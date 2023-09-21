@@ -1,0 +1,91 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-E9ZG1KHTVT"></script>
+<script src='/scripts/google.js'></script>
+
+<title>Camera Lens Tutorial</title>
+
+<div id="app">
+    <canvas id="canvas"></canvas>
+</div>
+
+<h1>Description</h1>
+
+<script type="module">
+    import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+
+    createApp({
+        data() {
+            return {
+                message: 'Hello Vue!',
+            }
+        },
+        methods: {
+            onClick(e) {
+            }
+        },
+        computed: {
+            frequencies() {
+                // Default
+            }
+        },
+        mounted() {
+            //--------------------------------
+            // Canvas setup
+            //--------------------------------
+            const canvas = document.getElementById("canvas");
+            canvas.height = 800;
+            canvas.width = 1600;
+            const ctx = canvas.getContext("2d");
+
+            // Render callback
+            let frames = 0;
+            let startTime = new Date().getTime();
+            const render = () => {
+                // Calculate FPS
+                frames += 1;
+                let endTime = new Date().getTime();
+                if (endTime - startTime >= 1000) {
+                    this.fps = frames / (endTime - startTime) * 1000;
+                    startTime = endTime;
+                    frames = 0;
+                }
+
+                //================================
+                // Canvas drawing
+                //================================
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+
+                //--------------------------------
+                // Clear canvas
+                //--------------------------------
+                ctx.clearRect(0, 0, w, h);
+
+                //--------------------------------
+                // Axes
+                //--------------------------------
+                // x-axis
+                ctx.beginPath();
+                ctx.moveTo(0, cy);
+                ctx.lineTo(w, cy);
+                ctx.stroke();
+
+                // y-axis
+                ctx.beginPath();
+                ctx.moveTo(cx, 0);
+                ctx.lineTo(cx, h);
+                ctx.stroke();
+
+                // Next frame
+                requestAnimationFrame(render);
+            }
+
+            // Rendering bootstrap
+            requestAnimationFrame(render);
+        },
+    }).mount('#app')
+</script>
