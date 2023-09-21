@@ -51,6 +51,8 @@
         data() {
             return {
                 canvas: undefined,
+                cx: 0,
+                cy: 0,
                 scale: 50,
                 rayN: 360,
                 lens: {
@@ -70,8 +72,8 @@
         methods: {
             mouseDown(e) {
                 const rect = this.canvas.getBoundingClientRect()
-                const x = (e.clientX - rect.left - this.canvas.width / 2) / this.scale;
-                const y = (e.clientY - rect.top - this.canvas.height / 2) / this.scale;
+                const x = (e.clientX - rect.left - this.cx) / this.scale;
+                const y = (e.clientY - rect.top - this.cy) / this.scale;
 
                 this.lights.forEach((light, idx) => {
                     if (Math.pow(x - light.x, 2) + Math.pow(y - light.y, 2) < Math.pow(light.r * 2, 2)) {
@@ -82,8 +84,8 @@
             mouseMove(e) {
                 if (this.moving >= 0) {
                     const rect = this.canvas.getBoundingClientRect()
-                    const x = (e.clientX - rect.left - this.canvas.width / 2) / this.scale;
-                    const y = (e.clientY - rect.top - this.canvas.height / 2) / this.scale;
+                    const x = (e.clientX - rect.left - this.cx) / this.scale;
+                    const y = (e.clientY - rect.top - this.cy) / this.scale;
                     this.lights[this.moving].x = Math.min(x, -this.focalLength * 1.001);
                     this.lights[this.moving].y = y;
                 }
@@ -128,8 +130,8 @@
                 //================================
                 const w = canvas.width;
                 const h = canvas.height;
-                const cx = canvas.width / 2;
-                const cy = canvas.height / 2;
+                this.cx = canvas.width * 2 / 3;
+                this.cy = canvas.height / 2;
 
                 //--------------------------------
                 // Clear canvas
@@ -149,14 +151,14 @@
                 ctx.lineWidth = 0.2;
                 // x-axis
                 ctx.beginPath();
-                ctx.moveTo(0, cy);
-                ctx.lineTo(w, cy);
+                ctx.moveTo(0, this.cy);
+                ctx.lineTo(w, this.cy);
                 ctx.stroke();
 
                 // y-axis
                 ctx.beginPath();
-                ctx.moveTo(cx, 0);
-                ctx.lineTo(cx, h);
+                ctx.moveTo(this.cx, 0);
+                ctx.lineTo(this.cx, h);
                 ctx.stroke();
 
                 //--------------------------------
@@ -170,8 +172,8 @@
 
                     // Source
                     {
-                        const x = cx + light.x * this.scale;
-                        const y = cy + light.y * this.scale;
+                        const x = this.cx + light.x * this.scale;
+                        const y = this.cy + light.y * this.scale;
                         const color = light.color;
                         ctx.strokeStyle = color;
 
@@ -247,12 +249,12 @@
                 {
                     const r = this.lens.r * this.scale;
                     const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
-                    const y = cy;
+                    const y = this.cy;
                     ctx.lineWidth = 1;
                     ctx.strokeStyle = "white";
                     // Left
                     {
-                        const x = cx + (this.lens.r - this.lens.d / 2) * this.scale;
+                        const x = this.cx + (this.lens.r - this.lens.d / 2) * this.scale;
                         const startAngle = Math.PI - theta;
                         const endAngle = Math.PI + theta;
                         ctx.beginPath();
@@ -261,7 +263,7 @@
                     }
                     // Right
                     {
-                        const x = cx - (this.lens.r - this.lens.d / 2) * this.scale;
+                        const x = this.cx - (this.lens.r - this.lens.d / 2) * this.scale;
                         const startAngle = - theta;
                         const endAngle = theta;
                         ctx.beginPath();
@@ -272,12 +274,12 @@
                 // Focal point
                 {
                     const r = 3;
-                    const y = cy;
+                    const y = this.cy;
                     ctx.fillStyle = "white";
                     ctx.strokeStyle = "white";
                     // Left
                     {
-                        const x = cx - this.focalLength * this.scale;
+                        const x = this.cx - this.focalLength * this.scale;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
                         ctx.fill();
@@ -285,7 +287,7 @@
                     }
                     // Right
                     {
-                        const x = cx + this.focalLength * this.scale;
+                        const x = this.cx + this.focalLength * this.scale;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
                         ctx.fill();
