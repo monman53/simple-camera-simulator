@@ -19,6 +19,13 @@
         data() {
             return {
                 message: 'Hello Vue!',
+                scale: 50,
+                rayN: 360,
+                lights: [
+                    { x: -3, y: -3, r: 0.1, color: "cyan" },
+                    { x: -5, y: -3, r: 0.1, color: "yellow" },
+                    { x: -7, y: -3, r: 0.1, color: "magenta" },
+                ],
             }
         },
         methods: {
@@ -63,11 +70,18 @@
                 //--------------------------------
                 // Clear canvas
                 //--------------------------------
-                ctx.clearRect(0, 0, w, h);
+                ctx.reset();
+                // ctx.clearRect(0, 0, w, h);
+
+                //--------------------------------
+                // Background
+                //--------------------------------
+                ctx.fillRect(0, 0, w, h);
 
                 //--------------------------------
                 // Axes
                 //--------------------------------
+                ctx.strokeStyle = "white";
                 // x-axis
                 ctx.beginPath();
                 ctx.moveTo(0, cy);
@@ -79,6 +93,38 @@
                 ctx.moveTo(cx, 0);
                 ctx.lineTo(cx, h);
                 ctx.stroke();
+
+                //--------------------------------
+                // Lights
+                //--------------------------------
+                this.lights.forEach((light) => {
+                    const x = cx + light.x * this.scale;
+                    const y = cy + light.y * this.scale;
+                    const color = light.color;
+                    ctx.strokeStyle = color;
+
+                    // Rays
+                    ctx.lineWidth = 0.3;
+                    for (let i = 0; i < this.rayN; i++) {
+                        const r = w + h; // Rough length
+                        const theta = 2 * Math.PI * i / this.rayN;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + r * Math.cos(theta), y + r * Math.sin(theta));
+                        ctx.stroke();
+                    }
+
+                    // Circle
+                    const r = light.r * this.scale;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = "black";
+                    ctx.stroke();
+                });
+
 
                 // Next frame
                 requestAnimationFrame(render);
