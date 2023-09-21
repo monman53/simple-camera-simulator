@@ -10,6 +10,16 @@
     <canvas id="canvas"></canvas>
     <div>
         <label>
+            Lens thickness
+            <input type="range" min="0.1" :max="Math.min(5, lens.r*2)" step="0.1" v-model="lens.d">
+        </label>
+        <br>
+        <label>
+            Lens R
+            <input type="range" :min="lens.d/2" max="100" step="0.1" v-model="lens.r">
+        </label>
+        <br>
+        <label>
             Number of rays
             <input type="range" min="1" max="1000" stp="1" v-model="rayN">
         </label>
@@ -39,6 +49,11 @@
                 message: 'Hello Vue!',
                 scale: 50,
                 rayN: 360 * 2,
+                lens: {
+                    r: 10,
+                    d: 0.3,
+                    n: 1.5,
+                },
                 lights: [
                     { x: -3, y: -3, r: 0.1, color: "cyan", enabled: true },
                     { x: -5, y: -3, r: 0.1, color: "yellow", enabled: false },
@@ -52,8 +67,8 @@
             }
         },
         computed: {
-            frequencies() {
-                // Default
+            focalLength() {
+                return 2 * (this.lens.n - 1) / this.lens.r;
             }
         },
         mounted() {
@@ -101,6 +116,7 @@
                 // Axes
                 //--------------------------------
                 ctx.strokeStyle = "white";
+                ctx.lineWidth = 0.2;
                 // x-axis
                 ctx.beginPath();
                 ctx.moveTo(0, cy);
@@ -147,6 +163,36 @@
                     ctx.strokeStyle = "black";
                     ctx.stroke();
                 });
+
+                //--------------------------------
+                // Lens
+                //--------------------------------
+                {
+                    const r = this.lens.r * this.scale;
+                    const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
+                    const y = cy;
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = "white";
+                    // Left
+                    {
+                        const x = cx + (this.lens.r - this.lens.d / 2) * this.scale;
+                        const startAngle = Math.PI - theta;
+                        const endAngle = Math.PI + theta;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, startAngle, endAngle);
+                        ctx.stroke();
+                    }
+                    // Right
+                    {
+                        const x = cx - (this.lens.r - this.lens.d / 2) * this.scale;
+                        const startAngle = - theta;
+                        const endAngle = theta;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, startAngle, endAngle);
+                        ctx.stroke();
+                    }
+                }
+
 
 
                 // Next frame
