@@ -7,7 +7,7 @@
 <title>Camera Lens Tutorial</title>
 
 <div id="app">
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
     <div>
         <label>
             Lens thickness
@@ -36,7 +36,8 @@
     <div>
         <details>
             <summary>Debug</summary>
-            FPS: {{fps}}
+            moving: {{moving}}
+            FPS: {{fps}}<br>
         </details>
     </div>
 
@@ -49,7 +50,7 @@
     createApp({
         data() {
             return {
-                message: 'Hello Vue!',
+                canvas: undefined,
                 scale: 50,
                 rayN: 360,
                 lens: {
@@ -62,12 +63,34 @@
                     { x: -11, y: -3, r: 0.1, color: "yellow", enabled: false },
                     { x: -13, y: -3, r: 0.1, color: "magenta", enabled: false },
                 ],
+                moving: -1,
                 fps: 0,
             }
         },
         methods: {
-            onClick(e) {
-            }
+            mouseDown(e) {
+                const rect = this.canvas.getBoundingClientRect()
+                const x = (e.clientX - rect.left - this.canvas.width / 2) / this.scale;
+                const y = (e.clientY - rect.top - this.canvas.height / 2) / this.scale;
+
+                this.lights.forEach((light, idx) => {
+                    if (Math.pow(x - light.x, 2) + Math.pow(y - light.y, 2) < Math.pow(light.r * 2, 2)) {
+                        this.moving = idx;
+                    }
+                });
+            },
+            mouseMove(e) {
+                if (this.moving >= 0) {
+                    const rect = this.canvas.getBoundingClientRect()
+                    const x = (e.clientX - rect.left - this.canvas.width / 2) / this.scale;
+                    const y = (e.clientY - rect.top - this.canvas.height / 2) / this.scale;
+                    this.lights[this.moving].x = Math.min(x, 0);
+                    this.lights[this.moving].y = y;
+                }
+            },
+            mouseUp(e) {
+                this.moving = -1;
+            },
         },
         computed: {
             focalLength() {
@@ -82,7 +105,7 @@
             //--------------------------------
             // Canvas setup
             //--------------------------------
-            const canvas = document.getElementById("canvas");
+            this.canvas = document.getElementById("canvas");
             canvas.height = 800;
             canvas.width = 1600;
             const ctx = canvas.getContext("2d");
