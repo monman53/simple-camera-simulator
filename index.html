@@ -12,16 +12,19 @@
         <label>
             Lens thickness
             <input type="range" min="0.1" :max="Math.min(5, lens.r*2)" step="0.1" v-model="lens.d">
+            {{lens.d}}
         </label>
         <br>
         <label>
             Lens R
             <input type="range" :min="lens.d/2" max="100" step="0.1" v-model="lens.r">
+            {{lens.r}}
         </label>
         <br>
         <label>
             Number of rays
             <input type="range" min="1" max="1000" stp="1" v-model="rayN">
+            {{rayN}}
         </label>
         <br>
         <label v-for="light in lights">
@@ -68,7 +71,7 @@
         },
         computed: {
             focalLength() {
-                return 2 * (this.lens.n - 1) / this.lens.r;
+                return this.lens.r / 2 * (this.lens.n - 1);
             }
         },
         mounted() {
@@ -189,6 +192,29 @@
                         const endAngle = theta;
                         ctx.beginPath();
                         ctx.arc(x, y, r, startAngle, endAngle);
+                        ctx.stroke();
+                    }
+                }
+                // Focal point
+                {
+                    const r = 3;
+                    const y = cy;
+                    ctx.fillStyle = "white";
+                    ctx.strokeStyle = "white";
+                    // Left
+                    {
+                        const x = cx - this.focalLength * this.scale;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                    // Right
+                    {
+                        const x = cx + this.focalLength * this.scale;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
                         ctx.stroke();
                     }
                 }
