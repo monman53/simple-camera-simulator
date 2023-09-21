@@ -10,6 +10,12 @@
     <canvas id="canvas" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
     <div>
         <label>
+            Aperture
+            <input type="range" min="0" :max="1" step="0.01" v-model="aperture">
+            {{aperture}}
+        </label>
+        <br>
+        <label>
             Lens thickness
             <input type="range" min="0.1" :max="Math.min(5, lens.r*2)" step="0.1" v-model="lens.d">
             {{lens.d}}
@@ -23,7 +29,7 @@
         <br>
         <label>
             Number of rays
-            <input type="range" min="1" max="1000" stp="1" v-model="rayN">
+            <input type="range" min="1" max="2048" stp="1" v-model="rayN">
             {{rayN}}
         </label>
         <br>
@@ -60,10 +66,11 @@
                     d: 0.3,
                     n: 1.5,
                 },
+                aperture: 1.0,
                 lights: [
-                    { x: -9, y: -3, r: 0.1, color: "cyan", enabled: true },
-                    { x: -11, y: -3, r: 0.1, color: "yellow", enabled: false },
-                    { x: -13, y: -3, r: 0.1, color: "magenta", enabled: false },
+                    { x: -8, y: -3, r: 0.1, color: "cyan", enabled: true },
+                    { x: -12, y: -3, r: 0.1, color: "yellow", enabled: false },
+                    { x: -16, y: -3, r: 0.1, color: "magenta", enabled: false },
                 ],
                 moving: -1,
                 fps: 0,
@@ -162,6 +169,26 @@
                 ctx.stroke();
 
                 //--------------------------------
+                // Aperture
+                //--------------------------------
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
+                // upper
+                {
+                    ctx.beginPath();
+                    ctx.moveTo(this.cx + 0, this.cy + -this.lensSize * this.scale);
+                    ctx.lineTo(this.cx + 0, this.cy + -this.lensSize * this.aperture * this.scale);
+                    ctx.stroke();
+                }
+                // lower
+                {
+                    ctx.beginPath();
+                    ctx.moveTo(this.cx + 0, this.cy + this.lensSize * this.scale);
+                    ctx.lineTo(this.cx + 0, this.cy + this.lensSize * this.aperture * this.scale);
+                    ctx.stroke();
+                }
+
+                //--------------------------------
                 // Lights
                 //--------------------------------
                 this.lights.forEach((light) => {
@@ -178,7 +205,7 @@
                         ctx.strokeStyle = color;
 
                         // Rays
-                        ctx.lineWidth = 0.3;
+                        ctx.lineWidth = 0.2;
                         for (let i = 0; i < this.rayN; i++) {
                             const theta = 2 * Math.PI * i / this.rayN;
                             let r = w + h; // Rough length
@@ -198,7 +225,8 @@
                             ctx.stroke();
 
                             // Ray behind lens
-                            if (hitLens) {
+                            const notHitAperture = -this.lensSize * this.aperture < y0 && y0 < this.lensSize * this.aperture;
+                            if (hitLens && notHitAperture) {
                                 const s1 = Math.abs(light.x);
                                 const s2 = this.focalLength + this.focalLength * this.focalLength / (s1 - this.focalLength);
                                 const ux = s2;
