@@ -84,7 +84,7 @@
                     const rect = this.canvas.getBoundingClientRect()
                     const x = (e.clientX - rect.left - this.canvas.width / 2) / this.scale;
                     const y = (e.clientY - rect.top - this.canvas.height / 2) / this.scale;
-                    this.lights[this.moving].x = Math.min(x, 0);
+                    this.lights[this.moving].x = Math.min(x, -this.focalLength * 1.001);
                     this.lights[this.moving].y = y;
                 }
             },
