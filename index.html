@@ -16,6 +16,18 @@
         </label>
         <br>
         <label>
+            Sensor size
+            <input type="range" min="0.1" :max="3" step="0.1" v-model="sensor.size">
+            {{sensor.size}}
+        </label>
+        <br>
+        <label>
+            Sensor position
+            <input type="range" :min="focalLength*0.99" max="8" step="0.01" v-model="sensor.x">
+            {{sensor.x}}
+        </label>
+        <br>
+        <label>
             Lens thickness
             <input type="range" min="0.1" :max="Math.min(5, lens.r*2)" step="0.1" v-model="lens.d">
             {{lens.d}}
@@ -37,6 +49,12 @@
             Ray width
             <input type="range" min="0.01" max="1.0" step="0.01" v-model="rayWidth">
             {{rayWidth}}
+        </label>
+        <br>
+        <label>
+            Canvas scale
+            <input type="range" min="0.1" max="100" step="0.1" v-model="scale">
+            {{scale}}
         </label>
         <br>
         <label v-for="light in lights">
@@ -72,6 +90,10 @@
                     r: 10,
                     d: 0.3,
                     n: 1.5,
+                },
+                sensor: {
+                    x: 4.0,
+                    size: 1.0,
                 },
                 aperture: 1.0,
                 lights: [
@@ -230,7 +252,7 @@
                         ctx.stroke();
 
                         // Ray behind lens
-                        const notHitAperture = -this.lensSize * this.aperture < y0 && y0 < this.lensSize * this.aperture;
+                        const notHitAperture = r0 > 0 && -this.lensSize * this.aperture < y0 && y0 < this.lensSize * this.aperture;
                         if (hitLens && notHitAperture) {
                             const s1 = Math.abs(light.x);
                             const s2 = this.focalLength + this.focalLength * this.focalLength / (s1 - this.focalLength);
@@ -316,6 +338,16 @@
                         ctx.stroke();
                     }
                 }
+
+                //--------------------------------
+                // Aperture
+                //--------------------------------
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(this.cx + this.sensor.x * this.scale, this.cy + this.sensor.size * this.scale);
+                ctx.lineTo(this.cx + this.sensor.x * this.scale, this.cy + -this.sensor.size * this.scale);
+                ctx.stroke();
 
                 // Next frame
                 requestAnimationFrame(render);
