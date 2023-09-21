@@ -8,9 +8,27 @@
 
 <div id="app">
     <canvas id="canvas"></canvas>
-</div>
+    <div>
+        <label>
+            Number of rays
+            <input type="range" min="1" max="1000" stp="1" v-model="rayN">
+        </label>
+        <br>
+        <label v-for="light in lights">
+            <input type="checkbox" v-model="light.enabled">
+            Show light {{light.color}}
+            <br>
+        </label>
+    </div>
+    <div>
+        <details>
+            <summary>Debug</summary>
+            FPS: {{fps}}
+        </details>
+    </div>
 
-<h1>Description</h1>
+    <h1>Description</h1>
+</div>
 
 <script type="module">
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
@@ -20,12 +38,13 @@
             return {
                 message: 'Hello Vue!',
                 scale: 50,
-                rayN: 360,
+                rayN: 360 * 2,
                 lights: [
-                    { x: -3, y: -3, r: 0.1, color: "cyan" },
-                    { x: -5, y: -3, r: 0.1, color: "yellow" },
-                    { x: -7, y: -3, r: 0.1, color: "magenta" },
+                    { x: -3, y: -3, r: 0.1, color: "cyan", enabled: true },
+                    { x: -5, y: -3, r: 0.1, color: "yellow", enabled: false },
+                    { x: -7, y: -3, r: 0.1, color: "magenta", enabled: false },
                 ],
+                fps: 0,
             }
         },
         methods: {
@@ -98,6 +117,10 @@
                 // Lights
                 //--------------------------------
                 this.lights.forEach((light) => {
+                    if (!light.enabled) {
+                        return;
+                    }
+
                     const x = cx + light.x * this.scale;
                     const y = cy + light.y * this.scale;
                     const color = light.color;
