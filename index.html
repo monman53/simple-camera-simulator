@@ -51,16 +51,16 @@
             return {
                 message: 'Hello Vue!',
                 scale: 50,
-                rayN: 360 * 2,
+                rayN: 360,
                 lens: {
                     r: 10,
                     d: 0.3,
                     n: 1.5,
                 },
                 lights: [
-                    { x: -3, y: -3, r: 0.1, color: "cyan", enabled: true },
-                    { x: -5, y: -3, r: 0.1, color: "yellow", enabled: false },
-                    { x: -7, y: -3, r: 0.1, color: "magenta", enabled: false },
+                    { x: -9, y: -3, r: 0.1, color: "cyan", enabled: true },
+                    { x: -11, y: -3, r: 0.1, color: "yellow", enabled: false },
+                    { x: -13, y: -3, r: 0.1, color: "magenta", enabled: false },
                 ],
                 fps: 0,
             }
@@ -72,7 +72,11 @@
         computed: {
             focalLength() {
                 return this.lens.r / 2 * (this.lens.n - 1);
-            }
+            },
+            lensSize() {
+                const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
+                return this.lens.r * Math.sin(theta);
+            },
         },
         mounted() {
             //--------------------------------
@@ -140,31 +144,78 @@
                         return;
                     }
 
-                    const x = cx + light.x * this.scale;
-                    const y = cy + light.y * this.scale;
-                    const color = light.color;
-                    ctx.strokeStyle = color;
 
-                    // Rays
-                    ctx.lineWidth = 0.3;
-                    for (let i = 0; i < this.rayN; i++) {
-                        const r = w + h; // Rough length
-                        const theta = 2 * Math.PI * i / this.rayN;
+                    // Source
+                    {
+                        const x = cx + light.x * this.scale;
+                        const y = cy + light.y * this.scale;
+                        const color = light.color;
+                        ctx.strokeStyle = color;
+
+                        // Rays
+                        ctx.lineWidth = 0.3;
+                        for (let i = 0; i < this.rayN; i++) {
+                            const theta = 2 * Math.PI * i / this.rayN;
+                            let r = w + h; // Rough length
+
+                            const r0 = - light.x / Math.cos(theta);
+                            const y0 = light.y + r0 * Math.sin(theta);
+                            const hitLens = r0 > 0 && -this.lensSize < y0 && y0 < this.lensSize;
+                            if (hitLens) {
+                                r = r0 * this.scale;
+                            }
+                            const tx = x + r * Math.cos(theta);
+                            const ty = y + r * Math.sin(theta);
+
+                            ctx.beginPath();
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(tx, ty);
+                            ctx.stroke();
+
+                            // Ray behind lens
+                            if (hitLens) {
+                                const s1 = Math.abs(light.x);
+                                const s2 = this.focalLength + this.focalLength * this.focalLength / (s1 - this.focalLength);
+                                const ux = s2;
+                                const uy = - light.y * (s2 / s1)
+                                const theta = Math.atan2(uy - y0, ux - 0);
+                                const r = w + h;
+                                ctx.beginPath();
+                                ctx.moveTo(tx, ty);
+                                ctx.lineTo(tx + r * Math.cos(theta), ty + r * Math.sin(theta));
+                                ctx.stroke();
+                            }
+                        }
+
+                        // Point
+                        const r = light.r * this.scale;
                         ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(x + r * Math.cos(theta), y + r * Math.sin(theta));
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.fill();
+                        ctx.lineWidth = 1;
+                        ctx.strokeStyle = "black";
                         ctx.stroke();
                     }
 
-                    // Circle
-                    const r = light.r * this.scale;
-                    ctx.beginPath();
-                    ctx.arc(x, y, r, 0, Math.PI * 2);
-                    ctx.fillStyle = color;
-                    ctx.fill();
-                    ctx.lineWidth = 1;
-                    ctx.strokeStyle = "black";
-                    ctx.stroke();
+                    // Image (circle)
+                    // {
+                    //     const s1 = Math.abs(light.x);
+                    //     const s2 = this.focalLength + this.focalLength * this.focalLength / (s1 - this.focalLength);
+                    //     const x = cx + s2 * this.scale;
+                    //     const y = cy - light.y * (s2 / s1) * this.scale;
+                    //     const color = light.color;
+                    //     ctx.strokeStyle = color;
+
+                    //     const r = light.r * this.scale;
+                    //     ctx.beginPath();
+                    //     ctx.arc(x, y, r, 0, Math.PI * 2);
+                    //     ctx.fillStyle = color;
+                    //     ctx.fill();
+                    //     ctx.lineWidth = 1;
+                    //     ctx.strokeStyle = "black";
+                    //     ctx.stroke();
+                    // }
                 });
 
                 //--------------------------------
