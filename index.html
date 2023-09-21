@@ -29,7 +29,7 @@
         <br>
         <label>
             Number of rays
-            <input type="range" min="1" max="2048" stp="1" v-model="rayN">
+            <input type="range" min="1" max="4096" stp="1" v-model="rayN">
             {{rayN}}
         </label>
         <br>
@@ -60,7 +60,7 @@
                 cx: 0,
                 cy: 0,
                 scale: 50,
-                rayN: 360,
+                rayN: 512,
                 lens: {
                     r: 10,
                     d: 0.3,
@@ -68,9 +68,9 @@
                 },
                 aperture: 1.0,
                 lights: [
-                    { x: -8, y: -3, r: 0.1, color: "cyan", enabled: true },
-                    { x: -12, y: -3, r: 0.1, color: "yellow", enabled: false },
-                    { x: -16, y: -3, r: 0.1, color: "magenta", enabled: false },
+                    { x: -8, y: -3, r: 0.1, color: "rgba(255, 0, 0, 0.8)", enabled: false },
+                    { x: -12, y: -3, r: 0.1, color: "rgba(0, 255, 0, 0.8)", enabled: true },
+                    { x: -16, y: -3, r: 0.1, color: "rgba(0, 0, 255, 0.8)", enabled: false },
                 ],
                 moving: -1,
                 fps: 0,
@@ -144,6 +144,7 @@
                 // Clear canvas
                 //--------------------------------
                 ctx.reset();
+                ctx.globalCompositeOperation = 'lighten';
                 // ctx.clearRect(0, 0, w, h);
 
                 //--------------------------------
@@ -205,7 +206,7 @@
                         ctx.strokeStyle = color;
 
                         // Rays
-                        ctx.lineWidth = 0.2;
+                        ctx.lineWidth = 0.3;
                         for (let i = 0; i < this.rayN; i++) {
                             const theta = 2 * Math.PI * i / this.rayN;
                             let r = w + h; // Rough length
@@ -239,13 +240,21 @@
                                 ctx.stroke();
                             }
                         }
+                    }
+                });
 
-                        // Point
+                ctx.globalCompositeOperation = 'normal';
+                this.lights.forEach((light) => {
+                    if (!light.enabled) {
+                        return;
+                    }
+                    // Source
+                    {
+                        const x = this.cx + light.x * this.scale;
+                        const y = this.cy + light.y * this.scale;
                         const r = light.r * this.scale;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.fillStyle = color;
-                        ctx.fill();
                         ctx.lineWidth = 1;
                         ctx.strokeStyle = "black";
                         ctx.stroke();
