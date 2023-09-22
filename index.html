@@ -353,13 +353,12 @@
                 // Copy offscreen render result to main canvas
                 //--------------------------------
                 mainCtx.transferFromImageBitmap(offscreen.transferToImageBitmap());
-
-                // Next frame
-                requestAnimationFrame(render);
             }
 
-            // Rendering bootstrap
-            requestAnimationFrame(render);
+            // Render only when data changes
+            this.$watch('$data', () => {
+                requestAnimationFrame(render);
+            }, { deep: true, immediate: true });
         },
     }).mount('#app')
 </script>
