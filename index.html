@@ -174,7 +174,7 @@
                 //--------------------------------
                 ctx.reset();
                 ctx.fillRect(0, 0, w, h); // background
-                ctx.translate(this.cx, this.cy);
+                ctx.transform(this.scale, 0, 0, this.scale, this.cx, this.cy);
                 ctx.globalCompositeOperation = 'lighten';
                 // ctx.clearRect(0, 0, w, h);
 
@@ -182,7 +182,7 @@
                 // Axes
                 //--------------------------------
                 ctx.strokeStyle = "white";
-                ctx.lineWidth = 0.2;
+                ctx.lineWidth = 0.2 / this.scale;
                 // x-axis
                 ctx.beginPath();
                 ctx.moveTo(-w, 0);
@@ -199,19 +199,19 @@
                 // Aperture
                 //--------------------------------
                 ctx.strokeStyle = "white";
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 1 / this.scale;
                 // upper
                 {
                     ctx.beginPath();
-                    ctx.moveTo(0, -this.lensSize * this.scale);
-                    ctx.lineTo(0, -this.lensSize * this.aperture * this.scale);
+                    ctx.moveTo(0, -this.lensSize);
+                    ctx.lineTo(0, -this.lensSize * this.aperture);
                     ctx.stroke();
                 }
                 // lower
                 {
                     ctx.beginPath();
-                    ctx.moveTo(0, this.lensSize * this.scale);
-                    ctx.lineTo(0, this.lensSize * this.aperture * this.scale);
+                    ctx.moveTo(0, this.lensSize);
+                    ctx.lineTo(0, this.lensSize * this.aperture);
                     ctx.stroke();
                 }
 
@@ -224,21 +224,21 @@
                         return;
                     }
 
-                    const x = light.x * this.scale;
-                    const y = light.y * this.scale;
+                    const x = light.x;
+                    const y = light.y;
                     const color = light.color;
                     ctx.strokeStyle = color;
 
-                    ctx.lineWidth = this.rayWidth;
+                    ctx.lineWidth = this.rayWidth / this.scale;
                     for (let i = 0; i < this.rayN; i++) {
                         const theta = 2 * Math.PI * i / this.rayN;
-                        let r = w + h; // Rough length
+                        let r = (w + h) / this.scale; // Rough length
 
                         const r0 = - light.x / Math.cos(theta);
                         const y0 = light.y + r0 * Math.sin(theta);
                         const hitLens = r0 > 0 && -this.lensSize < y0 && y0 < this.lensSize;
                         if (hitLens) {
-                            r = r0 * this.scale;
+                            r = r0;
                         }
                         const tx = x + r * Math.cos(theta);
                         const ty = y + r * Math.sin(theta);
@@ -256,7 +256,7 @@
                             const ux = s2;
                             const uy = - light.y * (s2 / s1)
                             const theta = Math.atan2(uy - y0, ux - 0);
-                            const r = w + h;
+                            const r = (w + h) / this.scale; // Rough length
                             ctx.beginPath();
                             ctx.moveTo(tx, ty);
                             ctx.lineTo(tx + r * Math.cos(theta), ty + r * Math.sin(theta));
@@ -274,12 +274,12 @@
                     }
 
                     {
-                        const x = light.x * this.scale;
-                        const y = light.y * this.scale;
-                        const r = light.r * this.scale;
+                        const x = light.x;
+                        const y = light.y;
+                        const r = light.r;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.lineWidth = 1;
+                        ctx.lineWidth = 1 / this.scale;
                         ctx.strokeStyle = "black";
                         ctx.stroke();
                     }
@@ -289,14 +289,14 @@
                 // Lens
                 //--------------------------------
                 {
-                    const r = this.lens.r * this.scale;
+                    const r = this.lens.r;
                     const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
                     const y = 0;
-                    ctx.lineWidth = 1;
+                    ctx.lineWidth = 1 / this.scale;
                     ctx.strokeStyle = "white";
                     // Left
                     {
-                        const x = (this.lens.r - this.lens.d / 2) * this.scale;
+                        const x = this.lens.r - this.lens.d / 2;
                         const startAngle = Math.PI - theta;
                         const endAngle = Math.PI + theta;
                         ctx.beginPath();
@@ -305,7 +305,7 @@
                     }
                     // Right
                     {
-                        const x = -(this.lens.r - this.lens.d / 2) * this.scale;
+                        const x = -(this.lens.r - this.lens.d / 2);
                         const startAngle = - theta;
                         const endAngle = theta;
                         ctx.beginPath();
@@ -315,13 +315,13 @@
                 }
                 // Focal point
                 {
-                    const r = 3;
+                    const r = 3 / this.scale;
                     const y = 0;
                     ctx.fillStyle = "white";
                     ctx.strokeStyle = "white";
                     // Left
                     {
-                        const x = -this.focalLength * this.scale;
+                        const x = -this.focalLength;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
                         ctx.fill();
@@ -329,7 +329,7 @@
                     }
                     // Right
                     {
-                        const x = this.focalLength * this.scale;
+                        const x = this.focalLength;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
                         ctx.fill();
@@ -341,10 +341,10 @@
                 // Sensor
                 //--------------------------------
                 ctx.strokeStyle = "white";
-                ctx.lineWidth = 1;
+                ctx.lineWidth = 1 / this.scale;
                 ctx.beginPath();
-                ctx.moveTo(this.sensor.x * this.scale, this.sensor.size * this.scale);
-                ctx.lineTo(this.sensor.x * this.scale, -this.sensor.size * this.scale);
+                ctx.moveTo(this.sensor.x, this.sensor.size)
+                ctx.lineTo(this.sensor.x, -this.sensor.size);
                 ctx.stroke();
 
                 // Next frame
