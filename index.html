@@ -8,6 +8,7 @@
     .container {
         display: grid;
         grid-template-columns: 9fr 1fr;
+        gap: 10px;
     }
 
     .item-main {
@@ -38,7 +39,6 @@
 
     #canvas-sensor {
         width: 100%;
-        margin-left: 1em;
     }
 </style>
 
@@ -288,6 +288,8 @@
                 this.canvas.height = this.height;
                 this.sensorCanvas.width = this.sensorCanvas.getBoundingClientRect().width;
                 this.sensorCanvas.height = this.height;
+                this.sensorCanvas.style.width = this.sensorCanvas.getBoundingClientRect().width;
+                this.sensorCanvas.style.height = this.canvas.getBoundingClientRect().height;
             },
         },
         computed: {
