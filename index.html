@@ -4,12 +4,57 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9ZG1KHTVT"></script>
 <script src='/scripts/google.js'></script>
 
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: 9fr 1fr;
+    }
+
+    .item-main {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .item-sensor {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    #stage {
+        position: relative;
+        display: inline;
+    }
+
+    #canvas {
+        width: 100%;
+        position: absolute;
+        z-index: 1;
+    }
+
+    #ui {
+        position: absolute;
+        z-index: 2;
+    }
+
+    #canvas-sensor {
+        width: 100%;
+        margin-left: 1em;
+    }
+</style>
+
 <title>Simple Camera Lens Simulator</title>
 
 <div id="app">
-    <canvas id="canvas" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
-    <canvas id="canvas-sensor" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"
-        style="margin-left: 1em;"></canvas>
+    <div class="container">
+        <div class="item-main" id="stage">
+            <canvas id="canvas" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
+            <!-- <svg id="ui" :width="width" :height="height" :viewBox="viewBoxStr"></svg> -->
+        </div>
+        <div class="item-sensor">
+            <canvas id="canvas-sensor" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
+        </div>
+    </div>
+
     <div>
         <label>
             Aperture
@@ -176,19 +221,26 @@
         data() {
             return {
                 canvas: undefined,
-                cx: 0,
-                cy: 0,
+                sensorCanvas: undefined,
+                width: 1600,
+                height: 800,
+                viewBox: {
+                    x: 0,
+                    y: 0,
+                    w: 0,
+                    h: 0,
+                },
                 scale: 50,
                 rayN: 512,
                 rayWidth: 0.3,
                 lens: {
-                    x: 0.0,
+                    x: -4.0,
                     r: 10.0,
                     d: 0.3,
                     n: 1.5,
                 },
                 sensor: {
-                    x: 4.0,
+                    x: 0.0,
                     size: 1.0,
                 },
                 aperture: 1.0,
@@ -204,8 +256,10 @@
         methods: {
             mouseDown(e) {
                 const rect = this.canvas.getBoundingClientRect()
-                const x = (e.clientX - rect.left - this.cx) / this.scale;
-                const y = (e.clientY - rect.top - this.cy) / this.scale;
+                const xPix = e.clientX - rect.left;
+                const yPix = e.clientY - rect.top;
+                const x = xPix / this.scale + this.viewBox.x;
+                const y = yPix / this.scale + this.viewBox.y;
 
                 this.lights.forEach((light, idx) => {
                     if (Math.pow(x - light.x, 2) + Math.pow(y - light.y, 2) < Math.pow(light.r * 2, 2)) {
@@ -216,14 +270,24 @@
             mouseMove(e) {
                 if (this.moving >= 0) {
                     const rect = this.canvas.getBoundingClientRect()
-                    const x = (e.clientX - rect.left - this.cx) / this.scale;
-                    const y = (e.clientY - rect.top - this.cy) / this.scale;
+                    const xPix = e.clientX - rect.left;
+                    const yPix = e.clientY - rect.top;
+                    const x = xPix / this.scale + this.viewBox.x;
+                    const y = yPix / this.scale + this.viewBox.y;
                     this.lights[this.moving].x = Math.min(x, this.lens.x - this.focalLength * 1.001);
                     this.lights[this.moving].y = y;
                 }
             },
             mouseUp(e) {
                 this.moving = -1;
+            },
+            resize() {
+                this.width = this.canvas.getBoundingClientRect().width;
+                this.height = this.width / 2;
+                this.canvas.width = this.width;
+                this.canvas.height = this.height;
+                this.sensorCanvas.width = this.sensorCanvas.getBoundingClientRect().width;
+                this.sensorCanvas.height = this.height;
             },
         },
         computed: {
@@ -237,6 +301,9 @@
             boxWidth() {
                 return this.sensor.x - this.lens.x + 0.3;
             },
+            viewBoxStr() {
+                return `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`;
+            }
         },
         mounted() {
             //================================
@@ -305,26 +372,20 @@
             //================================
             // Canvas setup
             //================================
-            const height = 800;
-
             // Main canvas
             this.canvas = document.getElementById("canvas");
-            this.canvas.height = height;
-            this.canvas.width = height * 2;
-            const offscreen = new OffscreenCanvas(canvas.width, canvas.height);
-            const ctx = offscreen.getContext("2d", { alpha: false });
-            const mainCtx = this.canvas.getContext("bitmaprenderer");
-
-            const w = this.canvas.width;
-            const h = this.canvas.height;
-            this.cx = this.canvas.width * 2 / 3;
-            this.cy = this.canvas.height / 2;
 
             // Sensor canvas
-            const sensorCanvas = document.getElementById("canvas-sensor");
-            sensorCanvas.height = height;
-            sensorCanvas.width = height / 8;
-            const sensorCanvasCtx = sensorCanvas.getContext("2d");
+            this.sensorCanvas = document.getElementById("canvas-sensor");
+            const sensorCanvasCtx = this.sensorCanvas.getContext("2d");
+
+            this.resize();
+            window.addEventListener("resize", this.resize);
+
+            // Prepare offscreen canvas
+            const offscreen = new OffscreenCanvas(this.canvas.width, this.canvas.height);
+            const ctx = offscreen.getContext("2d", { alpha: false });
+            const mainCtx = this.canvas.getContext("bitmaprenderer");
 
             //================================
             // Render callback function
@@ -344,14 +405,26 @@
                 //================================
                 // Main canvas drawing
                 //================================
-                const maxR = (w + h) / this.scale; // Long enough
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                this.scale = h / (this.sensor.size * 16); // Equal to 8*(sensor size)
+                this.viewBox.w = w / this.scale;
+                this.viewBox.h = h / this.scale;
+                this.viewBox.x = -7 / 8 * this.viewBox.w
+                this.viewBox.y = -this.viewBox.h / 2;
+
+                const maxR = (w + h) / this.scale; // Long enough (Use as length of infinity ray)
+
+                offscreen.width = w;
+                offscreen.height = h;
 
                 //--------------------------------
                 // Clear canvas
                 //--------------------------------
                 ctx.reset();
-                ctx.fillRect(0, 0, w, h); // background
-                ctx.transform(this.scale, 0, 0, this.scale, this.cx, this.cy);
+                ctx.transform(this.scale, 0, 0, this.scale, -this.viewBox.x * this.scale, -this.viewBox.y * this.scale);
+                ctx.fillRect(this.viewBox.x, this.viewBox.y, this.viewBox.w, this.viewBox.h); // background
                 ctx.globalCompositeOperation = 'lighten';
 
                 //--------------------------------
@@ -593,9 +666,9 @@
                 // Sensor canvas drawing
                 //================================
                 sensorCanvasCtx.reset();
-                sensorCanvasCtx.fillRect(0, 0, h / 4, h); // background
-                const sensorCanvasScale = sensorCanvas.height / (this.sensor.size * 2);
-                sensorCanvasCtx.transform(8192, 0, 0, sensorCanvasScale, sensorCanvas.width / 2, sensorCanvas.height / 2);
+                sensorCanvasCtx.fillRect(0, 0, this.sensorCanvas.width, this.sensorCanvas.height); // background
+                const sensorCanvasScale = this.sensorCanvas.height / (this.sensor.size * 2);
+                sensorCanvasCtx.transform(8192, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
                 sensorCanvasCtx.globalCompositeOperation = 'lighten';
 
                 sensorIntersections.forEach((sensorIntersectionsForLight, idx) => {
@@ -609,10 +682,11 @@
                 });
             }
 
-            // Render only when data changes
+            // Render only when data changed or window resized
             this.$watch('$data', () => {
                 requestAnimationFrame(render);
             }, { deep: true, immediate: true });
+            window.addEventListener("resize", render);
         },
     }).mount('#app')
 </script>
