@@ -51,7 +51,8 @@
     }
 
     .svg-light-source,
-    .svg-sensor {
+    .svg-sensor,
+    .svg-line {
         stroke-width: 0.03;
         stroke: white;
     }
@@ -84,6 +85,13 @@
                 <!-- Axes -->
                 <line class="svg-axis" :x1="viewBox.x" y1="0" :x2="viewBox.x+viewBox.w" y2="0" />
                 <line class="svg-axis" x1="0" :y1="-viewBox.y" x2="0" :y2="viewBox.y" />
+                <!-- Box -->
+                <line class="svg-line" :x1="lens.x" :y1="-boxHeight/2" :x2="lens.x+boxWidth" :y2="-boxHeight/2" />
+                <line class="svg-line" :x1="lens.x" :y1="boxHeight/2" :x2="lens.x+boxWidth" :y2="boxHeight/2" />
+                <line class="svg-line" :x1="lens.x+boxWidth" :y1="-boxHeight/2" :x2="lens.x+boxWidth"
+                    :y2="boxHeight/2" />
+                <line class="svg-line" :x1="lens.x" :y1="-boxHeight/2" :x2="lens.x" :y2="-lensSize" />
+                <line class="svg-line" :x1="lens.x" :y1="lensSize" :x2="lens.x" :y2="boxHeight/2" />
                 <!-- Light sources position -->
                 <g v-for="light in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
@@ -167,13 +175,6 @@
             <br>
         </label>
     </div>
-    <!-- <div>
-        <details>
-            <summary>Debug</summary>
-            moving: {{moving}}
-            FPS: {{fps}}<br>
-        </details>
-    </div> -->
 
     <div>
         <h2>Description</h2>
@@ -210,13 +211,13 @@
             <ul>
                 <li>A. See how the image on virtual sensor by changing the sensor size.</li>
             </ul>
-            <li>Q. Why vignetting occurs when using lenses for smaller image sensor?</li>
+            <!-- <li>Q. Why vignetting occurs when using lenses for smaller image sensor?</li>
             <ul>
                 <li>A. Lenses for the smaller image sensor (e.g. micro-four-thirds) uses smaller diameter of lenses but
                     same focal length. Put a light source that makes image on the around of corner of image sensor and
                     change lens thickness to see how image cropped (vignetting).
                 </li>
-            </ul>
+            </ul> -->
         </ul>
         <h2>Features</h2>
         <ul>
@@ -395,6 +396,9 @@
             boxWidth() {
                 return this.sensor.x - this.lens.x + 0.3;
             },
+            boxHeight() {
+                return Math.max(this.lensSize * 2, this.sensor.size * 2 + 0.8);
+            },
             viewBoxStr() {
                 return `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`;
             },
@@ -438,13 +442,20 @@
             }
 
             const getIntersectionBox = (cx, cy, theta, maxR, skipBehindSensor, immediate) => {
+                // Front
+                const [hit0, x0, y0, r0] = getIntersectionY(cx, cy, theta, this.lens.x, -this.boxHeight / 2, this.boxHeight / 2, maxR);
+                if (hit0 && r0 > 0) {
+                    // NOTICE: Assume all rays passes left to right
+                    // r0 > 0 condition is for inner rays.
+                    return [hit0, x0, y0, r0];
+                }
                 // Top
-                const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.lensSize, maxR);
+                const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.boxHeight / 2, maxR);
                 if (hit1 && immediate) {
                     return [hit1, x1, y1, r1];
                 }
                 // Bottom
-                const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.lensSize, maxR);
+                const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.boxHeight / 2, maxR);
                 if (hit2 && immediate) {
                     return [hit2, x2, y2, r2];
                 }
@@ -458,7 +469,7 @@
                 }
 
                 // Behind the sensor
-                const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.lensSize, this.lensSize, maxR);
+                const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.boxHeight / 2, this.boxHeight / 2, maxR);
                 if (hit3 && immediate) {
                     return [hit3, x3, y3, r3];
                 }
@@ -624,27 +635,6 @@
                 ctx.lineWidth = 1 / this.scale;
                 ctx.strokeStyle = "white";
                 ctx.fillStyle = "white";
-
-                //--------------------------------
-                // Camera box
-                //--------------------------------
-                // Upper
-                ctx.beginPath();
-                ctx.moveTo(this.lens.x, -this.lensSize)
-                ctx.lineTo(this.lens.x + this.boxWidth, -this.lensSize);
-                ctx.stroke();
-
-                // Bottom
-                ctx.beginPath();
-                ctx.moveTo(this.lens.x, this.lensSize)
-                ctx.lineTo(this.lens.x + this.boxWidth, this.lensSize);
-                ctx.stroke();
-
-                // Behind the sensor
-                ctx.beginPath();
-                ctx.moveTo(this.lens.x + this.boxWidth, -this.lensSize)
-                ctx.lineTo(this.lens.x + this.boxWidth, this.lensSize);
-                ctx.stroke();
 
                 //--------------------------------
                 // Lens
