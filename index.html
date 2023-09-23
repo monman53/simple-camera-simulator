@@ -146,23 +146,27 @@
             //================================
             // Support functions
             //================================
-            const getIntersectionRX = (px, py, theta, minX, maxX, y, maxR) => {
-                const r = (y - py) / Math.sin(theta);
-                const x = px + r * Math.cos(theta);
+            const getIntersectionX = (px, py, theta, minX, maxX, y, maxR) => {
+                const sin = Math.sin(theta);
+                const cos = Math.cos(theta);
+                const r = (y - py) / sin;
+                const x = px + r * cos;
                 if (r >= 0 && minX <= x && x <= maxX) {
-                    return [true, Math.abs(r)];
+                    return [true, x, y];
                 } else {
-                    return [false, maxR];
+                    return [false, px + maxR * cos, py + maxR * sin];
                 }
             }
 
-            const getIntersectionRY = (px, py, theta, x, minY, maxY, maxR) => {
+            const getIntersectionY = (px, py, theta, x, minY, maxY, maxR) => {
+                const sin = Math.sin(theta);
+                const cos = Math.cos(theta);
                 const r = (x - px) / Math.cos(theta);
                 const y = py + r * Math.sin(theta);
                 if (r >= 0 && minY <= y && y <= maxY) {
-                    return [true, Math.abs(r)];
+                    return [true, x, y];
                 } else {
-                    return [false, maxR];
+                    return [false, px + maxR * cos, py + maxR * sin];
                 }
             }
 
@@ -275,9 +279,7 @@
                         // Draw outer ray
                         const theta = 2 * Math.PI * i / this.rayN;
 
-                        const [hitLens, r] = getIntersectionRY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, maxR);
-                        const tx = x + r * Math.cos(theta);
-                        const ty = y + r * Math.sin(theta);
+                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, maxR);
                         ctx.beginPath();
                         ctx.moveTo(x, y);
                         ctx.lineTo(tx, ty);
@@ -298,9 +300,7 @@
                             const phi = Math.atan2(uy - ty, ux - this.lens.x);
 
                             // Check intersection to the sensor
-                            const [hitSensor, r] = getIntersectionRY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, maxR);
-                            const vx = tx + r * Math.cos(phi);
-                            const vy = ty + r * Math.sin(phi);
+                            const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, maxR);
 
                             ctx.beginPath();
                             ctx.moveTo(tx, ty);
