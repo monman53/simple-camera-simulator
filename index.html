@@ -173,6 +173,28 @@
                 }
             }
 
+            const getIntersectionBox = (cx, cy, theta, maxR) => {
+                // Top
+                {
+                    const [hit, x, y] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.lensSize, maxR);
+                    if (hit) {
+                        return [hit, x, y];
+                    }
+                }
+                // Bottom
+                {
+                    const [hit, x, y] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.lensSize, maxR);
+                    if (hit) {
+                        return [hit, x, y];
+                    }
+                }
+                // Behind the sensor
+                {
+                    const [hit, x, y] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.lensSize, this.lensSize, maxR);
+                    return [hit, x, y];
+                }
+            }
+
             //================================
             // Canvas setup
             //================================
@@ -258,19 +280,36 @@
                     let sensorIntersectionsForLight = [];
                     ctx.lineWidth = this.rayWidth / this.scale;
                     for (let i = 0; i < this.rayN; i++) {
-
                         // Draw outer ray
                         const theta = 2 * Math.PI * i / this.rayN;
 
                         const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, maxR);
+                        if (!hitLens) {
+                            {
+                                const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, maxR);
+                                // Draw light to box ray
+                                if (hitBox) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(x, y);
+                                    ctx.lineTo(tx, ty);
+                                    ctx.stroke();
+                                    continue;
+                                }
+                            }
+
+                            // Draw light to infinity ray
+                            ctx.beginPath();
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(tx, ty);
+                            ctx.stroke();
+                            continue;
+                        }
+
+                        // Draw light to lens ray
                         ctx.beginPath();
                         ctx.moveTo(x, y);
                         ctx.lineTo(tx, ty);
                         ctx.stroke();
-
-                        if (!hitLens) {
-                            continue;
-                        }
 
                         // Draw inner ray
                         const notHitAperture = -this.lensSize * this.aperture < ty && ty < this.lensSize * this.aperture;
@@ -285,10 +324,20 @@
                             // Check intersection to the sensor
                             const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, maxR);
 
-                            ctx.beginPath();
-                            ctx.moveTo(tx, ty);
-                            ctx.lineTo(vx, vy);
-                            ctx.stroke();
+                            // Draw lens to sensor ray
+                            if (hitSensor) {
+                                ctx.beginPath();
+                                ctx.moveTo(tx, ty);
+                                ctx.lineTo(vx, vy);
+                                ctx.stroke();
+                            } else {
+                                const [hitBox, vx, vy] = getIntersectionBox(tx, ty, phi, maxR);
+                                console.assert(hitBox); // Inner rays should always hit to the box
+                                ctx.beginPath();
+                                ctx.moveTo(tx, ty);
+                                ctx.lineTo(vx, vy);
+                                ctx.stroke();
+                            }
 
                             // Record intersection
                             if (hitSensor) {
