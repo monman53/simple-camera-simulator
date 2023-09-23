@@ -180,11 +180,17 @@
                 }
             }
 
-            const getIntersectionBox = (cx, cy, theta, maxR, skipBehindSensor) => {
+            const getIntersectionBox = (cx, cy, theta, maxR, skipBehindSensor, immediate) => {
                 // Top
                 const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.lensSize, maxR);
+                if (hit1 && immediate) {
+                    return [hit1, x1, y1, r1];
+                }
                 // Bottom
                 const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.lensSize, maxR);
+                if (hit2 && immediate) {
+                    return [hit2, x2, y2, r2];
+                }
 
                 if (skipBehindSensor) {
                     if (r1 < r2) {
@@ -196,6 +202,11 @@
 
                 // Behind the sensor
                 const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.lensSize, this.lensSize, maxR);
+                if (hit3 && immediate) {
+                    return [hit3, x3, y3, r3];
+                }
+
+                // Return closest intersection
                 if (r1 <= r2 && r1 <= r3) {
                     return [hit1, x1, y1];
                 } else if ((r2 <= r1 && r2 <= r3)) {
