@@ -45,19 +45,25 @@
         fill: none;
     }
 
-    .svg-light-source {
+    .svg-axis {
+        stroke-width: 0.01;
+        stroke: white;
+    }
+
+    .svg-light-source,
+    .svg-sensor {
         stroke-width: 0.03;
         stroke: white;
     }
 
-    .svg-lens {
+    .svg-lens,
+    .svg-sensor-size {
         fill: white;
         fill-opacity: 0.0;
     }
 
-    .svg-sensor-size {
+    .svg-focal-point {
         fill: white;
-        fill-opacity: 0.0;
     }
 
     .svg-sensor-size:hover,
@@ -75,6 +81,9 @@
             <canvas id="canvas"></canvas>
             <svg id="ui" :width="width" :height="height" :view-box.camel="viewBoxStr" xmlns="http://www.w3.org/2000/svg"
                 @mousemove="mouseMove" @mouseup="mouseUp">
+                <!-- Axes -->
+                <line class="svg-axis" :x1="viewBox.x" y1="0" :x2="viewBox.x+viewBox.w" y2="0" />
+                <line class="svg-axis" x1="0" :y1="-viewBox.y" x2="0" :y2="viewBox.y" />
                 <!-- Light sources position -->
                 <g v-for="light in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
@@ -83,9 +92,13 @@
                 <!-- Lens position -->
                 <rect class="svg-lens" :x="lens.x-0.2" :y="-lensSize" :width="0.4" :height="2*lensSize"
                     @mousedown="lensMoveHandler" />
-                <!-- Sensor size -->
+                <!-- Sensor -->
+                <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
                 <circle class="svg-sensor-size" :cx="sensor.x" :cy="-sensor.size" r="0.2"
                     @mousedown="sensorSizeMoveHandler" />
+                <!-- Focal point -->
+                <circle class="svg-focal-point" :cx="lens.x-focalLength" :cy="0" r="0.05" />
+                <circle class="svg-focal-point" :cx="lens.x+focalLength" :cy="0" r="0.05" />
             </svg>
         </div>
         <div class="item-sensor">
@@ -504,7 +517,7 @@
 
                 this.viewBox.w = w / this.scale;
                 this.viewBox.h = h / this.scale;
-                this.viewBox.x = -7 / 8 * this.viewBox.w
+                this.viewBox.x = -0.95 * this.viewBox.w
                 this.viewBox.y = -this.viewBox.h / 2;
 
                 offscreen.width = w;
@@ -519,27 +532,9 @@
                 ctx.globalCompositeOperation = 'lighten';
 
                 //--------------------------------
-                // Axes
-                //--------------------------------
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 0.2 / this.scale;
-                // x-axis
-                ctx.beginPath();
-                ctx.moveTo(-w, 0);
-                ctx.lineTo(w, 0);
-                ctx.stroke();
-
-                // y-axis
-                ctx.beginPath();
-                ctx.moveTo(0, -h);
-                ctx.lineTo(0, h);
-                ctx.stroke();
-
-                //--------------------------------
-                // Lights
+                // Rays
                 //--------------------------------
                 let sensorIntersections = new Array(this.lights.length).fill([]);
-                // Rays
                 this.lights.forEach((light, idx) => {
                     if (!light.enabled) {
                         return;
@@ -680,30 +675,6 @@
                 }
 
                 //--------------------------------
-                // Focal point
-                //--------------------------------
-                {
-                    const r = 3 / this.scale;
-                    const y = 0;
-                    // Left
-                    {
-                        const x = this.lens.x + -this.focalLength;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    }
-                    // Right
-                    {
-                        const x = this.lens.x + this.focalLength;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-                    }
-                }
-
-                //--------------------------------
                 // Aperture
                 //--------------------------------
                 // upper
@@ -720,14 +691,6 @@
                     ctx.lineTo(this.lens.x, this.lensSize * this.aperture);
                     ctx.stroke();
                 }
-
-                //--------------------------------
-                // Sensor
-                //--------------------------------
-                ctx.beginPath();
-                ctx.moveTo(this.sensor.x, this.sensor.size)
-                ctx.lineTo(this.sensor.x, -this.sensor.size);
-                ctx.stroke();
 
                 //--------------------------------
                 // Copy offscreen render result to main canvas
