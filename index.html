@@ -8,6 +8,8 @@
 
 <div id="app">
     <canvas id="canvas" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
+    <canvas id="canvas-sensor" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"
+        style="margin-left: 1em;"></canvas>
     <div>
         <label>
             Aperture
@@ -140,20 +142,52 @@
             },
         },
         mounted() {
-            //--------------------------------
+            //================================
+            // Support functions
+            //================================
+            const getIntersectionRX = (px, py, theta, sx, tx, y, maxR) => {
+                const r = (y - py) / Math.sin(theta);
+                const x = px + r * Math.cos(theta);
+                if (sx <= x && x <= tx) {
+                    return r;
+                } else {
+                    return Math.sign(r) * maxR;
+                }
+            }
+
+            const getIntersectionRY = (px, py, theta, x, sy, ty, maxR) => {
+                const r = (x - px) / Math.cos(theta);
+                const y = py + r * Math.sin(theta);
+                if (tx <= y && y <= ty) {
+                    return r;
+                } else {
+                    return Math.sign(r) * maxR;
+                }
+            }
+
+            //================================
             // Canvas setup
-            //--------------------------------
+            //================================
+            const height = 800;
+
+            // Main canvas
             this.canvas = document.getElementById("canvas");
-            canvas.height = 800;
-            canvas.width = 1600;
+            this.canvas.height = height;
+            this.canvas.width = height * 2;
             const offscreen = new OffscreenCanvas(canvas.width, canvas.height);
             const ctx = offscreen.getContext("2d", { alpha: false });
             const mainCtx = this.canvas.getContext("bitmaprenderer");
 
-            const w = canvas.width;
-            const h = canvas.height;
-            this.cx = canvas.width * 2 / 3;
-            this.cy = canvas.height / 2;
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+            this.cx = this.canvas.width * 2 / 3;
+            this.cy = this.canvas.height / 2;
+
+            // Sensor canvas
+            const sensorCanvas = document.getElementById("canvas-sensor");
+            sensorCanvas.height = height;
+            sensorCanvas.width = height / 8;
+            const sensorCanvasCtx = sensorCanvas.getContext("2d");
 
             // Render callback
             let frames = 0;
@@ -169,8 +203,9 @@
                 }
 
                 //================================
-                // Canvas drawing
+                // Main canvas drawing
                 //================================
+                const maxR = (w + h) / this.scale; // Long enough
 
                 //--------------------------------
                 // Clear canvas
@@ -220,8 +255,9 @@
                 //--------------------------------
                 // Lights
                 //--------------------------------
+                let sensorIntersections = new Array(this.lights.length).fill([]);
                 // Rays
-                this.lights.forEach((light) => {
+                this.lights.forEach((light, idx) => {
                     if (!light.enabled) {
                         return;
                     }
@@ -231,10 +267,11 @@
                     const color = light.color;
                     ctx.strokeStyle = color;
 
+                    let sensorIntersectionsForLight = [];
                     ctx.lineWidth = this.rayWidth / this.scale;
                     for (let i = 0; i < this.rayN; i++) {
                         const theta = 2 * Math.PI * i / this.rayN;
-                        let r = (w + h) / this.scale; // Rough length
+                        let r = maxR;
 
                         const r0 = - light.x / Math.cos(theta);
                         const y0 = light.y + r0 * Math.sin(theta);
@@ -258,14 +295,24 @@
                             const ux = s2;
                             const uy = - light.y * (s2 / s1)
                             const theta = Math.atan2(uy - y0, ux - 0);
-                            const r = (w + h) / this.scale; // Rough length
+                            r = maxR;
+
+                            // Record intersection with sensor
+                            const rSensor = (this.sensor.x - tx) / Math.cos(theta);
+                            const vy = ty + rSensor * Math.sin(theta);
+                            const hitSensor = rSensor > 0 && -this.sensor.size < vy && vy < this.sensor.size;
+                            if (hitSensor) {
+                                r = rSensor;
+                                sensorIntersectionsForLight.push(vy);
+                            }
+
                             ctx.beginPath();
                             ctx.moveTo(tx, ty);
                             ctx.lineTo(tx + r * Math.cos(theta), ty + r * Math.sin(theta));
                             ctx.stroke();
                         }
-                        // ctx.stroke();
                     }
+                    sensorIntersections[idx] = sensorIntersectionsForLight;
                 });
 
                 // Source points
@@ -353,6 +400,25 @@
                 // Copy offscreen render result to main canvas
                 //--------------------------------
                 mainCtx.transferFromImageBitmap(offscreen.transferToImageBitmap());
+
+                //================================
+                // Sensor canvas drawing
+                //================================
+                sensorCanvasCtx.reset();
+                sensorCanvasCtx.fillRect(0, 0, h / 4, h); // background
+                const sensorCanvasScale = sensorCanvas.height / (this.sensor.size * 2);
+                sensorCanvasCtx.transform(sensorCanvasScale * 16, 0, 0, sensorCanvasScale, sensorCanvas.width / 2, sensorCanvas.height / 2);
+                sensorCanvasCtx.globalCompositeOperation = 'lighten';
+
+                sensorIntersections.forEach((sensorIntersectionsForLight, idx) => {
+                    const color = this.lights[idx].color;
+                    sensorCanvasCtx.fillStyle = color;
+                    sensorIntersectionsForLight.forEach((y) => {
+                        sensorCanvasCtx.beginPath();
+                        sensorCanvasCtx.arc(0, y, this.rayWidth / 2 / 50, 0, Math.PI * 2);
+                        sensorCanvasCtx.fill();
+                    });
+                });
             }
 
             // Render only when data changes
