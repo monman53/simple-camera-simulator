@@ -40,6 +40,11 @@
     #canvas-sensor {
         width: 100%;
     }
+
+    svg * {
+        stroke-width: 0.03;
+        stroke: white;
+    }
 </style>
 
 <title>Simple Camera Lens Simulator</title>
@@ -47,11 +52,17 @@
 <div id="app">
     <div class="container">
         <div class="item-main" id="stage">
-            <canvas id="canvas" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
-            <!-- <svg id="ui" :width="width" :height="height" :viewBox="viewBoxStr"></svg> -->
+            <canvas id="canvas"></canvas>
+            <svg id="ui" :width="width" :height="height" :view-box.camel="viewBoxStr" xmlns="http://www.w3.org/2000/svg"
+                @mousemove="mouseMove" @mouseup="mouseUp">
+                <g v-for="light in lights">
+                    <circle v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2" :fill="light.color"
+                        @mousedown="createLightMoveHandler($event, light)" />
+                </g>
+            </svg>
         </div>
         <div class="item-sensor">
-            <canvas id="canvas-sensor" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
+            <canvas id="canvas-sensor"></canvas>
         </div>
     </div>
 
@@ -116,13 +127,13 @@
             <br>
         </label>
     </div>
-    <div>
+    <!-- <div>
         <details>
             <summary>Debug</summary>
             moving: {{moving}}
             FPS: {{fps}}<br>
         </details>
-    </div>
+    </div> -->
 
     <div>
         <h2>Description</h2>
@@ -245,12 +256,12 @@
                 },
                 aperture: 1.0,
                 lights: [
-                    { x: -8, y: -3, r: 0.1, color: "rgba(255, 0, 0, 0.8)", enabled: false },
-                    { x: -12, y: -3, r: 0.1, color: "rgba(0, 255, 0, 0.8)", enabled: true },
-                    { x: -16, y: -3, r: 0.1, color: "rgba(0, 0, 255, 0.8)", enabled: false },
+                    { x: -8, y: -3, color: "rgba(255, 0, 0, 0.8)", enabled: false },
+                    { x: -12, y: -3, color: "rgba(0, 255, 0, 0.8)", enabled: true },
+                    { x: -16, y: -3, color: "rgba(0, 0, 255, 0.8)", enabled: false },
                 ],
-                moving: -1,
                 fps: 0,
+                moveHandler: null,
             }
         },
         methods: {
@@ -267,23 +278,39 @@
                     }
                 });
             },
+            getMousePosition(e) {
+                const rect = this.canvas.getBoundingClientRect()
+                const xPix = e.clientX - rect.left;
+                const yPix = e.clientY - rect.top;
+                const x = xPix / this.scale + this.viewBox.x;
+                const y = yPix / this.scale + this.viewBox.y;
+                return [x, y];
+            },
+            createLightMoveHandler(e, light) {
+                const [sx, sy] = this.getMousePosition(e);
+                const x = light.x;
+                const y = light.y;
+
+                const handler = (e) => {
+                    const [tx, ty] = this.getMousePosition(e);
+                    light.x = x + (tx - sx);
+                    light.y = y + (ty - sy);
+                };
+
+                this.moveHandler = handler;
+            },
             mouseMove(e) {
-                if (this.moving >= 0) {
-                    const rect = this.canvas.getBoundingClientRect()
-                    const xPix = e.clientX - rect.left;
-                    const yPix = e.clientY - rect.top;
-                    const x = xPix / this.scale + this.viewBox.x;
-                    const y = yPix / this.scale + this.viewBox.y;
-                    this.lights[this.moving].x = Math.min(x, this.lens.x - this.focalLength * 1.001);
-                    this.lights[this.moving].y = y;
+                if (this.moveHandler) {
+                    this.moveHandler(e);
                 }
             },
             mouseUp(e) {
+                this.moveHandler = null;
                 this.moving = -1;
             },
             resize() {
                 this.width = this.canvas.getBoundingClientRect().width;
-                this.height = this.width / 2;
+                this.height = this.width * (5 / 10);
                 this.canvas.width = this.width;
                 this.canvas.height = this.height;
                 this.sensorCanvas.width = this.sensorCanvas.getBoundingClientRect().width;
@@ -410,7 +437,7 @@
                 const w = this.canvas.width;
                 const h = this.canvas.height;
 
-                this.scale = h / (this.sensor.size * 16); // Equal to 8*(sensor size)
+                this.scale = h / (this.sensor.size * 16);
                 this.viewBox.w = w / this.scale;
                 this.viewBox.h = h / this.scale;
                 this.viewBox.x = -7 / 8 * this.viewBox.w
@@ -532,25 +559,6 @@
                         }
                     }
                     sensorIntersections[idx] = sensorIntersectionsForLight;
-                });
-
-                // Source points
-                ctx.globalCompositeOperation = 'normal';
-                this.lights.forEach((light) => {
-                    if (!light.enabled) {
-                        return;
-                    }
-
-                    {
-                        const x = light.x;
-                        const y = light.y;
-                        const r = light.r;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.lineWidth = 1 / this.scale;
-                        ctx.strokeStyle = "black";
-                        ctx.stroke();
-                    }
                 });
 
                 //--------------------------------
