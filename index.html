@@ -84,6 +84,7 @@
 
 <script type="module">
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+    // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
 
     createApp({
         data() {
@@ -161,9 +162,9 @@
                 const r = (y - py) / sin;
                 const x = px + r * cos;
                 if (r >= 0 && minX <= x && x <= maxX) {
-                    return [true, x, y];
+                    return [true, x, y, r];
                 } else {
-                    return [false, px + maxR * cos, py + maxR * sin];
+                    return [false, px + maxR * cos, py + maxR * sin, maxR];
                 }
             }
 
@@ -173,31 +174,34 @@
                 const r = (x - px) / Math.cos(theta);
                 const y = py + r * Math.sin(theta);
                 if (r >= 0 && minY <= y && y <= maxY) {
-                    return [true, x, y];
+                    return [true, x, y, r];
                 } else {
-                    return [false, px + maxR * cos, py + maxR * sin];
+                    return [false, px + maxR * cos, py + maxR * sin, maxR];
                 }
             }
 
-            const getIntersectionBox = (cx, cy, theta, maxR) => {
+            const getIntersectionBox = (cx, cy, theta, maxR, skipBehindSensor) => {
                 // Top
-                {
-                    const [hit, x, y] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.lensSize, maxR);
-                    if (hit) {
-                        return [hit, x, y];
-                    }
-                }
+                const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.lensSize, maxR);
                 // Bottom
-                {
-                    const [hit, x, y] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.lensSize, maxR);
-                    if (hit) {
-                        return [hit, x, y];
+                const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.lensSize, maxR);
+
+                if (skipBehindSensor) {
+                    if (r1 < r2) {
+                        return [hit1, x1, y1];
+                    } else {
+                        return [hit2, x2, y2];
                     }
                 }
+
                 // Behind the sensor
-                {
-                    const [hit, x, y] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.lensSize, this.lensSize, maxR);
-                    return [hit, x, y];
+                const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.lensSize, this.lensSize, maxR);
+                if (r1 <= r2 && r1 <= r3) {
+                    return [hit1, x1, y1];
+                } else if ((r2 <= r1 && r2 <= r3)) {
+                    return [hit2, x2, y2];
+                } else {
+                    return [hit3, x3, y3];
                 }
             }
 
@@ -291,21 +295,22 @@
                         // Draw outer ray
                         const theta = 2 * Math.PI * i / this.rayN;
 
-                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, maxR);
-                        if (!hitLens) {
-                            {
-                                const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, maxR);
-                                // Draw light to box ray
-                                if (hitBox) {
-                                    ctx.beginPath();
-                                    ctx.moveTo(x, y);
-                                    ctx.lineTo(tx, ty);
-                                    ctx.stroke();
-                                    continue;
-                                }
-                            }
+                        // Pruning intersection check of left oriented rays for optimization
+                        if (Math.PI / 2 <= theta && theta <= Math.PI * 3 / 2) {
+                            // Draw light source to infinity ray
+                            ctx.beginPath();
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(x + maxR * Math.cos(theta), y + maxR * Math.sin(theta));
+                            ctx.stroke();
+                            continue;
+                        }
 
-                            // Draw light to infinity ray
+                        // Check intersection with lens
+                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, maxR);
+
+                        if (!hitLens) {
+                            // Draw light to box ray
+                            const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, maxR, true);
                             ctx.beginPath();
                             ctx.moveTo(x, y);
                             ctx.lineTo(tx, ty);
@@ -330,7 +335,7 @@
                             const phi = Math.atan2(uy - ty, ux);
 
                             // Check intersection to the sensor
-                            const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, maxR);
+                            const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, maxR, false);
 
                             // Draw lens to sensor ray
                             if (hitSensor) {
@@ -415,7 +420,6 @@
                     // Left
                     {
                         const x = this.lens.x + (r - d / 2);
-                        console.log(x, this.lens.x);
                         const startAngle = Math.PI - theta;
                         const endAngle = Math.PI + theta;
                         ctx.beginPath();
