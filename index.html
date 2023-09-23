@@ -558,6 +558,10 @@
                     const color = light.color;
                     ctx.strokeStyle = color;
 
+                    // Find a range that needs intersection calculation
+                    const thetaMin = Math.atan2(-this.boxHeight / 2 - y, this.lens.x - x);
+                    const thetaMax = Math.atan2(this.boxHeight / 2 - y, this.lens.x - x);
+
                     // Find image position (ux, uy) of the light source
                     const s1 = this.lens.x - light.x;
                     const s2 = this.focalLength * s1 / (s1 - this.focalLength);
@@ -569,10 +573,10 @@
                     ctx.lineWidth = this.rayWidth / this.scale;
                     for (let i = 0; i < this.rayN; i++) {
                         // Draw outer ray
-                        const theta = 2 * Math.PI * i / this.rayN;
+                        const theta = 2 * Math.PI * i / this.rayN - Math.PI; // -pi <= theta < pi
 
                         // Pruning intersection check of left oriented rays for optimization
-                        if (Math.PI / 2 <= theta && theta <= Math.PI * 3 / 2) {
+                        if (theta < thetaMin || thetaMax < theta) {
                             // Draw light source to infinity ray
                             ctx.beginPath();
                             ctx.moveTo(x, y);
