@@ -432,8 +432,8 @@
             const getIntersectionY = (px, py, theta, x, minY, maxY, maxR) => {
                 const sin = Math.sin(theta);
                 const cos = Math.cos(theta);
-                const r = (x - px) / Math.cos(theta);
-                const y = py + r * Math.sin(theta);
+                const r = (x - px) / cos;
+                const y = py + r * sin;
                 if (r >= 0 && minY <= y && y <= maxY) {
                     return [true, x, y, r];
                 } else {
@@ -441,26 +441,28 @@
                 }
             }
 
-            const getIntersectionBox = (cx, cy, theta, maxR, skipBehindSensor, immediate) => {
+            const getIntersectionBox = (cx, cy, theta, maxR, isInner) => {
                 // Front
-                const [hit0, x0, y0, r0] = getIntersectionY(cx, cy, theta, this.lens.x, -this.boxHeight / 2, this.boxHeight / 2, maxR);
-                if (hit0 && r0 > 0) {
-                    // NOTICE: Assume all rays passes left to right
-                    // r0 > 0 condition is for inner rays.
-                    return [hit0, x0, y0, r0];
+                if (!isInner) {
+                    const [hit0, x0, y0, r0] = getIntersectionY(cx, cy, theta, this.lens.x, -this.boxHeight / 2, this.boxHeight / 2, maxR);
+                    if (hit0 && r0 > 0) {
+                        // NOTICE: Assume all rays passes left to right
+                        // r0 > 0 condition is for inner rays.
+                        return [hit0, x0, y0, r0];
+                    }
                 }
                 // Top
                 const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.boxHeight / 2, maxR);
-                if (hit1 && immediate) {
+                if (hit1 && isInner) {
                     return [hit1, x1, y1, r1];
                 }
                 // Bottom
                 const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.boxHeight / 2, maxR);
-                if (hit2 && immediate) {
+                if (hit2 && isInner) {
                     return [hit2, x2, y2, r2];
                 }
 
-                if (skipBehindSensor) {
+                if (!isInner) {
                     if (r1 < r2) {
                         return [hit1, x1, y1];
                     } else {
@@ -470,7 +472,7 @@
 
                 // Behind the sensor
                 const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.boxHeight / 2, this.boxHeight / 2, maxR);
-                if (hit3 && immediate) {
+                if (hit3) {
                     return [hit3, x3, y3, r3];
                 }
 
@@ -556,6 +558,13 @@
                     const color = light.color;
                     ctx.strokeStyle = color;
 
+                    // Find image position (ux, uy) of the light source
+                    const s1 = this.lens.x - light.x;
+                    const s2 = this.focalLength * s1 / (s1 - this.focalLength);
+                    const ux = s2;
+                    const uy = -light.y * (s2 / s1)
+
+                    // Draw rays
                     let sensorIntersectionsForLight = [];
                     ctx.lineWidth = this.rayWidth / this.scale;
                     for (let i = 0; i < this.rayN; i++) {
@@ -576,8 +585,8 @@
                         const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, this.maxR);
 
                         if (!hitLens) {
-                            // Draw light to box ray
-                            const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, this.maxR, true);
+                            // Draw rays don't enter into the lens
+                            const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, this.maxR, false);
                             ctx.beginPath();
                             ctx.moveTo(x, y);
                             ctx.lineTo(tx, ty);
@@ -595,10 +604,6 @@
                         const notHitAperture = -this.lensSize * this.aperture < ty && ty < this.lensSize * this.aperture;
                         if (notHitAperture) {
                             // Calculate refraction direction (phi)
-                            const s1 = this.lens.x - light.x;
-                            const s2 = this.focalLength * s1 / (s1 - this.focalLength);
-                            const ux = s2;
-                            const uy = -light.y * (s2 / s1)
                             const phi = Math.atan2(uy - ty, ux);
 
                             // Check intersection to the sensor
@@ -611,7 +616,7 @@
                                 ctx.lineTo(vx, vy);
                                 ctx.stroke();
                             } else {
-                                const [hitBox, vx, vy] = getIntersectionBox(tx, ty, phi, this.maxR);
+                                const [hitBox, vx, vy] = getIntersectionBox(tx, ty, phi, this.maxR, true);
                                 console.assert(hitBox); // Inner rays should always hit to the box
                                 ctx.beginPath();
                                 ctx.moveTo(tx, ty);
