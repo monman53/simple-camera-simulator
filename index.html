@@ -4,7 +4,7 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-E9ZG1KHTVT"></script>
 <script src='/scripts/google.js'></script>
 
-<title>Camera Lens Tutorial</title>
+<title>Simple Camera Lens Simulator</title>
 
 <div id="app">
     <canvas id="canvas" @mousedown="mouseDown" @mousemove="mouseMove" @mouseup="mouseUp"></canvas>
@@ -13,19 +13,19 @@
     <div>
         <label>
             Aperture
-            <input type="range" min="0" :max="1" step="0.01" v-model.number="aperture">
+            <input type="range" min="0" :max="1" step="0.001" v-model.number="aperture">
             {{aperture}}
         </label>
         <br>
         <label>
             Sensor size
-            <input type="range" min="0.1" :max="3" step="0.1" v-model.number="sensor.size">
+            <input type="range" min="0.1" :max="3" step="0.01" v-model.number="sensor.size">
             {{sensor.size}}
         </label>
         <br>
         <label>
             Sensor position
-            <input type="range" :min="focalLength*0.99" max="8" step="0.01" v-model.number="sensor.x">
+            <input type="range" :min="focalLength*0.99" max="8" step="0.001" v-model.number="sensor.x">
             {{sensor.x}}
         </label>
         <br>
@@ -79,7 +79,93 @@
         </details>
     </div>
 
-    <h1>Description</h1>
+    <div>
+        <h2>Description</h2>
+        <p>This is an interactive tool for understanding how the camera works. You can change some conditions and see
+            how camera effects change by viewing rays path and image on virtual 1D image sensor.</p>
+        <h3>Usage</h3>
+        <ul>
+            <li>Move the light sources by mouse drag and see how the rays path change.</li>
+        </ul>
+        <h3>List of controllable places</h3>
+        <ul>
+            <li>Aperture</li>
+            <li>Lens position (x-axis)</li>
+            <li>Lens curvature (changes focal length)</li>
+            <li>Lens thickness (does't change focal length)</li>
+            <li>Image sensor size</li>
+            <li>Image sensor position (x-axis)</li>
+            <li>Number of rays from light source (affects performance significantly)</li>
+            <li>Rays intensity (ray boldness)</li>
+            <li>Light source selection (up to 3)</li>
+        </ul>
+        <h3>List of the major questions about camera that this tool supports to understand.</h3>
+        <ul>
+            <li>Q. What is the bokeh (blur effect)?</li>
+            <ul>
+                <li>A. A not focused circle-shape image. See how focus works by changing lens position.</li>
+            </ul>
+            <li>Q. How the aperture effects to the bokeh?</li>
+            <ul>
+                <li>A. Puts multiple light sources with difference distances and see how the size of image changes on
+                    virtual image sensor by changing aperture value.</li>
+            </ul>
+            <li>Q. Why the angle of view changes between different size of image sensors?</li>
+            <ul>
+                <li>A. See how the image on virtual sensor by changing the sensor size.</li>
+            </ul>
+            <li>Q. Why vignetting occurs when using lenses for smaller image sensor?</li>
+            <ul>
+                <li>A. Lenses for the smaller image sensor (e.g. micro-four-thirds) uses smaller diameter of lenses but
+                    same focal length. Put a light source that makes image on the around of corner of image sensor and
+                    change lens thickness to see how image cropped (vignetting).
+                </li>
+            </ul>
+        </ul>
+        <h2>Features</h2>
+        <ul>
+            <li>Mouse interactive</li>
+            <li>Real-time rendering</li>
+            <li>Single HTML app (Internet access is needed)</li>
+            <!-- <li>Mobile friendly (maybe)</li> -->
+        </ul>
+        <!-- <h2>Q&A</h2>
+        <ul>
+            <li>
+                Q. xxx.
+                <ul>
+                    <li>A. xxx.
+                    </li>
+                </ul>
+            </li>
+        </ul> -->
+        <h2>Used technologies</h2>
+        <ul>
+            <li>HTML / Javascript</li>
+            <li>Vue.js 3</li>
+            <li>Canvas API</li>
+        </ul>
+        <p>
+            <a href="https://github.com/monman53/simple-camera-simulator">Source codes (GitHub)</a>
+            Any suggestions and issues are welcome.
+        </p>
+        <h2>Future works</h2>
+        <ul>
+            <li>Support shutter</li>
+            <li>More detail emulation for lens refraction</li>
+            <li>Support composite lenses</li>
+        </ul>
+        <h2>References</h2>
+        <ul>
+            <li><a href="https://en.wikipedia.org/wiki/Lens">Lens - Wikipedia</a></li>
+        </ul>
+        <h2>Contacts</h2>
+        <ul>
+            <li><a href="https://github.com/monman53/simple-camera-lens-simulator">GitHub (This project)</a></li>
+            <li><a href="https://github.com/monman53">GitHub (Profile page)</a></li>
+            <li><a href="https://twitter.com/monman53">Twitter</a></li>
+        </ul>
+    </div>
 </div>
 
 <script type="module">
