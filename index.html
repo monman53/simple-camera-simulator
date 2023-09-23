@@ -13,49 +13,55 @@
     <div>
         <label>
             Aperture
-            <input type="range" min="0" :max="1" step="0.01" v-model="aperture">
+            <input type="range" min="0" :max="1" step="0.01" v-model.number="aperture">
             {{aperture}}
         </label>
         <br>
         <label>
             Sensor size
-            <input type="range" min="0.1" :max="3" step="0.1" v-model="sensor.size">
+            <input type="range" min="0.1" :max="3" step="0.1" v-model.number="sensor.size">
             {{sensor.size}}
         </label>
         <br>
         <label>
             Sensor position
-            <input type="range" :min="focalLength*0.99" max="8" step="0.01" v-model="sensor.x">
+            <input type="range" :min="focalLength*0.99" max="8" step="0.01" v-model.number="sensor.x">
             {{sensor.x}}
         </label>
         <br>
         <label>
+            Lens position
+            <input type="range" min="-1" max="1" step="0.0001" v-model.number="lens.x">
+            {{lens.x}}
+        </label>
+        <br>
+        <label>
             Lens thickness
-            <input type="range" min="0.1" :max="Math.min(5, lens.r*2)" step="0.1" v-model="lens.d">
+            <input type="range" min="0.1" :max="Math.min(5, lens.r*2)" step="0.1" v-model.number="lens.d">
             {{lens.d}}
         </label>
         <br>
         <label>
             Lens R
-            <input type="range" :min="lens.d/2" max="100" step="0.1" v-model="lens.r">
+            <input type="range" :min="lens.d/2" max="100" step="0.1" v-model.number="lens.r">
             {{lens.r}}
         </label>
         <br>
         <label>
             Number of rays
-            <input type="range" min="1" max="4096" step="1" v-model="rayN">
+            <input type="range" min="1" max="4096" step="1" v-model.number="rayN">
             {{rayN}}
         </label>
         <br>
         <label>
             Ray width
-            <input type="range" min="0.01" max="1.0" step="0.01" v-model="rayWidth">
+            <input type="range" min="0.01" max="1.0" step="0.01" v-model.number="rayWidth">
             {{rayWidth}}
         </label>
         <br>
         <label>
             Canvas scale
-            <input type="range" min="0.1" max="100" step="0.1" v-model="scale">
+            <input type="range" min="0.1" max="100" step="0.1" v-model.number="scale">
             {{scale}}
         </label>
         <br>
@@ -89,8 +95,8 @@
                 rayN: 512,
                 rayWidth: 0.3,
                 lens: {
-                    x: 0,
-                    r: 10,
+                    x: 0.0,
+                    r: 10.0,
                     d: 0.3,
                     n: 1.5,
                 },
@@ -219,7 +225,9 @@
             sensorCanvas.width = height / 8;
             const sensorCanvasCtx = sensorCanvas.getContext("2d");
 
-            // Render callback
+            //================================
+            // Render callback function
+            //================================
             let frames = 0;
             let startTime = new Date().getTime();
             const render = () => {
@@ -316,10 +324,10 @@
                         if (notHitAperture) {
                             // Calculate refraction direction (phi)
                             const s1 = this.lens.x - light.x;
-                            const s2 = this.focalLength + this.focalLength * this.focalLength / (s1 - this.focalLength);
+                            const s2 = this.focalLength * s1 / (s1 - this.focalLength);
                             const ux = s2;
                             const uy = -light.y * (s2 / s1)
-                            const phi = Math.atan2(uy - ty, ux - this.lens.x);
+                            const phi = Math.atan2(uy - ty, ux);
 
                             // Check intersection to the sensor
                             const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, maxR);
@@ -401,11 +409,13 @@
                 //--------------------------------
                 {
                     const r = this.lens.r;
-                    const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
+                    const d = this.lens.d;
+                    const theta = Math.acos((r - d / 2) / r);
                     const y = 0;
                     // Left
                     {
-                        const x = this.lens.r - this.lens.d / 2;
+                        const x = this.lens.x + (r - d / 2);
+                        console.log(x, this.lens.x);
                         const startAngle = Math.PI - theta;
                         const endAngle = Math.PI + theta;
                         ctx.beginPath();
@@ -414,7 +424,7 @@
                     }
                     // Right
                     {
-                        const x = -(this.lens.r - this.lens.d / 2);
+                        const x = this.lens.x - (r - d / 2);
                         const startAngle = - theta;
                         const endAngle = theta;
                         ctx.beginPath();
@@ -422,7 +432,10 @@
                         ctx.stroke();
                     }
                 }
+
+                //--------------------------------
                 // Focal point
+                //--------------------------------
                 {
                     const r = 3 / this.scale;
                     const y = 0;
@@ -481,7 +494,7 @@
                 sensorCanvasCtx.reset();
                 sensorCanvasCtx.fillRect(0, 0, h / 4, h); // background
                 const sensorCanvasScale = sensorCanvas.height / (this.sensor.size * 2);
-                sensorCanvasCtx.transform(sensorCanvasScale * 16, 0, 0, sensorCanvasScale, sensorCanvas.width / 2, sensorCanvas.height / 2);
+                sensorCanvasCtx.transform(8192, 0, 0, sensorCanvasScale, sensorCanvas.width / 2, sensorCanvas.height / 2);
                 sensorCanvasCtx.globalCompositeOperation = 'lighten';
 
                 sensorIntersections.forEach((sensorIntersectionsForLight, idx) => {
