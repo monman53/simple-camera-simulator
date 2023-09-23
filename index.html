@@ -59,6 +59,7 @@
         fill: white;
         fill-opacity: 0.0;
     }
+
     .svg-sensor-size:hover,
     .svg-lens:hover {
         stroke-width: 0.03;
@@ -383,7 +384,17 @@
             },
             viewBoxStr() {
                 return `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`;
-            }
+            },
+            maxR() {
+                let maxR2 = 0;
+                this.lights.forEach((light) => {
+                    const dx = Math.max(Math.abs(this.viewBox.x - light.x), Math.abs(this.viewBox.x + this.viewBox.w - light.x));
+                    const dy = Math.max(Math.abs(this.viewBox.y - light.y), Math.abs(this.viewBox.y + this.viewBox.h - light.y));
+                    maxR2 = Math.max(dx * dx + dy * dy, maxR2);
+                });
+                return Math.sqrt(maxR2);
+                // TODO: Check if long enough (Use as length of infinity ray)
+            },
         },
         mounted() {
             //================================
@@ -496,8 +507,6 @@
                 this.viewBox.x = -7 / 8 * this.viewBox.w
                 this.viewBox.y = -this.viewBox.h / 2;
 
-                const maxR = (w + h) / this.scale; // Long enough (Use as length of infinity ray)
-
                 offscreen.width = w;
                 offscreen.height = h;
 
@@ -552,17 +561,17 @@
                             // Draw light source to infinity ray
                             ctx.beginPath();
                             ctx.moveTo(x, y);
-                            ctx.lineTo(x + maxR * Math.cos(theta), y + maxR * Math.sin(theta));
+                            ctx.lineTo(x + this.maxR * Math.cos(theta), y + this.maxR * Math.sin(theta));
                             ctx.stroke();
                             continue;
                         }
 
                         // Check intersection with lens
-                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, maxR);
+                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, this.maxR);
 
                         if (!hitLens) {
                             // Draw light to box ray
-                            const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, maxR, true);
+                            const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, this.maxR, true);
                             ctx.beginPath();
                             ctx.moveTo(x, y);
                             ctx.lineTo(tx, ty);
@@ -587,7 +596,7 @@
                             const phi = Math.atan2(uy - ty, ux);
 
                             // Check intersection to the sensor
-                            const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, maxR, false);
+                            const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, this.maxR, false);
 
                             // Draw lens to sensor ray
                             if (hitSensor) {
@@ -596,7 +605,7 @@
                                 ctx.lineTo(vx, vy);
                                 ctx.stroke();
                             } else {
-                                const [hitBox, vx, vy] = getIntersectionBox(tx, ty, phi, maxR);
+                                const [hitBox, vx, vy] = getIntersectionBox(tx, ty, phi, this.maxR);
                                 console.assert(hitBox); // Inner rays should always hit to the box
                                 ctx.beginPath();
                                 ctx.moveTo(tx, ty);
