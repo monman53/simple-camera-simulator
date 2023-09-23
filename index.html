@@ -141,6 +141,9 @@
                 const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
                 return this.lens.r * Math.sin(theta);
             },
+            boxWidth() {
+                return this.sensor.x - this.lens.x + 0.3;
+            },
         },
         mounted() {
             //================================
@@ -238,26 +241,6 @@
                 ctx.stroke();
 
                 //--------------------------------
-                // Aperture
-                //--------------------------------
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 1 / this.scale;
-                // upper
-                {
-                    ctx.beginPath();
-                    ctx.moveTo(0, -this.lensSize);
-                    ctx.lineTo(0, -this.lensSize * this.aperture);
-                    ctx.stroke();
-                }
-                // lower
-                {
-                    ctx.beginPath();
-                    ctx.moveTo(0, this.lensSize);
-                    ctx.lineTo(0, this.lensSize * this.aperture);
-                    ctx.stroke();
-                }
-
-                //--------------------------------
                 // Lights
                 //--------------------------------
                 let sensorIntersections = new Array(this.lights.length).fill([]);
@@ -310,6 +293,7 @@
                             // Record intersection
                             if (hitSensor) {
                                 sensorIntersectionsForLight.push(vy);
+                                continue;
                             }
                         }
                     }
@@ -336,14 +320,40 @@
                 });
 
                 //--------------------------------
+                // Camera components
+                //--------------------------------
+                ctx.lineWidth = 1 / this.scale;
+                ctx.strokeStyle = "white";
+                ctx.fillStyle = "white";
+
+                //--------------------------------
+                // Camera box
+                //--------------------------------
+                // Upper
+                ctx.beginPath();
+                ctx.moveTo(this.lens.x, -this.lensSize)
+                ctx.lineTo(this.lens.x + this.boxWidth, -this.lensSize);
+                ctx.stroke();
+
+                // Bottom
+                ctx.beginPath();
+                ctx.moveTo(this.lens.x, this.lensSize)
+                ctx.lineTo(this.lens.x + this.boxWidth, this.lensSize);
+                ctx.stroke();
+
+                // Behind the sensor
+                ctx.beginPath();
+                ctx.moveTo(this.lens.x + this.boxWidth, -this.lensSize)
+                ctx.lineTo(this.lens.x + this.boxWidth, this.lensSize);
+                ctx.stroke();
+
+                //--------------------------------
                 // Lens
                 //--------------------------------
                 {
                     const r = this.lens.r;
                     const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
                     const y = 0;
-                    ctx.lineWidth = 1 / this.scale;
-                    ctx.strokeStyle = "white";
                     // Left
                     {
                         const x = this.lens.r - this.lens.d / 2;
@@ -367,11 +377,9 @@
                 {
                     const r = 3 / this.scale;
                     const y = 0;
-                    ctx.fillStyle = "white";
-                    ctx.strokeStyle = "white";
                     // Left
                     {
-                        const x = -this.focalLength;
+                        const x = this.lens.x + -this.focalLength;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
                         ctx.fill();
@@ -379,7 +387,7 @@
                     }
                     // Right
                     {
-                        const x = this.focalLength;
+                        const x = this.lens.x + this.focalLength;
                         ctx.beginPath();
                         ctx.arc(x, y, r, 0, Math.PI * 2);
                         ctx.fill();
@@ -388,10 +396,26 @@
                 }
 
                 //--------------------------------
+                // Aperture
+                //--------------------------------
+                // upper
+                {
+                    ctx.beginPath();
+                    ctx.moveTo(this.lens.x, -this.lensSize);
+                    ctx.lineTo(this.lens.x, -this.lensSize * this.aperture);
+                    ctx.stroke();
+                }
+                // lower
+                {
+                    ctx.beginPath();
+                    ctx.moveTo(this.lens.x, this.lensSize);
+                    ctx.lineTo(this.lens.x, this.lensSize * this.aperture);
+                    ctx.stroke();
+                }
+
+                //--------------------------------
                 // Sensor
                 //--------------------------------
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 1 / this.scale;
                 ctx.beginPath();
                 ctx.moveTo(this.sensor.x, this.sensor.size)
                 ctx.lineTo(this.sensor.x, -this.sensor.size);
