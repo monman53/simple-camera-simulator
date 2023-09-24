@@ -163,17 +163,24 @@
             {{rayWidth}}
         </label>
         <br>
-        <label>
-            Canvas scale
-            <input type="range" min="0.1" max="100" step="0.1" v-model.number="scale">
-            {{scale}}
-        </label>
-        <br>
         <label v-for="light in lights">
             <input type="checkbox" v-model="light.enabled">
             Show light {{light.color}}
             <br>
         </label>
+        <fieldset>
+            <legend>Options</legend>
+            <label>
+                <input type="checkbox" v-model="options.renderOmissionWhileMoving">
+                Rendering omission while components moving for better usability.
+            </label>
+            <br>
+            <label>
+                Canvas scale
+                <input type="range" min="0.1" max="100" step="0.1" v-model.number="scale">
+                {{scale}}
+            </label>
+        </fieldset>
     </div>
 
     <div>
@@ -301,6 +308,9 @@
                     { x: -12, y: -0.5, color: "rgba(0, 255, 0, 0.8)", enabled: true },
                     { x: -20, y: 1, color: "rgba(0, 0, 255, 0.8)", enabled: true },
                 ],
+                options: {
+                    renderOmissionWhileMoving: true,
+                },
                 fps: 0,
                 moveHandler: null,
             }
@@ -571,9 +581,10 @@
                     // Draw rays
                     let sensorIntersectionsForLight = [];
                     ctx.lineWidth = this.rayWidth / this.scale;
-                    for (let i = 0; i < this.rayN; i++) {
+                    const itr = this.options.renderOmissionWhileMoving && this.moveHandler ? Math.min(512, this.rayN) : this.rayN;
+                    for (let i = 0; i < itr; i++) {
                         // Draw outer ray
-                        const theta = 2 * Math.PI * i / this.rayN - Math.PI; // -pi <= theta < pi
+                        const theta = 2 * Math.PI * i / itr - Math.PI; // -pi <= theta < pi
 
                         // Pruning intersection check of left oriented rays for optimization
                         if (theta < thetaMin || thetaMax < theta) {
