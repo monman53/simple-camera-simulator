@@ -57,6 +57,18 @@
         stroke: white;
     }
 
+    .svg-line-dot {
+        stroke-width: 0.02;
+        stroke: white;
+        stroke-dasharray: 0.1;
+    }
+
+    .svg-line-dot-thick {
+        stroke-width: 0.005;
+        stroke: white;
+        stroke-dasharray: 0.1;
+    }
+
     .svg-lens,
     .svg-sensor-size {
         fill: white;
@@ -92,6 +104,38 @@
                     :y2="boxHeight/2" />
                 <line class="svg-line" :x1="lens.x" :y1="-boxHeight/2" :x2="lens.x" :y2="-lensSize" />
                 <line class="svg-line" :x1="lens.x" :y1="lensSize" :x2="lens.x" :y2="boxHeight/2" />
+                <!-- Angle -->
+                <g v-if="options.showAngle">
+                    <!-- Inside camera -->
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="-lensSize" />
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="lensSize" />
+                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="lensSize" />
+                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-lensSize" /> -->
+                    <!-- Inner -->
+                    <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
+                        :x2="focalInfo.inner.x" :y2="focalInfo.inner.y" />
+                    <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size"
+                        :x2="focalInfo.inner.x" :y2="-focalInfo.inner.y" />
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-lensSize" :x2="focalInfo.focalPos.x"
+                        :y2="focalInfo.focalPos.size" />
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="lensSize" :x2="focalInfo.focalPos.x"
+                        :y2="-focalInfo.focalPos.size" />
+                    <!-- Outer -->
+                    <line class="svg-line-dot" :x1="lens.x" :y1="-lensSize" :x2="focalInfo.focalPos.x"
+                        :y2="-focalInfo.focalPos.size" />
+                    <line class="svg-line-dot" :x1="lens.x" :y1="lensSize" :x2="focalInfo.focalPos.x"
+                        :y2="focalInfo.focalPos.size" />
+                    <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
+                        :x2="focalInfo.outer.x" :y2="-focalInfo.outer.y" />
+                    <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size"
+                        :x2="focalInfo.outer.x" :y2="focalInfo.outer.y" />
+                    <!-- Focal plane -->
+                    <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
+                        :x2="focalInfo.focalPos.x" :y2="focalInfo.focalPos.size" />
+                </g>
+                <!-- Focal point -->
+                <circle class="svg-focal-point" :cx="lens.x-focalLength" :cy="0" r="0.05" />
+                <circle class="svg-focal-point" :cx="lens.x+focalLength" :cy="0" r="0.05" />
                 <!-- Light sources position -->
                 <g v-for="light in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
@@ -104,9 +148,6 @@
                 <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
                 <circle class="svg-sensor-size" :cx="sensor.x" :cy="-sensor.size" r="0.2"
                     @mousedown="sensorSizeMoveHandler" />
-                <!-- Focal point -->
-                <circle class="svg-focal-point" :cx="lens.x-focalLength" :cy="0" r="0.05" />
-                <circle class="svg-focal-point" :cx="lens.x+focalLength" :cy="0" r="0.05" />
             </svg>
         </div>
         <div class="item-sensor">
@@ -173,6 +214,11 @@
             <label>
                 <input type="checkbox" v-model="options.renderOmissionWhileMoving">
                 Rendering omission while components moving for better usability.
+            </label>
+            <br>
+            <label>
+                <input type="checkbox" v-model="options.showAngle">
+                Show angle line
             </label>
             <br>
             <label>
@@ -310,6 +356,7 @@
                 ],
                 options: {
                     renderOmissionWhileMoving: true,
+                    showAngle: false,
                 },
                 fps: 0,
                 moveHandler: null,
@@ -394,6 +441,12 @@
                 this.sensorCanvas.style.width = this.sensorCanvas.getBoundingClientRect().width;
                 this.sensorCanvas.style.height = this.canvas.getBoundingClientRect().height;
             },
+            extendSegment(sx, sy, tx, ty) {
+                const theta = Math.atan2(ty - sy, tx - sx);
+                const ntx = sx + this.maxR * Math.cos(theta);
+                const nty = sy + this.maxR * Math.sin(theta);
+                return [ntx, nty];
+            },
         },
         computed: {
             focalLength() {
@@ -401,7 +454,7 @@
             },
             lensSize() {
                 const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
-                return this.lens.r * Math.sin(theta);
+                return Math.abs(this.lens.r * Math.sin(theta));
             },
             boxWidth() {
                 return this.sensor.x - this.lens.x + 0.3;
@@ -419,8 +472,25 @@
                     const dy = Math.max(Math.abs(this.viewBox.y - light.y), Math.abs(this.viewBox.y + this.viewBox.h - light.y));
                     maxR2 = Math.max(dx * dx + dy * dy, maxR2);
                 });
-                return Math.sqrt(maxR2);
+                return Math.sqrt(maxR2) * 2;
                 // TODO: Check if long enough (Use as length of infinity ray)
+            },
+            focalInfo() {
+                const f = this.focalLength;
+                const b = this.sensor.x - this.lens.x;
+                const a = f * b / (b - f);
+
+                const focalPosX = this.lens.x - a;
+                const focalPosSize = this.sensor.size * (a / b);
+
+                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.lensSize, focalPosX, -focalPosSize);
+                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.lensSize, focalPosX, focalPosSize);
+
+                return {
+                    focalPos: { x: focalPosX, size: focalPosSize },
+                    inner: { x: innerX, y: innerY },
+                    outer: { x: outerX, y: outerY },
+                }
             },
         },
         mounted() {
