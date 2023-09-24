@@ -569,8 +569,15 @@
                     ctx.strokeStyle = color;
 
                     // Find a range that needs intersection calculation
-                    const thetaMin = Math.atan2(-this.boxHeight / 2 - y, this.lens.x - x);
-                    const thetaMax = Math.atan2(this.boxHeight / 2 - y, this.lens.x - x);
+                    const thetaMin = Math.min(
+                        Math.atan2(-this.boxHeight / 2 - y, this.lens.x - x),// top left
+                        Math.atan2(-this.boxHeight / 2 - y, this.lens.x + this.boxWidth - x) // top right
+                    );
+                    const thetaMax = Math.max(
+                        Math.atan2(this.boxHeight / 2 - y, this.lens.x - x), // bottom left
+                        Math.atan2(this.boxHeight / 2 - y, this.lens.x + this.boxWidth - x) // bottom right
+                    );
+
 
                     // Find image position (ux, uy) of the light source
                     const s1 = this.lens.x - light.x;
