@@ -69,17 +69,21 @@
         stroke-dasharray: 0.1;
     }
 
+    .svg-focal-point {
+        fill: white;
+    }
+
     .svg-lens,
+    .svg-focal-length,
+    .svg-lens-size,
     .svg-sensor-size {
         fill: white;
         fill-opacity: 0.0;
     }
 
-    .svg-focal-point {
-        fill: white;
-    }
-
     .svg-sensor-size:hover,
+    .svg-lens-size:hover,
+    .svg-focal-length:hover,
     .svg-lens:hover {
         stroke-width: 0.03;
         stroke: white;
@@ -136,16 +140,17 @@
                 <!-- Focal point -->
                 <circle class="svg-focal-point" :cx="lens.x-lens.f" :cy="0" r="0.05" />
                 <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" r="0.05" />
-                <circle class="svg-sensor-size" :cx="lens.x-lens.f" :cy="0" r="0.2"
+                <circle class="svg-focal-length" :cx="lens.x-lens.f" :cy="0" r="0.2"
                     @mousedown="focalLengthMoveHandler" />
                 <!-- Light sources position -->
                 <g v-for="light in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
                         :fill="light.color" @mousedown="lightMoveHandler($event, light)" />
                 </g>
-                <!-- Lens position -->
+                <!-- Lens -->
                 <rect class="svg-lens" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
                     @mousedown="lensMoveHandler" />
+                <circle class="svg-lens-size" :cx="lens.x" :cy="-lens.r" r="0.2" @mousedown="lensSizeMoveHandler" />
                 <!-- Sensor -->
                 <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
                 <circle class="svg-sensor-size" :cx="sensor.x" :cy="-sensor.size" r="0.2"
@@ -168,12 +173,6 @@
             Lens refractive index
             <input type="range" :min="1.0" :max="5" step="0.001" v-model.number="lens.n">
             {{lens.n}}
-        </label>
-        <br>
-        <label>
-            Lens radius
-            <input type="range" min="0.1" max="10" step="0.001" v-model.number="lens.r">
-            {{lens.r}}
         </label>
         <br>
         <label>
@@ -308,8 +307,8 @@
 </div>
 
 <script type="module">
-    import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-    // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
+    // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+    import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
 
     createApp({
         data() {
@@ -328,9 +327,9 @@
                 rayN: 512,
                 rayWidth: 0.4,
                 lens: {
-                    x: -3.0,
+                    x: -4.0,
                     r: 1.0,
-                    f: 2,
+                    f: 3,
                     n: 1.5,
                 },
                 sensor: {
@@ -531,6 +530,24 @@
                     const nLensR = this.calcLensR(this.lens.n, nLensF, this.lens.r);
                     if (this.lens.r * 1.2 < nLensR) {
                         this.lens.f = nLensF;
+                    }
+                };
+
+                this.moveHandler = handler;
+            },
+            lensSizeMoveHandler(e) {
+                const [sx, sy] = this.getMousePosition(e);
+                const y = -this.lens.r
+                const handler = (e) => {
+                    const [tx, ty] = this.getMousePosition(e);
+                    let ny = y + (ty - sy);
+                    if (ny > -0.01) {
+                        ny = -0.01;
+                    }
+                    const nLensSize = -ny;
+                    const nLensR = this.calcLensR(this.lens.n, this.lens.f, nLensSize);
+                    if (0 < nLensR) {
+                        this.lens.r = nLensSize;
                     }
                 };
 
