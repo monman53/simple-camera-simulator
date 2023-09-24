@@ -48,7 +48,6 @@
     .svg-axis {
         stroke-width: 0.005;
         stroke: white;
-        /* stroke-dasharray: 0.2; */
     }
 
     .svg-light-source,
@@ -103,29 +102,28 @@
                 <line class="svg-line" :x1="lens.x" :y1="boxHeight/2" :x2="lens.x+boxWidth" :y2="boxHeight/2" />
                 <line class="svg-line" :x1="lens.x+boxWidth" :y1="-boxHeight/2" :x2="lens.x+boxWidth"
                     :y2="boxHeight/2" />
-                <line class="svg-line" :x1="lens.x" :y1="-boxHeight/2" :x2="lens.x" :y2="-lensSize" />
-                <line class="svg-line" :x1="lens.x" :y1="lensSize" :x2="lens.x" :y2="boxHeight/2" />
+                <line class="svg-line" :x1="lens.x" :y1="-boxHeight/2" :x2="lens.x" :y2="-lens.r" />
+                <line class="svg-line" :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="boxHeight/2" />
                 <!-- Angle -->
                 <g v-if="options.showAngle">
                     <!-- Inside camera -->
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x"
-                        :y2="-lensSize*aperture" />
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="lensSize*aperture" />
-                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="lensSize*aperture" />
-                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-lensSize*aperture" /> -->
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="-lens.r*aperture" />
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="lens.r*aperture" />
+                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="lens.r*aperture" />
+                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-lens.r*aperture" /> -->
                     <!-- Inner -->
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="focalInfo.inner.y" />
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="-focalInfo.inner.y" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-lensSize*aperture" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-lens.r*aperture" :x2="focalInfo.focalPos.x"
                         :y2="focalInfo.focalPos.size" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="lensSize*aperture" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="lens.r*aperture" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
                     <!-- Outer -->
-                    <line class="svg-line-dot" :x1="lens.x" :y1="-lensSize*aperture" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="-lens.r*aperture" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
-                    <line class="svg-line-dot" :x1="lens.x" :y1="lensSize*aperture" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="lens.r*aperture" :x2="focalInfo.focalPos.x"
                         :y2="focalInfo.focalPos.size" />
                     <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.outer.x" :y2="-focalInfo.outer.y" />
@@ -136,15 +134,17 @@
                         :x2="focalInfo.focalPos.x" :y2="focalInfo.focalPos.size" />
                 </g>
                 <!-- Focal point -->
-                <circle class="svg-focal-point" :cx="lens.x-focalLength" :cy="0" r="0.05" />
-                <circle class="svg-focal-point" :cx="lens.x+focalLength" :cy="0" r="0.05" />
+                <circle class="svg-focal-point" :cx="lens.x-lens.f" :cy="0" r="0.05" />
+                <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" r="0.05" />
+                <circle class="svg-sensor-size" :cx="lens.x-lens.f" :cy="0" r="0.2"
+                    @mousedown="focalLengthMoveHandler" />
                 <!-- Light sources position -->
                 <g v-for="light in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
                         :fill="light.color" @mousedown="lightMoveHandler($event, light)" />
                 </g>
                 <!-- Lens position -->
-                <rect class="svg-lens" :x="lens.x-0.2" :y="-lensSize" :width="0.4" :height="2*lensSize"
+                <rect class="svg-lens" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
                     @mousedown="lensMoveHandler" />
                 <!-- Sensor -->
                 <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
@@ -164,33 +164,15 @@
             {{aperture}}
         </label>
         <br>
-        <!-- <label>
-            Sensor size
-            <input type="range" min="0.1" :max="3" step="0.01" v-model.number="sensor.size">
-            {{sensor.size}}
+        <label>
+            Lens refractive index
+            <input type="range" :min="1.0" :max="5" step="0.001" v-model.number="lens.n">
+            {{lens.n}}
         </label>
         <br>
         <label>
-            Sensor position
-            <input type="range" :min="lens.x+focalLength*0.99" max="8" step="0.001" v-model.number="sensor.x">
-            {{sensor.x}}
-        </label>
-        <br> -->
-        <!-- <label>
-            Lens position
-            <input type="range" min="-1" max="1" step="0.0001" v-model.number="lens.x">
-            {{lens.x}}
-        </label> -->
-        <!-- <br> -->
-        <label>
-            Lens thickness
-            <input type="range" min="0.1" :max="Math.min(5, lens.r*2)" step="0.1" v-model.number="lens.d">
-            {{lens.d}}
-        </label>
-        <br>
-        <label>
-            Lens R
-            <input type="range" :min="lens.d/2" max="100" step="0.1" v-model.number="lens.r">
+            Lens radius
+            <input type="range" min="0.1" max="10" step="0.001" v-model.number="lens.r">
             {{lens.r}}
         </label>
         <br>
@@ -338,12 +320,12 @@
                     h: 0,
                 },
                 scale: 50,
-                rayN: 256,
+                rayN: 512,
                 rayWidth: 0.4,
                 lens: {
-                    x: -4.0,
-                    r: 10.0,
-                    d: 0.3,
+                    x: -3.0,
+                    r: 1.0,
+                    f: 2,
                     n: 1.5,
                 },
                 sensor: {
@@ -364,7 +346,115 @@
                 moveHandler: null,
             }
         },
+        computed: {
+            lensR() {
+                const R = this.calcLensR(this.lens.n, this.lens.f, this.lens.r);
+                if (R < 0) {
+                    // Failed to solve R (no real answer?)
+                    return this.lens.r * 1.01;
+                }
+                console.assert(R > this.lens.r);
+                return R;
+            },
+            lensD() {
+                // const theta = Math.asin(this.lens.r / this.lensR);
+                // return 2 * this.lensR * (1 - Math.cos(theta));
+                return 2 * (this.lensR - Math.sqrt(this.lensR * this.lensR - this.lens.r * this.lens.r));
+            },
+            boxWidth() {
+                return this.sensor.x - this.lens.x + 0.3;
+            },
+            boxHeight() {
+                return Math.max(this.lens.r * 2, this.sensor.size * 2 + 0.8);
+            },
+            viewBoxStr() {
+                return `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`;
+            },
+            maxR() {
+                let maxR2 = 0;
+                this.lights.forEach((light) => {
+                    const dx = Math.max(Math.abs(this.viewBox.x - light.x), Math.abs(this.viewBox.x + this.viewBox.w - light.x));
+                    const dy = Math.max(Math.abs(this.viewBox.y - light.y), Math.abs(this.viewBox.y + this.viewBox.h - light.y));
+                    maxR2 = Math.max(dx * dx + dy * dy, maxR2);
+                });
+                return Math.sqrt(maxR2) * 2;
+                // TODO: Check if long enough (Use as length of infinity ray)
+            },
+            focalInfo() {
+                const f = this.lens.f;
+                const b = this.sensor.x - this.lens.x;
+                const a = f * b / (b - f);
+
+                const focalPosX = this.lens.x - a;
+                const focalPosSize = this.sensor.size * (a / b);
+
+                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.lens.r * this.aperture, focalPosX, -focalPosSize);
+                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.lens.r * this.aperture, focalPosX, focalPosSize);
+
+                return {
+                    focalPos: { x: focalPosX, size: focalPosSize },
+                    inner: { x: innerX, y: innerY },
+                    outer: { x: outerX, y: outerY },
+                }
+            },
+        },
+        watch: {
+            'lens.n'(newN, oldN) {
+                if (this.calcLensR(newN, this.lens.f, this.lens.r) < 0) {
+                    this.lens.n = oldN;
+                }
+            },
+            'lens.r'(newR, oldR) {
+                if (this.calcLensR(this.lens.n, this.lens.f, newR) < 0) {
+                    this.lens.r = oldR;
+                }
+            }
+        },
         methods: {
+            calcLensR(n, f, r) {
+                // This formula is made from maker's formula and d = 2(R-sqrt(R^2-r^2))
+                const func = (R) => {
+                    let res = 0;
+                    res += n * n * Math.pow(R, 4);
+                    res += - 4 * n * (n - 1) * f * Math.pow(R, 3);
+                    res += 4 * (n - 1) * (n - 1) * f * f * (1 - (n - 1) * (n - 1)) * R * R;
+                    res += 4 * Math.pow(n - 1, 4) * f * f * r * r;
+
+                    return res;
+                };
+
+                // Derivative of func
+                const funcc = (R) => {
+                    let res = 0;
+                    res += 4 * n * n * Math.pow(R, 3);
+                    res += - 12 * n * (n - 1) * f * Math.pow(R, 2);
+                    res += 8 * (n - 1) * (n - 1) * f * f * (1 - (n - 1) * (n - 1)) * R;
+                    return res;
+                };
+
+                // Solve func(R) = 0 by Newton' method
+                let R = 10 * n; // NOTICE: Very heuristic
+                for (let i = 0; i < 100; i++) {
+                    // console.log(R, func(R), funcc(R))
+                    R = R - func(R) / funcc(R);
+
+                    // Validation R with desired focal length
+                    // Calculate focal length by lens maker's formula
+                    const d = 2 * (R - Math.sqrt(R * R - r * r));
+                    const desiredLensF = f;
+                    const actualLensF = 1.0 / (2 * (n - 1) / R - (n - 1) * (n - 1) * d / (n * R * R));
+                    // console.log(desiredLensF, actualLensF);
+
+                    const absError = Math.abs(desiredLensF - actualLensF);
+                    const relError = absError / desiredLensF;
+                    if (relError < 0.0001) {
+                        return R;
+                    }
+                }
+
+                // Failed
+                return -1.0;
+            },
             getMousePosition(e) {
                 const rect = this.canvas.getBoundingClientRect()
                 const xPix = e.clientX - rect.left;
@@ -382,7 +472,7 @@
                     const [tx, ty] = this.getMousePosition(e);
                     const nx = x + (tx - sx);
                     const ny = y + (ty - sy);
-                    const maxX = this.lens.x - this.focalLength * 1.01;
+                    const maxX = this.lens.x - this.lens.f * 1.01;
                     light.x = maxX < nx ? maxX : nx;
                     light.y = ny;
                 };
@@ -397,7 +487,7 @@
                     let nx = x + (tx - sx);
                     this.lights.forEach((light) => {
                         if (light.enabled) {
-                            const minX = light.x + 1.01 * this.focalLength;
+                            const minX = light.x + 1.01 * this.lens.f;
                             if (nx < minX) {
                                 nx = minX;
                             }
@@ -407,6 +497,35 @@
                         nx = this.sensor.x;
                     }
                     this.lens.x = nx;
+                };
+
+                this.moveHandler = handler;
+            },
+            focalLengthMoveHandler(e) {
+                const [sx, sy] = this.getMousePosition(e);
+                const x = this.lens.x - this.lens.f;
+                const handler = (e) => {
+                    const [tx, ty] = this.getMousePosition(e);
+                    let nx = x + (tx - sx);
+                    // Doesn't go left than light sources
+                    this.lights.forEach((light) => {
+                        if (light.enabled) {
+                            const minX = light.x + 0.01;
+                            if (nx < minX) {
+                                nx = minX;
+                            }
+                        }
+                    });
+                    // Doesn't collision to lens
+                    if (nx > this.lens.x - 0.01) {
+                        nx = this.lens.x - 0.01;
+                    }
+
+                    const nLensF = this.lens.x - nx;
+                    const nLensR = this.calcLensR(this.lens.n, nLensF, this.lens.r);
+                    if (this.lens.r * 1.2 < nLensR) {
+                        this.lens.f = nLensF;
+                    }
                 };
 
                 this.moveHandler = handler;
@@ -448,51 +567,6 @@
                 const ntx = sx + this.maxR * Math.cos(theta);
                 const nty = sy + this.maxR * Math.sin(theta);
                 return [ntx, nty];
-            },
-        },
-        computed: {
-            focalLength() {
-                return this.lens.r / 2 * (this.lens.n - 1);
-            },
-            lensSize() {
-                const theta = Math.acos((this.lens.r - this.lens.d / 2) / this.lens.r);
-                return Math.abs(this.lens.r * Math.sin(theta));
-            },
-            boxWidth() {
-                return this.sensor.x - this.lens.x + 0.3;
-            },
-            boxHeight() {
-                return Math.max(this.lensSize * 2, this.sensor.size * 2 + 0.8);
-            },
-            viewBoxStr() {
-                return `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`;
-            },
-            maxR() {
-                let maxR2 = 0;
-                this.lights.forEach((light) => {
-                    const dx = Math.max(Math.abs(this.viewBox.x - light.x), Math.abs(this.viewBox.x + this.viewBox.w - light.x));
-                    const dy = Math.max(Math.abs(this.viewBox.y - light.y), Math.abs(this.viewBox.y + this.viewBox.h - light.y));
-                    maxR2 = Math.max(dx * dx + dy * dy, maxR2);
-                });
-                return Math.sqrt(maxR2) * 2;
-                // TODO: Check if long enough (Use as length of infinity ray)
-            },
-            focalInfo() {
-                const f = this.focalLength;
-                const b = this.sensor.x - this.lens.x;
-                const a = f * b / (b - f);
-
-                const focalPosX = this.lens.x - a;
-                const focalPosSize = this.sensor.size * (a / b);
-
-                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.lensSize * this.aperture, focalPosX, -focalPosSize);
-                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.lensSize * this.aperture, focalPosX, focalPosSize);
-
-                return {
-                    focalPos: { x: focalPosX, size: focalPosSize },
-                    inner: { x: innerX, y: innerY },
-                    outer: { x: outerX, y: outerY },
-                }
             },
         },
         mounted() {
@@ -653,7 +727,7 @@
 
                     // Find image position (ux, uy) of the light source
                     const s1 = this.lens.x - light.x;
-                    const s2 = this.focalLength * s1 / (s1 - this.focalLength);
+                    const s2 = this.lens.f * s1 / (s1 - this.lens.f);
                     const ux = s2;
                     const uy = -light.y * (s2 / s1)
 
@@ -676,7 +750,7 @@
                         }
 
                         // Check intersection with lens
-                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lensSize, this.lensSize, this.maxR);
+                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lens.r, this.lens.r, this.maxR);
 
                         if (!hitLens) {
                             // Draw rays don't enter into the lens
@@ -695,7 +769,7 @@
                         ctx.stroke();
 
                         // Draw inner ray
-                        const notHitAperture = -this.lensSize * this.aperture < ty && ty < this.lensSize * this.aperture;
+                        const notHitAperture = -this.lens.r * this.aperture < ty && ty < this.lens.r * this.aperture;
                         if (notHitAperture) {
                             // Calculate refraction direction (phi)
                             const phi = Math.atan2(uy - ty, ux);
@@ -739,8 +813,8 @@
                 // Lens
                 //--------------------------------
                 {
-                    const r = this.lens.r;
-                    const d = this.lens.d;
+                    const r = this.lensR;
+                    const d = this.lensD;
                     const theta = Math.acos((r - d / 2) / r);
                     const y = 0;
                     // Left
@@ -769,15 +843,15 @@
                 // upper
                 {
                     ctx.beginPath();
-                    ctx.moveTo(this.lens.x, -this.lensSize);
-                    ctx.lineTo(this.lens.x, -this.lensSize * this.aperture);
+                    ctx.moveTo(this.lens.x, -this.lens.r);
+                    ctx.lineTo(this.lens.x, -this.lens.r * this.aperture);
                     ctx.stroke();
                 }
                 // lower
                 {
                     ctx.beginPath();
-                    ctx.moveTo(this.lens.x, this.lensSize);
-                    ctx.lineTo(this.lens.x, this.lensSize * this.aperture);
+                    ctx.moveTo(this.lens.x, this.lens.r);
+                    ctx.lineTo(this.lens.x, this.lens.r * this.aperture);
                     ctx.stroke();
                 }
 
