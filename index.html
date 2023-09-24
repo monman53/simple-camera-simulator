@@ -107,23 +107,24 @@
                 <!-- Angle -->
                 <g v-if="options.showAngle">
                     <!-- Inside camera -->
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="-lensSize" />
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="lensSize" />
-                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="lensSize" />
-                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-lensSize" /> -->
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x"
+                        :y2="-lensSize*aperture" />
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="lensSize*aperture" />
+                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="lensSize*aperture" />
+                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-lensSize*aperture" /> -->
                     <!-- Inner -->
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="focalInfo.inner.y" />
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="-focalInfo.inner.y" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-lensSize" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-lensSize*aperture" :x2="focalInfo.focalPos.x"
                         :y2="focalInfo.focalPos.size" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="lensSize" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="lensSize*aperture" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
                     <!-- Outer -->
-                    <line class="svg-line-dot" :x1="lens.x" :y1="-lensSize" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="-lensSize*aperture" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
-                    <line class="svg-line-dot" :x1="lens.x" :y1="lensSize" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="lensSize*aperture" :x2="focalInfo.focalPos.x"
                         :y2="focalInfo.focalPos.size" />
                     <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.outer.x" :y2="-focalInfo.outer.y" />
@@ -483,8 +484,8 @@
                 const focalPosX = this.lens.x - a;
                 const focalPosSize = this.sensor.size * (a / b);
 
-                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.lensSize, focalPosX, -focalPosSize);
-                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.lensSize, focalPosX, focalPosSize);
+                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.lensSize * this.aperture, focalPosX, -focalPosSize);
+                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.lensSize * this.aperture, focalPosX, focalPosSize);
 
                 return {
                     focalPos: { x: focalPosX, size: focalPosSize },
