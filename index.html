@@ -170,35 +170,33 @@
     </div>
 
     <div>
-        <label>
-            Lens refractive index
-            <input type="range" :min="1.0" :max="5" step="0.001" v-model.number="lens.n">
-            {{lens.n}}
-        </label>
-        <br>
-        <label>
-            Number of rays
-            <input type="range" min="1" max="4096" step="1" v-model.number="rayN">
-            {{rayN}}
-        </label>
-        <br>
-        <label>
-            Ray width
-            <input type="range" min="0.01" max="1.0" step="0.01" v-model.number="rayWidth">
-            {{rayWidth}}
-        </label>
-        <br>
-        <label v-for="light in lights">
-            <input type="checkbox" v-model="light.enabled">
-            Show light {{light.color}}
-            <br>
-        </label>
         <fieldset>
             <legend>Options</legend>
+            <!-- Range sliders -->
             <label>
-                <input type="checkbox" v-model="options.renderOmissionWhileMoving">
-                Rendering omission while components moving for better usability.
+                Lens refractive index
+                <input type="range" :min="1.0" :max="5" step="0.001" v-model.number="lens.n">
+                {{lens.n}}
             </label>
+            <br>
+            <label>
+                Number of rays
+                <input type="range" min="1" max="4096" step="1" v-model.number="rayN">
+                {{rayN}}
+            </label>
+            <br>
+            <label>
+                Ray width
+                <input type="range" min="0.01" max="1.0" step="0.01" v-model.number="rayWidth">
+                {{rayWidth}}
+            </label>
+            <br>
+            <label>
+                Canvas scale
+                <input type="range" min="0.1" max="100" step="0.1" v-model.number="scale">
+                {{scale}}
+            </label>
+            <!-- Checkboxes -->
             <br>
             <label>
                 <input type="checkbox" v-model="options.showAngle">
@@ -206,14 +204,19 @@
             </label>
             <br>
             <label>
+                <input type="checkbox" v-model="options.renderOmissionWhileMoving">
+                Rendering omission while components moving (for better usability)
+            </label>
+            <br>
+            <label>
                 <input type="checkbox" v-model="options.randomRays">
                 Random rays
             </label>
             <br>
-            <label>
-                Canvas scale
-                <input type="range" min="0.1" max="100" step="0.1" v-model.number="scale">
-                {{scale}}
+            <label v-for="light in lights">
+                <input type="checkbox" v-model="light.enabled">
+                Show light {{light.color}}
+                <br>
             </label>
         </fieldset>
     </div>
@@ -223,22 +226,23 @@
         <p>This is an interactive tool for understanding how the camera works. You can change some conditions and see
             how camera effects change by viewing rays path and image on virtual 1D image sensor.</p>
         <h3>Usage</h3>
+        <p>You can change following conditions.</p>
         <ul>
-            <li>Move the light sources by mouse drag and see how the rays path change.</li>
+            <li>On canvas (by mouse)</li>
+            <ul>
+                <li>Light source position</li>
+                <li>Lens position (x-axis)</li>
+                <li>Aperture</li>
+                <li>Sensor size</li>
+                <li>Lens size (diameter)</li>
+            </ul>
+            <li>Out of canvas</li>
+            <ul>
+                <li>See "Options"</li>
+            </ul>
         </ul>
-        <h3>List of controllable places</h3>
-        <ul>
-            <li>Aperture</li>
-            <li>Lens position (x-axis)</li>
-            <li>Lens curvature (changes focal length)</li>
-            <li>Lens thickness (does't change focal length)</li>
-            <li>Image sensor size</li>
-            <li>Image sensor position (x-axis)</li>
-            <li>Number of rays from light source (affects performance significantly)</li>
-            <li>Rays intensity (ray boldness)</li>
-            <li>Light source selection (up to 3)</li>
-        </ul>
-        <h3>List of the major questions about camera that this tool supports to understand.</h3>
+        <p>And you can enable/disable some options.</p>
+        <h3>List of common questions about cameras that this tool may help you to understand</h3>
         <ul>
             <li>Q. What is the bokeh (blur effect)?</li>
             <ul>
@@ -261,6 +265,16 @@
                 </li>
             </ul> -->
         </ul>
+        <h2>Notice</h2>
+        <ul>
+            <li>Theoretical correctness is not guaranteed.</li>
+            <li>Assume that the camera lens is singe symmetric spherical convex lens. (The real camera lens is composed
+                from multiple types of lenses.)</li>
+            <li>The rays inside the lens are not visualized correctly. The rays are refracted at the center plane of the
+                lens.</li>
+            <li>The visual may differ depending on the browser.</li>
+            <li>Enabling GPU acceleration is highly recommended.</li>
+        </ul>
         <h2>Features</h2>
         <ul>
             <li>Mouse interactive</li>
@@ -278,7 +292,7 @@
                 </ul>
             </li>
         </ul> -->
-        <h2>Used technologies</h2>
+        <h3>Used technologies</h3>
         <ul>
             <li>HTML / Javascript</li>
             <li>Vue.js 3</li>
