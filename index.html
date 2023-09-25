@@ -76,6 +76,7 @@
     .svg-lens,
     .svg-focal-length,
     .svg-lens-size,
+    .svg-aperture,
     .svg-sensor-size {
         fill: white;
         fill-opacity: 0.0;
@@ -83,6 +84,7 @@
 
     .svg-sensor-size:hover,
     .svg-lens-size:hover,
+    .svg-aperture:hover,
     .svg-focal-length:hover,
     .svg-lens:hover {
         stroke-width: 0.03;
@@ -151,6 +153,11 @@
                 <rect class="svg-lens" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
                     @mousedown="lensMoveHandler" />
                 <circle class="svg-lens-size" :cx="lens.x" :cy="-lens.r" r="0.2" @mousedown="lensSizeMoveHandler" />
+                <!-- Aperture -->
+                <line class="svg-line" :x1="lens.x" :y1="-lens.r*aperture" :x2="lens.x-Math.max(lensD*2/3, 0.5)"
+                    :y2="-lens.r*aperture" />
+                <circle class="svg-aperture" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-lens.r*aperture" r="0.2"
+                    @mousedown="apertureMoveHandler" />
                 <!-- Sensor -->
                 <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
                 <circle class="svg-sensor-size" :cx="sensor.x" :cy="-sensor.size" r="0.2"
@@ -163,12 +170,6 @@
     </div>
 
     <div>
-        <label>
-            Aperture
-            <input type="range" min="0" :max="1" step="0.001" v-model.number="aperture">
-            {{aperture}}
-        </label>
-        <br>
         <label>
             Lens refractive index
             <input type="range" :min="1.0" :max="5" step="0.001" v-model.number="lens.n">
@@ -562,6 +563,24 @@
                     const ny = y + (ty - sy);
                     const maxY = -0.1;
                     this.sensor.size = maxY < ny ? -maxY : -ny;
+                };
+
+                this.moveHandler = handler;
+            },
+            apertureMoveHandler(e) {
+                const [sx, sy] = this.getMousePosition(e);
+                const y = -this.lens.r * this.aperture;
+
+                const handler = (e) => {
+                    const [tx, ty] = this.getMousePosition(e);
+                    const ny = y + (ty - sy);
+                    if (0 < ny) {
+                        this.aperture = 0;
+                    } else if (ny < -this.lens.r) {
+                        this.aperture = 1;
+                    } else {
+                        this.aperture = -ny / this.lens.r;
+                    }
                 };
 
                 this.moveHandler = handler;
