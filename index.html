@@ -113,23 +113,25 @@
                 <!-- Angle -->
                 <g v-if="options.showAngle">
                     <!-- Inside camera -->
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="-lens.r*aperture" />
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="lens.r*aperture" />
-                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="lens.r*aperture" />
-                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-lens.r*aperture" /> -->
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x"
+                        :y2="-effectiveLensDiameter" />
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x"
+                        :y2="effectiveLensDiameter" />
+                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="effectiveLensDiameter" />
+                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-effectiveLensDiameter" /> -->
                     <!-- Inner -->
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="focalInfo.inner.y" />
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="-focalInfo.inner.y" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-lens.r*aperture" :x2="focalInfo.focalPos.x"
-                        :y2="focalInfo.focalPos.size" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="lens.r*aperture" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-effectiveLensDiameter"
+                        :x2="focalInfo.focalPos.x" :y2="focalInfo.focalPos.size" />
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="effectiveLensDiameter" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
                     <!-- Outer -->
-                    <line class="svg-line-dot" :x1="lens.x" :y1="-lens.r*aperture" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="-effectiveLensDiameter" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
-                    <line class="svg-line-dot" :x1="lens.x" :y1="lens.r*aperture" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="effectiveLensDiameter" :x2="focalInfo.focalPos.x"
                         :y2="focalInfo.focalPos.size" />
                     <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.outer.x" :y2="-focalInfo.outer.y" />
@@ -157,10 +159,12 @@
                     <circle class="svg-hover" :cx="lens.x-lensD/2" :cy="0" r="0.2"
                         @mousedown="lensThicknessMoveHandler" />
                     <!-- Aperture -->
-                    <line class="svg-line" :x1="lens.x" :y1="-lens.r*aperture" :x2="lens.x-Math.max(lensD*2/3, 0.5)"
-                        :y2="-lens.r*aperture" />
-                    <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-lens.r*aperture" r="0.2"
-                        @mousedown="apertureMoveHandler" />
+                    <g v-if="options.showAperture">
+                        <line class="svg-line" :x1="lens.x" :y1="-effectiveLensDiameter"
+                            :x2="lens.x-Math.max(lensD*2/3, 0.5)" :y2="-effectiveLensDiameter" />
+                        <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-effectiveLensDiameter"
+                            r="0.2" @mousedown="apertureMoveHandler" />
+                    </g>
                 </g>
                 <!-- Sensor -->
                 <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
@@ -169,7 +173,7 @@
             </svg>
             <div id="info">
                 Focal length: {{humanReadable(lens.f)}}<br>
-                Aperture: {{humanReadable(aperture)}}<br>
+                <span v-if="options.showAperture">Aperture: {{humanReadable(aperture)}}<br></span>
                 Lens refractive index: {{humanReadable(lens.n)}}<br>
                 Lens radius: {{humanReadable(lens.r)}}<br>
                 Lens thickness: {{humanReadable(lensD)}}<br>
@@ -205,6 +209,11 @@
                 {{scale}}
             </label>
             <!-- Checkboxes -->
+            <br>
+            <label>
+                <input type="checkbox" v-model="options.showAperture">
+                Show aperture
+            </label>
             <br>
             <label>
                 <input type="checkbox" v-model="options.showAngle">
@@ -368,16 +377,14 @@
                 },
                 aperture: 0.8,
                 lights: [
-                    // { x: -22, y: -1, color: "rgba(255, 0, 0, 0.8)", enabled: true },
-                    // { x: -28, y: -0.5, color: "rgba(0, 255, 0, 0.8)", enabled: true },
-                    // { x: -20, y: 1, color: "rgba(0, 0, 255, 0.8)", enabled: true },
                     { x: -22, y: -1, color: "rgb(255, 0, 0)", enabled: true },
                     { x: -28, y: -0.5, color: "rgb(0, 255, 0)", enabled: true },
                     { x: -20, y: 1, color: "rgb(0, 0, 255)", enabled: true },
                 ],
                 options: {
-                    renderOmissionWhileMoving: true,
+                    showAperture: true,
                     showAngle: false,
+                    renderOmissionWhileMoving: true,
                     randomRays: false,
                 },
                 fps: 0,
@@ -385,6 +392,13 @@
             }
         },
         computed: {
+            effectiveLensDiameter() {
+                if (this.options.showAperture) {
+                    return this.lens.r * this.aperture;
+                } else {
+                    return this.lens.r;
+                }
+            },
             lensR() {
                 const R = this.calcLensR(this.lens.n, this.lens.f, this.lens.r);
                 if (R < 0) {
@@ -425,8 +439,8 @@
                 const focalPosX = this.lens.x - a;
                 const focalPosSize = this.sensor.size * (a / b);
 
-                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.lens.r * this.aperture, focalPosX, -focalPosSize);
-                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.lens.r * this.aperture, focalPosX, focalPosSize);
+                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.effectiveLensDiameter, focalPosX, -focalPosSize);
+                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.effectiveLensDiameter, focalPosX, focalPosSize);
 
                 return {
                     focalPos: { x: focalPosX, size: focalPosSize },
@@ -661,7 +675,7 @@
             },
             apertureMoveHandler(e) {
                 const [sx, sy] = this.getMousePosition(e);
-                const y = -this.lens.r * this.aperture;
+                const y = -this.effectiveLensDiameter;
 
                 const handler = (e) => {
                     const [tx, ty] = this.getMousePosition(e);
@@ -908,7 +922,7 @@
                         ctx.stroke();
 
                         // Draw inner ray
-                        const notHitAperture = -this.lens.r * this.aperture < ty && ty < this.lens.r * this.aperture;
+                        const notHitAperture = -this.effectiveLensDiameter < ty && ty < this.effectiveLensDiameter
                         if (notHitAperture) {
                             // Calculate refraction direction (phi)
                             const phi = Math.atan2(uy - ty, ux);
@@ -949,7 +963,7 @@
                 ctx.fillStyle = "white";
 
                 //--------------------------------
-                // Lens
+                // Lens (TODO: Move to SVG)
                 //--------------------------------
                 {
                     const r = this.lensR;
@@ -977,21 +991,23 @@
                 }
 
                 //--------------------------------
-                // Aperture
+                // Aperture (TODO: Move to SVG)
                 //--------------------------------
-                // upper
-                {
-                    ctx.beginPath();
-                    ctx.moveTo(this.lens.x, -this.lens.r);
-                    ctx.lineTo(this.lens.x, -this.lens.r * this.aperture);
-                    ctx.stroke();
-                }
-                // lower
-                {
-                    ctx.beginPath();
-                    ctx.moveTo(this.lens.x, this.lens.r);
-                    ctx.lineTo(this.lens.x, this.lens.r * this.aperture);
-                    ctx.stroke();
+                if (this.options.showAperture) {
+                    // upper
+                    {
+                        ctx.beginPath();
+                        ctx.moveTo(this.lens.x, -this.lens.r);
+                        ctx.lineTo(this.lens.x, -this.effectiveLensDiameter);
+                        ctx.stroke();
+                    }
+                    // lower
+                    {
+                        ctx.beginPath();
+                        ctx.moveTo(this.lens.x, this.lens.r);
+                        ctx.lineTo(this.lens.x, this.effectiveLensDiameter);
+                        ctx.stroke();
+                    }
                 }
 
                 //--------------------------------
