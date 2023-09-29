@@ -113,7 +113,7 @@
                     <line class="svg-line" :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="boxHeight/2" />
                 </g>
                 <!-- Angle -->
-                <g v-if="options.showAngle">
+                <g v-if="options.showAngle && options.showBody">
                     <!-- Inside camera -->
                     <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x"
                         :y2="-effectiveLensDiameter" />
@@ -194,25 +194,6 @@
     <div>
         <fieldset>
             <legend>Options</legend>
-            <!-- Range sliders -->
-            <label>
-                Number of rays
-                <input type="range" min="1" max="4096" step="1" v-model.number="rayN">
-                {{rayN}}
-                <br>
-            </label>
-            <label>
-                Ray width
-                <input type="range" min="0.01" max="2.0" step="0.01" v-model.number="rayWidth">
-                {{rayWidth}}
-                <br>
-            </label>
-            <label>
-                Canvas scale
-                <input type="range" min="0.1" max="100" step="0.1" v-model.number="scale">
-                {{scale}}
-                <br>
-            </label>
             <!-- Checkboxes -->
             <label>
                 <input type="checkbox" v-model="options.showAperture">
@@ -229,21 +210,43 @@
                 Show angle line
                 <br>
             </label>
+            <!-- Range sliders -->
             <label>
-                <input type="checkbox" v-model="options.renderOmissionWhileMoving">
-                Rendering omission while components moving (for better usability)
+                Number of rays
+                <input type="range" min="1" max="4096" step="1" v-model.number="rayN">
+                {{rayN}}
                 <br>
             </label>
-            <label>
-                <input type="checkbox" v-model="options.randomRays">
-                Random rays
-                <br>
-            </label>
-            <label v-for="light in lights">
-                <input type="checkbox" v-model="light.enabled">
-                Show light {{light.color}}
-                <br>
-            </label>
+            <details>
+                <summary>Advanced</summary>
+                <label>
+                    <input type="checkbox" v-model="options.renderOmissionWhileMoving">
+                    Rendering omission while components moving (for better usability)
+                    <br>
+                </label>
+                <label>
+                    <input type="checkbox" v-model="options.randomRays">
+                    Random rays
+                    <br>
+                </label>
+                <label v-for="light in lights">
+                    <input type="checkbox" v-model="light.enabled">
+                    Show light {{light.color}}
+                    <br>
+                </label>
+                <label>
+                    Ray width
+                    <input type="range" min="0.01" max="2.0" step="0.01" v-model.number="rayWidth">
+                    {{rayWidth}}
+                    <br>
+                </label>
+                <label>
+                    Canvas scale
+                    <input type="range" min="0.1" max="100" step="0.1" v-model.number="scale">
+                    {{scale}}
+                    <br>
+                </label>
+            </details>
         </fieldset>
     </div>
 
@@ -257,10 +260,11 @@
             <li>On canvas (by mouse)</li>
             <ul>
                 <li>Light source position</li>
-                <li>Lens position (x-axis)</li>
                 <li>Aperture</li>
-                <li>Sensor size</li>
+                <li>Lens position (x-axis)</li>
+                <li>Lens thickness</li>
                 <li>Lens size (diameter)</li>
+                <li>Sensor size</li>
             </ul>
             <li>Out of canvas</li>
             <ul>
@@ -393,7 +397,7 @@
                 options: {
                     showAperture: true,
                     showBody: true,
-                    showAngle: false,
+                    showAngle: true,
                     renderOmissionWhileMoving: true,
                     randomRays: false,
                 },
