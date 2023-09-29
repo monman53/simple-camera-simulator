@@ -195,7 +195,7 @@
             <br>
             <label>
                 Ray width
-                <input type="range" min="0.01" max="1.0" step="0.01" v-model.number="rayWidth">
+                <input type="range" min="0.01" max="2.0" step="0.01" v-model.number="rayWidth">
                 {{rayWidth}}
             </label>
             <br>
@@ -357,20 +357,23 @@
                 rayN: 512,
                 rayWidth: 0.4,
                 lens: {
-                    x: -4.0,
-                    r: 1.0,
-                    f: 3,
+                    x: -6.0,
+                    r: 1.5,
+                    f: 4.36,
                     n: 1.5,
                 },
                 sensor: {
                     x: 0.0,
-                    size: 1.0,
+                    size: 1,
                 },
-                aperture: 1.0,
+                aperture: 0.8,
                 lights: [
-                    { x: -9, y: -1, color: "rgba(255, 0, 0, 0.8)", enabled: true },
-                    { x: -12, y: -0.5, color: "rgba(0, 255, 0, 0.8)", enabled: true },
-                    { x: -20, y: 1, color: "rgba(0, 0, 255, 0.8)", enabled: true },
+                    // { x: -22, y: -1, color: "rgba(255, 0, 0, 0.8)", enabled: true },
+                    // { x: -28, y: -0.5, color: "rgba(0, 255, 0, 0.8)", enabled: true },
+                    // { x: -20, y: 1, color: "rgba(0, 0, 255, 0.8)", enabled: true },
+                    { x: -22, y: -1, color: "rgb(255, 0, 0)", enabled: true },
+                    { x: -28, y: -0.5, color: "rgb(0, 255, 0)", enabled: true },
+                    { x: -20, y: 1, color: "rgb(0, 0, 255)", enabled: true },
                 ],
                 options: {
                     renderOmissionWhileMoving: true,
@@ -580,6 +583,12 @@
                     const nLensF = this.lens.x - nx;
                     const nLensR = this.calcLensR(this.lens.n, nLensF, this.lens.r);
                     const nLensD = this.calcLensD(this.lens.r, nLensR)
+                    if (nLensD < this.lens.r * minLensD) {
+                        return;
+                    }
+                    if (nLensD > this.lens.r * maxLensD) {
+                        return;
+                    }
                     if (nLensD / 2 < nLensF) {
                         this.lens.f = nLensF;
                     }
