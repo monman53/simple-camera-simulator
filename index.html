@@ -37,6 +37,14 @@
         z-index: 2;
     }
 
+    #info {
+        position: absolute;
+        z-index: 3;
+        padding: 0.5em;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+    }
+
     #canvas-sensor {
         width: 100%;
     }
@@ -159,6 +167,16 @@
                 <circle class="svg-hover" :cx="sensor.x" :cy="-sensor.size" r="0.2"
                     @mousedown="sensorSizeMoveHandler" />
             </svg>
+            <div id="info">
+                Focal length: {{humanReadable(lens.f)}}<br>
+                Aperture: {{humanReadable(aperture)}}<br>
+                Lens refractive index: {{humanReadable(lens.n)}}<br>
+                Lens radius: {{humanReadable(lens.r)}}<br>
+                Lens thickness: {{humanReadable(lensD)}}<br>
+                Lens curvature radius: {{humanReadable(lensR)}}<br>
+                Lens position: {{humanReadable(lens.x)}}<br>
+                Sensor size: {{humanReadable(sensor.size)}}<br>
+            </div>
         </div>
         <div class="item-sensor">
             <canvas id="canvas-sensor"></canvas>
@@ -674,6 +692,9 @@
                 const ntx = sx + this.maxR * Math.cos(theta);
                 const nty = sy + this.maxR * Math.sin(theta);
                 return [ntx, nty];
+            },
+            humanReadable(v) {
+                return v.toPrecision(3);
             },
         },
         mounted() {
