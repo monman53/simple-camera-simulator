@@ -116,24 +116,24 @@
                 <g v-if="options.showAngle && options.showBody">
                     <!-- Inside camera -->
                     <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x"
-                        :y2="-effectiveLensDiameter" />
+                        :y2="-effectiveLensRadius" />
                     <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x"
-                        :y2="effectiveLensDiameter" />
-                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="effectiveLensDiameter" />
-                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-effectiveLensDiameter" /> -->
+                        :y2="effectiveLensRadius" />
+                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="effectiveLensRadius" />
+                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-effectiveLensRadius" /> -->
                     <!-- Inner -->
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="focalInfo.inner.y" />
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="-focalInfo.inner.y" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-effectiveLensDiameter"
-                        :x2="focalInfo.focalPos.x" :y2="focalInfo.focalPos.size" />
-                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="effectiveLensDiameter" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="-effectiveLensRadius" :x2="focalInfo.focalPos.x"
+                        :y2="focalInfo.focalPos.size" />
+                    <line class="svg-line-dot-thick" :x1="lens.x" :y1="effectiveLensRadius" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
                     <!-- Outer -->
-                    <line class="svg-line-dot" :x1="lens.x" :y1="-effectiveLensDiameter" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="-effectiveLensRadius" :x2="focalInfo.focalPos.x"
                         :y2="-focalInfo.focalPos.size" />
-                    <line class="svg-line-dot" :x1="lens.x" :y1="effectiveLensDiameter" :x2="focalInfo.focalPos.x"
+                    <line class="svg-line-dot" :x1="lens.x" :y1="effectiveLensRadius" :x2="focalInfo.focalPos.x"
                         :y2="focalInfo.focalPos.size" />
                     <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.outer.x" :y2="-focalInfo.outer.y" />
@@ -162,9 +162,9 @@
                         @mousedown="lensThicknessMoveHandler" />
                     <!-- Aperture -->
                     <g v-if="options.showAperture">
-                        <line class="svg-line" :x1="lens.x" :y1="-effectiveLensDiameter"
-                            :x2="lens.x-Math.max(lensD*2/3, 0.5)" :y2="-effectiveLensDiameter" />
-                        <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-effectiveLensDiameter"
+                        <line class="svg-line" :x1="lens.x" :y1="-effectiveLensRadius"
+                            :x2="lens.x-Math.max(lensD*2/3, 0.5)" :y2="-effectiveLensRadius" />
+                        <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-effectiveLensRadius"
                             r="0.2" @mousedown="apertureMoveHandler" />
                     </g>
                 </g>
@@ -177,7 +177,7 @@
             </svg>
             <div id="info">
                 Focal length: {{humanReadable(lens.f)}}<br>
-                <span v-if="options.showAperture">Aperture: {{humanReadable(aperture)}}<br></span>
+                f-number: {{humanReadable(fNumber)}}<br></span>
                 Lens refractive index: {{humanReadable(lens.n)}}<br>
                 Lens radius: {{humanReadable(lens.r)}}<br>
                 Lens thickness: {{humanReadable(lensD)}}<br>
@@ -406,12 +406,15 @@
             }
         },
         computed: {
-            effectiveLensDiameter() {
+            effectiveLensRadius() {
                 if (this.options.showAperture) {
                     return this.lens.r * this.aperture;
                 } else {
                     return this.lens.r;
                 }
+            },
+            fNumber() {
+                return this.lens.f / (this.effectiveLensRadius * 2);
             },
             lensR() {
                 const R = this.calcLensR(this.lens.n, this.lens.f, this.lens.r);
@@ -453,8 +456,8 @@
                 const focalPosX = this.lens.x - a;
                 const focalPosSize = this.sensor.size * (a / b);
 
-                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.effectiveLensDiameter, focalPosX, -focalPosSize);
-                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.effectiveLensDiameter, focalPosX, focalPosSize);
+                const [innerX, innerY] = this.extendSegment(this.lens.x, -this.effectiveLensRadius, focalPosX, -focalPosSize);
+                const [outerX, outerY] = this.extendSegment(this.lens.x, -this.effectiveLensRadius, focalPosX, focalPosSize);
 
                 return {
                     focalPos: { x: focalPosX, size: focalPosSize },
@@ -689,7 +692,7 @@
             },
             apertureMoveHandler(e) {
                 const [sx, sy] = this.getMousePosition(e);
-                const y = -this.effectiveLensDiameter;
+                const y = -this.effectiveLensRadius;
 
                 const handler = (e) => {
                     const [tx, ty] = this.getMousePosition(e);
@@ -936,7 +939,7 @@
                         ctx.stroke();
 
                         // Draw inner ray
-                        const notHitAperture = -this.effectiveLensDiameter < ty && ty < this.effectiveLensDiameter
+                        const notHitAperture = -this.effectiveLensRadius < ty && ty < this.effectiveLensRadius
                         if (notHitAperture) {
                             // Calculate refraction direction (phi)
                             const phi = Math.atan2(uy - ty, ux);
@@ -1020,14 +1023,14 @@
                     {
                         ctx.beginPath();
                         ctx.moveTo(this.lens.x, -this.lens.r);
-                        ctx.lineTo(this.lens.x, -this.effectiveLensDiameter);
+                        ctx.lineTo(this.lens.x, -this.effectiveLensRadius);
                         ctx.stroke();
                     }
                     // lower
                     {
                         ctx.beginPath();
                         ctx.moveTo(this.lens.x, this.lens.r);
-                        ctx.lineTo(this.lens.x, this.effectiveLensDiameter);
+                        ctx.lineTo(this.lens.x, this.effectiveLensRadius);
                         ctx.stroke();
                     }
                 }
