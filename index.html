@@ -73,20 +73,12 @@
         fill: white;
     }
 
-    .svg-lens,
-    .svg-focal-length,
-    .svg-lens-size,
-    .svg-aperture,
-    .svg-sensor-size {
+    .svg-hover {
         fill: white;
         fill-opacity: 0.0;
     }
 
-    .svg-sensor-size:hover,
-    .svg-lens-size:hover,
-    .svg-aperture:hover,
-    .svg-focal-length:hover,
-    .svg-lens:hover {
+    .svg-hover:hover {
         stroke-width: 0.03;
         stroke: white;
     }
@@ -142,25 +134,29 @@
                 <!-- Focal point -->
                 <circle class="svg-focal-point" :cx="lens.x-lens.f" :cy="0" r="0.05" />
                 <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" r="0.05" />
-                <circle class="svg-focal-length" :cx="lens.x-lens.f" :cy="0" r="0.2"
-                    @mousedown="focalLengthMoveHandler" />
+                <circle class="svg-hover" :cx="lens.x-lens.f" :cy="0" r="0.2" @mousedown="focalLengthMoveHandler" />
                 <!-- Light sources position -->
                 <g v-for="light in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
                         :fill="light.color" @mousedown="lightMoveHandler($event, light)" />
                 </g>
                 <!-- Lens -->
-                <rect class="svg-lens" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
-                    @mousedown="lensMoveHandler" />
-                <circle class="svg-lens-size" :cx="lens.x" :cy="-lens.r" r="0.2" @mousedown="lensSizeMoveHandler" />
-                <!-- Aperture -->
-                <line class="svg-line" :x1="lens.x" :y1="-lens.r*aperture" :x2="lens.x-Math.max(lensD*2/3, 0.5)"
-                    :y2="-lens.r*aperture" />
-                <circle class="svg-aperture" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-lens.r*aperture" r="0.2"
-                    @mousedown="apertureMoveHandler" />
+                <g>
+                    <rect class="svg-hover" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
+                        @mousedown="lensMoveHandler" />
+                    <circle class="svg-hover" :cx="lens.x" :cy="-lens.r" r="0.2" @mousedown="lensSizeMoveHandler" />
+                    <!-- Thickness -->
+                    <circle class="svg-hover" :cx="lens.x-lensD/2" :cy="0" r="0.2"
+                        @mousedown="lensThicknessMoveHandler" />
+                    <!-- Aperture -->
+                    <line class="svg-line" :x1="lens.x" :y1="-lens.r*aperture" :x2="lens.x-Math.max(lensD*2/3, 0.5)"
+                        :y2="-lens.r*aperture" />
+                    <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-lens.r*aperture" r="0.2"
+                        @mousedown="apertureMoveHandler" />
+                </g>
                 <!-- Sensor -->
                 <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
-                <circle class="svg-sensor-size" :cx="sensor.x" :cy="-sensor.size" r="0.2"
+                <circle class="svg-hover" :cx="sensor.x" :cy="-sensor.size" r="0.2"
                     @mousedown="sensorSizeMoveHandler" />
             </svg>
         </div>
@@ -173,12 +169,6 @@
         <fieldset>
             <legend>Options</legend>
             <!-- Range sliders -->
-            <label>
-                Lens refractive index
-                <input type="range" :min="1.0" :max="5" step="0.001" v-model.number="lens.n">
-                {{lens.n}}
-            </label>
-            <br>
             <label>
                 Number of rays
                 <input type="range" min="1" max="4096" step="1" v-model.number="rayN">
@@ -325,6 +315,13 @@
     // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
     import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
 
+    // TODO:
+    // Cannot calculate n around lensD == lens.r.
+    // This problem is unsolved.
+    // We use maximum lensD == maxLesD * lens.r here for workaround.
+    const maxLensD = 0.5 * 2;
+    const minLensD = 0.05 * 2;
+
     createApp({
         data() {
             return {
@@ -371,15 +368,14 @@
                 const R = this.calcLensR(this.lens.n, this.lens.f, this.lens.r);
                 if (R < 0) {
                     // Failed to solve R (no real answer?)
+                    console.log("Failed to calculate lens R");
                     return this.lens.r * 1.01;
                 }
                 console.assert(R > this.lens.r);
                 return R;
             },
             lensD() {
-                // const theta = Math.asin(this.lens.r / this.lensR);
-                // return 2 * this.lensR * (1 - Math.cos(theta));
-                return 2 * (this.lensR - Math.sqrt(this.lensR * this.lensR - this.lens.r * this.lens.r));
+                return this.calcLensD(this.lens.r, this.lensR);
             },
             boxWidth() {
                 return this.sensor.x - this.lens.x + 0.3;
@@ -421,18 +417,38 @@
         watch: {
             'lens.n'(newN, oldN) {
                 if (this.calcLensR(newN, this.lens.f, this.lens.r) < 0) {
+                    console.log(`Failed to calculate lens R from n = ${newN}`);
                     this.lens.n = oldN;
                 }
             },
             'lens.r'(newR, oldR) {
                 if (this.calcLensR(this.lens.n, this.lens.f, newR) < 0) {
+                    console.log(`Failed to calculate lens R from r = ${newR}`);
                     this.lens.r = oldR;
                 }
             }
         },
         methods: {
+            calcLensN(f, d, r) {
+                // These formulas are made from lens-maker's formula
+                const R = r * r / d + d / 4;
+
+                const a = f * (2 * R - d);
+                const b = 2 * f * (d - R) - R * R;
+                const c = - d * f;
+
+                const cond = b * b - 4 * a * c;
+                if (cond < 0) {
+                    return NaN;
+                }
+
+                // TODO: What is negative answer?
+                const n1 = (-b + Math.sqrt(cond)) / (2 * a);
+                // const n2 = (-b - Math.sqrt(cond)) / (2 * a);
+                return n1;
+            },
             calcLensR(n, f, r) {
-                // This formula is made from maker's formula and d = 2(R-sqrt(R^2-r^2))
+                // This formula is made from lens-maker's formula and d = 2(R-sqrt(R^2-r^2))
                 const func = (R) => {
                     let res = 0;
                     res += n * n * Math.pow(R, 4);
@@ -463,17 +479,19 @@
                     const d = 2 * (R - Math.sqrt(R * R - r * r));
                     const desiredLensF = f;
                     const actualLensF = 1.0 / (2 * (n - 1) / R - (n - 1) * (n - 1) * d / (n * R * R));
-                    // console.log(desiredLensF, actualLensF);
 
                     const absError = Math.abs(desiredLensF - actualLensF);
                     const relError = absError / desiredLensF;
-                    if (relError < 0.0001) {
+                    if (relError < 1e-9) {
                         return R;
                     }
                 }
 
                 // Failed
                 return -1.0;
+            },
+            calcLensD(r, R) {
+                return 2 * (R - Math.sqrt(R * R - r * r));
             },
             getMousePosition(e) {
                 const rect = this.canvas.getBoundingClientRect()
@@ -543,7 +561,8 @@
 
                     const nLensF = this.lens.x - nx;
                     const nLensR = this.calcLensR(this.lens.n, nLensF, this.lens.r);
-                    if (this.lens.r * 1.2 < nLensR) {
+                    const nLensD = this.calcLensD(this.lens.r, nLensR)
+                    if (nLensD / 2 < nLensF) {
                         this.lens.f = nLensF;
                     }
                 };
@@ -562,7 +581,39 @@
                     const nLensSize = -ny;
                     const nLensR = this.calcLensR(this.lens.n, this.lens.f, nLensSize);
                     if (0 < nLensR) {
+                        const nLensD = this.calcLensD(nLensSize, nLensR);
+                        if (nLensD < nLensSize * minLensD) {
+                            return;
+                        }
+                        if (nLensD > nLensSize * maxLensD) {
+                            return;
+                        }
                         this.lens.r = nLensSize;
+                    }
+                };
+
+                this.moveHandler = handler;
+            },
+            lensThicknessMoveHandler(e) {
+                const [sx, sy] = this.getMousePosition(e);
+                const x = this.lens.x - this.lensD / 2;
+                const handler = (e) => {
+                    const [tx, ty] = this.getMousePosition(e);
+                    const nx = x + (tx - sx);
+                    let nLensD = 2 * (this.lens.x - nx);
+
+                    if (nLensD < this.lens.r * minLensD) {
+                        nLensD = this.lens.r * minLensD;
+                    }
+
+                    // TODO: This bound is workaround.
+                    if (nLensD >= this.lens.r * maxLensD) {
+                        nLensD = this.lens.r * maxLensD;
+                    }
+
+                    const nLensN = this.calcLensN(this.lens.f, nLensD, this.lens.r);
+                    if (!isNaN(nLensN) && nLensN > 0) {
+                        this.lens.n = nLensN;
                     }
                 };
 
