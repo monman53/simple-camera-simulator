@@ -56,27 +56,27 @@
     }
 
     .svg-axis {
-        stroke-width: 0.005;
+        stroke-width: 0.06;
         stroke: white;
     }
 
     .svg-light-source,
     .svg-sensor,
     .svg-line {
-        stroke-width: 0.03;
+        stroke-width: 0.3;
         stroke: white;
     }
 
     .svg-line-dot {
-        stroke-width: 0.02;
+        stroke-width: 0.3;
         stroke: white;
-        stroke-dasharray: 0.1;
+        stroke-dasharray: 1.2;
     }
 
     .svg-line-dot-thick {
-        stroke-width: 0.005;
+        stroke-width: 0.06;
         stroke: white;
-        stroke-dasharray: 0.1;
+        stroke-dasharray: 1.2;
     }
 
     .svg-focal-point {
@@ -89,7 +89,7 @@
     }
 
     .svg-hover:hover {
-        stroke-width: 0.03;
+        stroke-width: 0.4;
         stroke: white;
     }
 </style>
@@ -117,12 +117,12 @@
                 <!-- Angle -->
                 <g v-if="options.showAngle && options.showBody">
                     <!-- Inside camera -->
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x"
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size/2" :x2="lens.x"
                         :y2="-effectiveLensRadius" />
-                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size" :x2="lens.x"
+                    <line class="svg-line-dot" :x1="sensor.x" :y1="sensor.size/2" :x2="lens.x"
                         :y2="effectiveLensRadius" />
-                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size" :x2="lens.x" :y2="effectiveLensRadius" />
-                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size" :x2="lens.x" :y2="-effectiveLensRadius" /> -->
+                    <!-- <line class="svg-line-dot-thick" :x1="sensor.x" :y1="-sensor.size/2" :x2="lens.x" :y2="effectiveLensRadius" />
+                    <line class="svg-line-dot-thick" :x1="sensor.x" :y1="sensor.size/2" :x2="lens.x" :y2="-effectiveLensRadius" /> -->
                     <!-- Inner -->
                     <line class="svg-line-dot-thick" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.inner.x" :y2="focalInfo.inner.y" />
@@ -146,12 +146,12 @@
                         :x2="focalInfo.focalPos.x" :y2="focalInfo.focalPos.size" />
                 </g>
                 <!-- Focal point -->
-                <circle class="svg-focal-point" :cx="lens.x-lens.f" :cy="0" r="0.05" />
-                <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" r="0.05" />
-                <circle class="svg-hover" :cx="lens.x-lens.f" :cy="0" r="0.2" @mousedown="focalLengthMoveHandler" />
+                <circle class="svg-focal-point" :cx="lens.x-lens.f" :cy="0" :r="uiCircleR/3" />
+                <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" :r="uiCircleR/3" />
+                <circle class="svg-hover" :cx="lens.x-lens.f" :cy="0" r="2.4" @mousedown="focalLengthMoveHandler" />
                 <!-- Light sources position -->
                 <g v-for="(light, idx) in lights">
-                    <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
+                    <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" :r="uiCircleR"
                         :style="`fill:${light.color};`" @mousedown="lightMoveHandler($event, light)"
                         @dblclick="deleteLightSource($event, idx)" />
                 </g>
@@ -159,9 +159,10 @@
                 <g>
                     <rect class="svg-hover" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
                         @mousedown="lensMoveHandler" />
-                    <circle class="svg-hover" :cx="lens.x" :cy="-lens.r" r="0.2" @mousedown="lensSizeMoveHandler" />
+                    <circle class="svg-hover" :cx="lens.x" :cy="-lens.r" :r="uiCircleR"
+                        @mousedown="lensSizeMoveHandler" />
                     <!-- Thickness -->
-                    <circle class="svg-hover" :cx="lens.x-lensD/2" :cy="0" r="0.2"
+                    <circle class="svg-hover" :cx="lens.x-lensD/2" :cy="0" :r="uiCircleR"
                         @mousedown="lensThicknessMoveHandler" />
                     <!-- Aperture -->
                     <g v-if="options.showAperture">
@@ -171,25 +172,25 @@
                         <line class="svg-line" :x1="lens.x" :y1="-effectiveLensRadius"
                             :x2="lens.x-Math.max(lensD*2/3, 0.5)" :y2="-effectiveLensRadius" />
                         <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-effectiveLensRadius"
-                            r="0.2" @mousedown="apertureMoveHandler" />
+                            :r="uiCircleR" @mousedown="apertureMoveHandler" />
                     </g>
                 </g>
                 <!-- Sensor -->
                 <g v-if="options.showBody">
-                    <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size" :x2="sensor.x" :y2="sensor.size" />
-                    <circle class="svg-hover" :cx="sensor.x" :cy="-sensor.size" r="0.2"
+                    <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.size/2" :x2="sensor.x" :y2="sensor.size/2" />
+                    <circle class="svg-hover" :cx="sensor.x" :cy="-sensor.size/2" :r="uiCircleR"
                         @mousedown="sensorSizeMoveHandler" />
                 </g>
             </svg>
             <div id="info">
-                Focal length: {{humanReadable(lens.f)}}<br>
+                Focal length: {{humanReadable(lens.f)}} mm<br>
                 f-number: {{humanReadable(fNumber)}}<br></span>
-                Lens refractive index: {{humanReadable(lens.n)}}<br>
-                Lens radius: {{humanReadable(lens.r)}}<br>
-                Lens thickness: {{humanReadable(lensD)}}<br>
-                Lens curvature radius: {{humanReadable(lensR)}}<br>
-                Lens position: {{humanReadable(lens.x)}}<br>
                 <span v-if="options.showBody">Sensor size: {{humanReadable(sensor.size)}}<br></span>
+                Lens refractive index: {{humanReadable(lens.n)}}<br>
+                Lens radius: {{humanReadable(lens.r)}} mm<br>
+                Lens thickness: {{humanReadable(lensD)}} mm<br>
+                Lens curvature radius: {{humanReadable(lensR)}} mm<br>
+                Lens position: {{humanReadable(lens.x)}} mm<br>
             </div>
         </div>
         <div class="item-sensor">
@@ -378,6 +379,8 @@
     const maxLensD = 0.5 * 2;
     const minLensD = 0.05 * 2;
 
+    const lightAlpha = 0.5;
+
     createApp({
         data() {
             return {
@@ -393,26 +396,27 @@
                 },
                 scale: 50,
                 rayN: 512,
-                rayWidth: 0.4,
+                rayWidth: 1,
                 aperture: 0.8,
                 lens: {
-                    x: -6.0,
-                    r: 1.5,
-                    f: 4.36,
+                    x: -28,
+                    r: 12,
+                    f: 25,
                     n: 1.5,
                 },
-                lensMoveSensitivity: 1.0,
+                uiCircleR: 2.4,
+                lensMoveSensitivity: 8,
                 sensor: {
                     x: 0.0,
-                    size: 1,
+                    size: 12, // Height is 2*size
                 },
                 newLight: {
                     hue: 120
                 },
                 lights: [
-                    { x: -22, y: -1, color: "hsl(0, 100%, 50%, 0.5)", enabled: true },
-                    { x: -28, y: -0.5, color: "hsl(120, 100%, 50%, 0.5)", enabled: true },
-                    { x: -20, y: 1, color: "hsl(240, 100%, 50%, 0.5)", enabled: true },
+                    { x: -22 * 12, y: -1 * 12, color: `hsl(0, 100%, 50%, ${lightAlpha})`, enabled: true },
+                    { x: -28 * 12, y: -0.5 * 12, color: `hsl(120, 100%, 50%, ${lightAlpha})`, enabled: true },
+                    { x: -20 * 12, y: 1 * 12, color: `hsl(240, 100%, 50%, ${lightAlpha})`, enabled: true },
                 ],
                 options: {
                     showAperture: true,
@@ -450,10 +454,10 @@
                 return this.calcLensD(this.lens.r, this.lensR);
             },
             boxWidth() {
-                return this.sensor.x - this.lens.x + 0.3;
+                return this.sensor.x - this.lens.x + 2;
             },
             boxHeight() {
-                return Math.max(this.lens.r * 2, this.sensor.size * 2 + 0.8);
+                return Math.max(this.lens.r * 2, this.sensor.size + 0.8);
             },
             viewBoxStr() {
                 return `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`;
@@ -474,7 +478,7 @@
                 const a = f * b / (b - f);
 
                 const focalPosX = this.lens.x - a;
-                const focalPosSize = this.sensor.size * (a / b);
+                const focalPosSize = this.sensor.size / 2 * (a / b);
 
                 const [innerX, innerY] = this.extendSegment(this.lens.x, -this.effectiveLensRadius, focalPosX, -focalPosSize);
                 const [outerX, outerY] = this.extendSegment(this.lens.x, -this.effectiveLensRadius, focalPosX, focalPosSize);
@@ -541,7 +545,7 @@
                 };
 
                 // Solve func(R) = 0 by Newton' method
-                let R = 10 * n; // NOTICE: Very heuristic
+                let R = 100 * n; // NOTICE: Very heuristic
                 for (let i = 0; i < 100; i++) {
                     // console.log(R, func(R), funcc(R))
                     R = R - func(R) / funcc(R);
@@ -554,7 +558,7 @@
 
                     const absError = Math.abs(desiredLensF - actualLensF);
                     const relError = absError / desiredLensF;
-                    if (relError < 1e-9) {
+                    if (relError < 1e-8) {
                         return R;
                     }
                 }
@@ -620,15 +624,15 @@
                     // Doesn't go left than light sources
                     this.lights.forEach((light) => {
                         if (light.enabled) {
-                            const minX = light.x + 0.01;
+                            const minX = light.x + 1;
                             if (nx < minX) {
                                 nx = minX;
                             }
                         }
                     });
                     // Doesn't collision to lens
-                    if (nx > this.lens.x - 0.01) {
-                        nx = this.lens.x - 0.01;
+                    if (nx > this.lens.x - 1) {
+                        nx = this.lens.x - 1;
                     }
 
                     const nLensF = this.lens.x - nx;
@@ -653,8 +657,8 @@
                 const handler = (e) => {
                     const [tx, ty] = this.getMousePosition(e);
                     let ny = y + (ty - sy);
-                    if (ny > -0.01) {
-                        ny = -0.01;
+                    if (ny > -1) {
+                        ny = -1;
                     }
                     const nLensSize = -ny;
                     const nLensR = this.calcLensR(this.lens.n, this.lens.f, nLensSize);
@@ -699,13 +703,13 @@
             },
             sensorSizeMoveHandler(e) {
                 const [sx, sy] = this.getMousePosition(e);
-                const y = -this.sensor.size;
+                const y = -this.sensor.size / 2;
 
                 const handler = (e) => {
                     const [tx, ty] = this.getMousePosition(e);
                     const ny = y + (ty - sy);
-                    const maxY = -0.1;
-                    this.sensor.size = maxY < ny ? -maxY : -ny;
+                    const maxY = -1;
+                    this.sensor.size = maxY < ny ? -maxY * 2 : -ny * 2;
                 };
 
                 this.moveHandler = handler;
@@ -757,7 +761,7 @@
                 return v.toPrecision(3);
             },
             addLightSource(e, useMouse) {
-                let x = -20;
+                let x = (this.lens.x - this.lens.f + this.viewBox.x) / 2;
                 let y = 0;
                 if (useMouse) {
                     [x, y] = this.getMousePosition(e);
@@ -765,7 +769,7 @@
                 this.lights.push({
                     x: x,
                     y: y,
-                    color: `hsl(${this.newLight.hue}, 100%, 50%, 0.5)`,
+                    color: `hsl(${this.newLight.hue}, 100%, 50%, ${lightAlpha})`,
                     enabled: true,
                 });
             },
@@ -990,7 +994,7 @@
                             }
 
                             // Check intersection to the sensor
-                            const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size, this.sensor.size, this.maxR, false);
+                            const [hitSensor, vx, vy] = getIntersectionY(tx, ty, phi, this.sensor.x, -this.sensor.size / 2, this.sensor.size / 2, this.maxR, false);
 
                             // Draw lens to sensor ray
                             if (hitSensor) {
@@ -1062,8 +1066,8 @@
                 //================================
                 sensorCanvasCtx.reset();
                 sensorCanvasCtx.fillRect(0, 0, this.sensorCanvas.width, this.sensorCanvas.height); // background
-                const sensorCanvasScale = this.sensorCanvas.height / (this.sensor.size * 2);
-                sensorCanvasCtx.transform(8192, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
+                const sensorCanvasScale = this.sensorCanvas.height / (this.sensor.size);
+                sensorCanvasCtx.transform(this.scale * 128, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
                 sensorCanvasCtx.globalCompositeOperation = 'lighten';
 
                 sensorIntersections.forEach((sensorIntersectionsForLight, idx) => {
@@ -1071,7 +1075,7 @@
                     sensorCanvasCtx.fillStyle = color;
                     sensorIntersectionsForLight.forEach((y) => {
                         sensorCanvasCtx.beginPath();
-                        sensorCanvasCtx.arc(0, y, this.rayWidth / 2 / 50, 0, Math.PI * 2);
+                        sensorCanvasCtx.arc(0, y, this.rayWidth / 8, 0, Math.PI * 2);
                         sensorCanvasCtx.fill();
                     });
                 });
