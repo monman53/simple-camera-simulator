@@ -232,6 +232,12 @@
                 {{rayN}}
                 <br>
             </label>
+            <label>
+                Lens move sensitivity
+                <input type="range" min="1" max="32" step="1" v-model.number="lensMoveSensitivity">
+                {{lensMoveSensitivity}}
+                <br>
+            </label>
             <details>
                 <summary>Advanced</summary>
                 <label>
@@ -363,7 +369,7 @@
 
 <script type="module">
     // import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-    import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
+    import { createApp, toRaw } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.prod.js'
 
     // TODO:
     // Cannot calculate n around lensD == lens.r.
@@ -395,6 +401,7 @@
                     f: 4.36,
                     n: 1.5,
                 },
+                lensMoveSensitivity: 1.0,
                 sensor: {
                     x: 0.0,
                     size: 1,
@@ -587,7 +594,7 @@
                 const x = this.lens.x;
                 const handler = (e) => {
                     const [tx, ty] = this.getMousePosition(e);
-                    let nx = x + (tx - sx);
+                    let nx = x + (tx - sx) / this.lensMoveSensitivity;
                     this.lights.forEach((light) => {
                         if (light.enabled) {
                             const minX = light.x + 1.01 * this.lens.f;
