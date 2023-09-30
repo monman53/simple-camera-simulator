@@ -157,6 +157,11 @@
                 </g>
                 <!-- Lens -->
                 <g>
+                    <path class="svg-line"
+                        :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" />
+                    <path class="svg-line"
+                        :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" />
+                    <!-- Move -->
                     <rect class="svg-hover" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
                         @mousedown="lensMoveHandler" />
                     <circle class="svg-hover" :cx="lens.x" :cy="-lens.r" :r="uiCircleR"
@@ -1020,41 +1025,6 @@
                     }
                     sensorIntersections[idx] = sensorIntersectionsForLight;
                 });
-
-                //--------------------------------
-                // Camera components
-                //--------------------------------
-                ctx.lineWidth = 1 / this.scale;
-                ctx.strokeStyle = "white";
-                ctx.fillStyle = "white";
-
-                //--------------------------------
-                // Lens (TODO: Move to SVG)
-                //--------------------------------
-                {
-                    const r = this.lensR;
-                    const d = this.lensD;
-                    const theta = Math.acos((r - d / 2) / r);
-                    const y = 0;
-                    // Left
-                    {
-                        const x = this.lens.x + (r - d / 2);
-                        const startAngle = Math.PI - theta;
-                        const endAngle = Math.PI + theta;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, startAngle, endAngle);
-                        ctx.stroke();
-                    }
-                    // Right
-                    {
-                        const x = this.lens.x - (r - d / 2);
-                        const startAngle = - theta;
-                        const endAngle = theta;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, startAngle, endAngle);
-                        ctx.stroke();
-                    }
-                }
 
                 //--------------------------------
                 // Copy offscreen render result to main canvas
