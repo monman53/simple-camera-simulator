@@ -35,6 +35,7 @@
     #ui {
         position: absolute;
         z-index: 2;
+        user-select: none;
     }
 
     #info {
@@ -43,6 +44,7 @@
         padding: 0.5em;
         background-color: rgba(0, 0, 0, 0.5);
         color: white;
+        /* user-select: none; */
     }
 
     #canvas-sensor {
@@ -99,7 +101,7 @@
         <div class="item-main" id="stage">
             <canvas id="canvas"></canvas>
             <svg id="ui" :width="width" :height="height" :view-box.camel="viewBoxStr" xmlns="http://www.w3.org/2000/svg"
-                @mousemove="mouseMove" @mouseup="mouseUp">
+                @mousemove="mouseMove" @mouseup="mouseUp" @dblclick="addLightSource($event, true)">
                 <!-- Axes -->
                 <line class="svg-axis" :x1="viewBox.x" y1="0" :x2="viewBox.x+viewBox.w" y2="0" />
                 <line class="svg-axis" x1="0" :y1="-viewBox.y" x2="0" :y2="viewBox.y" />
@@ -148,9 +150,10 @@
                 <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" r="0.05" />
                 <circle class="svg-hover" :cx="lens.x-lens.f" :cy="0" r="0.2" @mousedown="focalLengthMoveHandler" />
                 <!-- Light sources position -->
-                <g v-for="light in lights">
+                <g v-for="(light, idx) in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" r="0.2"
-                        :fill="light.color" @mousedown="lightMoveHandler($event, light)" />
+                        :style="`fill:${light.color};`" @mousedown="lightMoveHandler($event, light)"
+                        @dblclick="deleteLightSource($event, idx)" />
                 </g>
                 <!-- Lens -->
                 <g>
@@ -162,6 +165,9 @@
                         @mousedown="lensThicknessMoveHandler" />
                     <!-- Aperture -->
                     <g v-if="options.showAperture">
+                        <line class="svg-line" :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-effectiveLensRadius" />
+                        <line class="svg-line" :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="effectiveLensRadius" />
+                        <!-- UI -->
                         <line class="svg-line" :x1="lens.x" :y1="-effectiveLensRadius"
                             :x2="lens.x-Math.max(lensD*2/3, 0.5)" :y2="-effectiveLensRadius" />
                         <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-effectiveLensRadius"
@@ -194,6 +200,15 @@
     <div>
         <fieldset>
             <legend>Options</legend>
+            <label>
+                <button @click="addLightSource(false)">Add light sources</button>
+                <span :style="`color: hsl(${newLight.hue}, 100%, 50%)`"> █ </span>
+                <input type="range" min="0" max="360" step="0.01" v-model.number="newLight.hue">
+                <button @click="newLight.hue=0">Red</button>
+                <button @click="newLight.hue=120">Green</button>
+                <button @click="newLight.hue=240">Blue</button>
+                <br>
+            </label>
             <!-- Checkboxes -->
             <label>
                 <input type="checkbox" v-model="options.showAperture">
@@ -227,11 +242,6 @@
                 <label>
                     <input type="checkbox" v-model="options.randomRays">
                     Random rays
-                    <br>
-                </label>
-                <label v-for="light in lights">
-                    <input type="checkbox" v-model="light.enabled">
-                    Show light {{light.color}}
                     <br>
                 </label>
                 <label>
@@ -378,6 +388,7 @@
                 scale: 50,
                 rayN: 512,
                 rayWidth: 0.4,
+                aperture: 0.8,
                 lens: {
                     x: -6.0,
                     r: 1.5,
@@ -388,11 +399,13 @@
                     x: 0.0,
                     size: 1,
                 },
-                aperture: 0.8,
+                newLight: {
+                    hue: 120
+                },
                 lights: [
-                    { x: -22, y: -1, color: "rgb(255, 0, 0)", enabled: true },
-                    { x: -28, y: -0.5, color: "rgb(0, 255, 0)", enabled: true },
-                    { x: -20, y: 1, color: "rgb(0, 0, 255)", enabled: true },
+                    { x: -22, y: -1, color: "hsl(0, 100%, 50%, 0.5)", enabled: true },
+                    { x: -28, y: -0.5, color: "hsl(120, 100%, 50%, 0.5)", enabled: true },
+                    { x: -20, y: 1, color: "hsl(240, 100%, 50%, 0.5)", enabled: true },
                 ],
                 options: {
                     showAperture: true,
@@ -439,7 +452,7 @@
                 return `${this.viewBox.x} ${this.viewBox.y} ${this.viewBox.w} ${this.viewBox.h}`;
             },
             maxR() {
-                let maxR2 = 0;
+                let maxR2 = this.viewBox.h * this.viewBox.h + this.viewBox.w * this.viewBox.w;
                 this.lights.forEach((light) => {
                     const dx = Math.max(Math.abs(this.viewBox.x - light.x), Math.abs(this.viewBox.x + this.viewBox.w - light.x));
                     const dy = Math.max(Math.abs(this.viewBox.y - light.y), Math.abs(this.viewBox.y + this.viewBox.h - light.y));
@@ -736,6 +749,23 @@
             humanReadable(v) {
                 return v.toPrecision(3);
             },
+            addLightSource(e, useMouse) {
+                let x = -20;
+                let y = 0;
+                if (useMouse) {
+                    [x, y] = this.getMousePosition(e);
+                }
+                this.lights.push({
+                    x: x,
+                    y: y,
+                    color: `hsl(${this.newLight.hue}, 100%, 50%, 0.5)`,
+                    enabled: true,
+                });
+            },
+            deleteLightSource(e, idx) {
+                this.lights.splice(idx, 1);
+                e.stopPropagation()
+            },
         },
         mounted() {
             //================================
@@ -1011,26 +1041,6 @@
                         const endAngle = theta;
                         ctx.beginPath();
                         ctx.arc(x, y, r, startAngle, endAngle);
-                        ctx.stroke();
-                    }
-                }
-
-                //--------------------------------
-                // Aperture (TODO: Move to SVG)
-                //--------------------------------
-                if (this.options.showAperture) {
-                    // upper
-                    {
-                        ctx.beginPath();
-                        ctx.moveTo(this.lens.x, -this.lens.r);
-                        ctx.lineTo(this.lens.x, -this.effectiveLensRadius);
-                        ctx.stroke();
-                    }
-                    // lower
-                    {
-                        ctx.beginPath();
-                        ctx.moveTo(this.lens.x, this.lens.r);
-                        ctx.lineTo(this.lens.x, this.effectiveLensRadius);
                         ctx.stroke();
                     }
                 }
