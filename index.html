@@ -42,7 +42,7 @@
         position: absolute;
         z-index: 3;
         padding: 0.5em;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.7);
         color: white;
         /* user-select: none; */
     }
@@ -1067,7 +1067,7 @@
                 sensorCanvasCtx.reset();
                 sensorCanvasCtx.fillRect(0, 0, this.sensorCanvas.width, this.sensorCanvas.height); // background
                 const sensorCanvasScale = this.sensorCanvas.height / (this.sensor.size);
-                sensorCanvasCtx.transform(this.scale * 128, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
+                sensorCanvasCtx.transform(this.scale * 256, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
                 sensorCanvasCtx.globalCompositeOperation = 'lighten';
 
                 sensorIntersections.forEach((sensorIntersectionsForLight, idx) => {
@@ -1075,7 +1075,7 @@
                     sensorCanvasCtx.fillStyle = color;
                     sensorIntersectionsForLight.forEach((y) => {
                         sensorCanvasCtx.beginPath();
-                        sensorCanvasCtx.arc(0, y, this.rayWidth / 8, 0, Math.PI * 2);
+                        sensorCanvasCtx.arc(0, y, this.rayWidth / 16, 0, Math.PI * 2);
                         sensorCanvasCtx.fill();
                     });
                 });
