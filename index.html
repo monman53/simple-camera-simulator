@@ -157,6 +157,11 @@
                 </g>
                 <!-- Lens -->
                 <g>
+                    <path class="svg-line"
+                        :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" />
+                    <path class="svg-line"
+                        :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" />
+                    <!-- Move -->
                     <rect class="svg-hover" :x="lens.x-lensD/2" :y="-lens.r" :width="lensD" :height="2*lens.r"
                         @mousedown="lensMoveHandler" />
                     <circle class="svg-hover" :cx="lens.x" :cy="-lens.r" :r="uiCircleR"
@@ -226,6 +231,11 @@
                 Show angle line
                 <br>
             </label>
+            <label>
+                <input type="checkbox" v-model="options.exactRefraction">
+                Simulate refraction on the surface of the lens.
+                <br>
+            </label>
             <!-- Range sliders -->
             <label>
                 Number of rays
@@ -253,7 +263,7 @@
                 </label>
                 <label>
                     Ray width
-                    <input type="range" min="0.01" max="2.0" step="0.01" v-model.number="rayWidth">
+                    <input type="range" min="0.001" max="0.5" step="0.001" v-model.number="rayWidth">
                     {{rayWidth}}
                     <br>
                 </label>
@@ -396,7 +406,7 @@
                 },
                 scale: 50,
                 rayN: 512,
-                rayWidth: 1,
+                rayWidth: 0.2,
                 aperture: 0.8,
                 lens: {
                     x: -28,
@@ -405,7 +415,7 @@
                     n: 1.5,
                 },
                 uiCircleR: 2.4,
-                lensMoveSensitivity: 8,
+                lensMoveSensitivity: 1,
                 sensor: {
                     x: 0.0,
                     size: 12, // Height is 2*size
@@ -422,6 +432,7 @@
                     showAperture: true,
                     showBody: true,
                     showAngle: true,
+                    exactRefraction: false,
                     renderOmissionWhileMoving: true,
                     randomRays: false,
                 },
@@ -792,7 +803,7 @@
                 } else {
                     return [false, px + maxR * cos, py + maxR * sin, maxR];
                 }
-            }
+            };
 
             const getIntersectionY = (px, py, theta, x, minY, maxY, maxR) => {
                 const sin = Math.sin(theta);
@@ -804,7 +815,40 @@
                 } else {
                     return [false, px + maxR * cos, py + maxR * sin, maxR];
                 }
-            }
+            };
+
+            const getIntersectionLens = (x, y, theta, cx, cy, r, R, maxR, select) => {
+                const a = 1;
+                const b = 2 * ((x - cx) * Math.cos(theta) + (y - cy) * Math.sin(theta));
+                const c = Math.pow(x - cx, 2) + Math.pow(y - cy, 2) - R * R;
+                const cond = b * b - 4 * a * c;
+                if (cond < 0) {
+                    return [false, x + maxR * Math.cos(theta), y + maxR * Math.sin(theta), maxR];
+                }
+                // NOTICE: Use smaller r
+                const d1 = (-b - Math.sqrt(cond)) / (2 * a);
+                const d2 = (-b + Math.sqrt(cond)) / (2 * a);
+                const d = select ? d1 : d2;
+                const tx = x + d * Math.cos(theta);
+                const ty = y + d * Math.sin(theta);
+                if (Math.abs(ty) > r) {
+                    return [false, x + maxR * Math.cos(theta), y + maxR * Math.sin(theta), maxR];
+                } else {
+                    return [true, tx, ty, d];
+                }
+            };
+
+            const dotAngle = (x1, y1, x2, y2) => {
+                const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
+                const norm2 = Math.sqrt(x2 * x2 + y2 * y2);
+                return Math.acos((x1 * x2 + y1 * y2) / (norm1 * norm2));
+            };
+
+            const crossAngle = (x1, y1, x2, y2) => {
+                const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
+                const norm2 = Math.sqrt(x2 * x2 + y2 * y2);
+                return Math.asin((x1 * y2 - x2 * y1) / (norm1 * norm2));
+            };
 
             const getIntersectionBox = (cx, cy, theta, maxR, isInner) => {
                 // Front
@@ -829,9 +873,9 @@
 
                 if (!isInner) {
                     if (r1 < r2) {
-                        return [hit1, x1, y1];
+                        return [hit1, x1, y1, r1];
                     } else {
-                        return [hit2, x2, y2];
+                        return [hit2, x2, y2, r2];
                     }
                 }
 
@@ -843,13 +887,20 @@
 
                 // Return closest intersection
                 if (r1 <= r2 && r1 <= r3) {
-                    return [hit1, x1, y1];
+                    return [hit1, x1, y1, r1];
                 } else if ((r2 <= r1 && r2 <= r3)) {
-                    return [hit2, x2, y2];
+                    return [hit2, x2, y2, r2];
                 } else {
-                    return [hit3, x3, y3];
+                    return [hit3, x3, y3, r3];
                 }
-            }
+            };
+
+            const drawSegment = (ctx, sx, sy, tx, ty) => {
+                ctx.beginPath();
+                ctx.moveTo(sx, sy);
+                ctx.lineTo(tx, ty);
+                ctx.stroke();
+            };
 
             //================================
             // Canvas setup
@@ -942,7 +993,7 @@
 
                     // Draw rays
                     let sensorIntersectionsForLight = [];
-                    ctx.lineWidth = this.rayWidth / this.scale;
+                    ctx.lineWidth = this.rayWidth;
                     const itr = this.options.renderOmissionWhileMoving && this.moveHandler ? Math.min(512, this.rayN) : this.rayN;
                     for (let i = 0; i < itr; i++) {
                         // Draw outer ray
@@ -950,46 +1001,99 @@
                             ? 2 * Math.PI * Math.random() - Math.PI
                             : 2 * Math.PI * i / itr - Math.PI; // -pi <= theta < pi
 
-                        // Pruning intersection check of left oriented rays for optimization
-                        if (theta < thetaMin || thetaMax < theta) {
-                            // Draw light source to infinity ray
-                            ctx.beginPath();
-                            ctx.moveTo(x, y);
-                            ctx.lineTo(x + this.maxR * Math.cos(theta), y + this.maxR * Math.sin(theta));
-                            ctx.stroke();
-                            continue;
+                        let innerStartX, innerStartY, innerPhi;
+
+                        if (-Math.PI / 2 < theta && theta < Math.PI / 2 && this.options.exactRefraction) {
+                            // Collision to the left side of the lens
+                            const cx = this.lens.x + this.lensR - this.lensD / 2;
+                            const cy = 0;
+                            const [hit, tx, ty, r] = getIntersectionLens(x, y, theta, cx, cy, this.lens.r, this.lensR, this.maxR, true);
+
+                            // Collision to the box
+                            const [hitBox, txBox, tyBox, rBox] = getIntersectionBox(x, y, theta, this.maxR, false);
+
+                            if (rBox < r) {
+                                // Draw light source to the box ray
+                                drawSegment(ctx, x, y, txBox, tyBox);
+                                continue;
+                            }
+                            // Draw light source to the lens surface ray
+                            drawSegment(ctx, x, y, tx, ty);
+
+                            // Draw inner-lens rays
+                            if (hit) {
+                                const phi1 = crossAngle(tx - cx, ty - cy, -(tx - x), -(ty - y));
+                                const phi2 = Math.asin(Math.sin(phi1) / this.lens.n);
+                                const phi3 = Math.atan2(ty - cy, tx - cx) + Math.PI + phi2;
+
+                                // Aperture collision
+                                {
+                                    const [hitLensCenter, dummyX, dummyY] = getIntersectionY(tx, ty, phi3, this.lens.x, -this.effectiveLensRadius, this.effectiveLensRadius, this.maxR);
+                                    const [hitBoxFront, wx, wy] = getIntersectionY(tx, ty, phi3, this.lens.x, -this.boxHeight / 2, this.boxHeight / 2, this.maxR);
+                                    if (!hitLensCenter) {
+                                        drawSegment(ctx, tx, ty, wx, wy);
+                                        continue;
+                                    }
+                                }
+
+                                // Right side of lens
+                                const cx2 = this.lens.x - (this.lensR - this.lensD / 2);
+                                const cy2 = 0;
+                                const [hit, wx, wy] = getIntersectionLens(tx, ty, phi3, cx2, cy2, this.lens.r, this.lensR, this.maxR, false);
+
+                                if (hit) {
+                                    drawSegment(ctx, tx, ty, wx, wy);
+                                    const phi1 = crossAngle(wx - cx2, wy - cy2, wx - tx, wy - ty);
+                                    const phi2 = Math.asin(Math.sin(phi1) * this.lens.n);
+                                    const phi3 = Math.atan2(wy - cy2, wx - cx2) + phi2;
+                                    innerStartX = wx;
+                                    innerStartY = wy;
+                                    innerPhi = phi3;
+
+                                    // Total reflection
+                                    if (isNaN(phi3)) {
+                                        continue;
+                                    }
+                                }
+                            }
+                        } else {
+                            // Pruning intersection check of left oriented rays for optimization
+                            if (theta < thetaMin || thetaMax < theta) {
+                                // Draw light source to infinity ray
+                                drawSegment(ctx, x, y, x + this.maxR * Math.cos(theta), y + this.maxR * Math.sin(theta));
+                                continue;
+                            }
+
+                            // Check intersection with lens
+                            const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lens.r, this.lens.r, this.maxR);
+
+                            if (!hitLens && this.options.showBody) {
+                                // Draw rays don't enter into the lens
+                                const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, this.maxR, false);
+                                drawSegment(ctx, x, y, tx, ty);
+                                continue;
+                            }
+
+                            // Draw light to lens ray
+                            drawSegment(ctx, x, y, tx, ty);
+
+                            // Calculate refraction direction (phi)
+                            innerPhi = Math.atan2(uy - ty, ux);
+
+                            innerStartX = tx;
+                            innerStartY = ty;
                         }
 
-                        // Check intersection with lens
-                        const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lens.r, this.lens.r, this.maxR);
-
-                        if (!hitLens && this.options.showBody) {
-                            // Draw rays don't enter into the lens
-                            const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, this.maxR, false);
-                            ctx.beginPath();
-                            ctx.moveTo(x, y);
-                            ctx.lineTo(tx, ty);
-                            ctx.stroke();
-                            continue;
-                        }
-
-                        // Draw light to lens ray
-                        ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(tx, ty);
-                        ctx.stroke();
+                        const tx = innerStartX;
+                        const ty = innerStartY;
+                        const phi = innerPhi;
 
                         // Draw inner ray
                         const notHitAperture = -this.effectiveLensRadius < ty && ty < this.effectiveLensRadius
                         if (notHitAperture) {
-                            // Calculate refraction direction (phi)
-                            const phi = Math.atan2(uy - ty, ux);
 
                             if (!this.options.showBody) {
-                                ctx.beginPath();
-                                ctx.moveTo(tx, ty);
-                                ctx.lineTo(tx + this.maxR * Math.cos(phi), ty + this.maxR * Math.sin(phi));
-                                ctx.stroke();
+                                drawSegment(ctx, tx, ty, tx + this.maxR * Math.cos(phi), ty + this.maxR * Math.sin(phi));
                                 continue;
                             }
 
@@ -998,17 +1102,11 @@
 
                             // Draw lens to sensor ray
                             if (hitSensor) {
-                                ctx.beginPath();
-                                ctx.moveTo(tx, ty);
-                                ctx.lineTo(vx, vy);
-                                ctx.stroke();
+                                drawSegment(ctx, tx, ty, vx, vy);
                             } else {
                                 const [hitBox, vx, vy] = getIntersectionBox(tx, ty, phi, this.maxR, true);
                                 console.assert(hitBox); // Inner rays should always hit to the box
-                                ctx.beginPath();
-                                ctx.moveTo(tx, ty);
-                                ctx.lineTo(vx, vy);
-                                ctx.stroke();
+                                drawSegment(ctx, tx, ty, vx, vy);
                             }
 
                             // Record intersection
@@ -1022,41 +1120,6 @@
                 });
 
                 //--------------------------------
-                // Camera components
-                //--------------------------------
-                ctx.lineWidth = 1 / this.scale;
-                ctx.strokeStyle = "white";
-                ctx.fillStyle = "white";
-
-                //--------------------------------
-                // Lens (TODO: Move to SVG)
-                //--------------------------------
-                {
-                    const r = this.lensR;
-                    const d = this.lensD;
-                    const theta = Math.acos((r - d / 2) / r);
-                    const y = 0;
-                    // Left
-                    {
-                        const x = this.lens.x + (r - d / 2);
-                        const startAngle = Math.PI - theta;
-                        const endAngle = Math.PI + theta;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, startAngle, endAngle);
-                        ctx.stroke();
-                    }
-                    // Right
-                    {
-                        const x = this.lens.x - (r - d / 2);
-                        const startAngle = - theta;
-                        const endAngle = theta;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, startAngle, endAngle);
-                        ctx.stroke();
-                    }
-                }
-
-                //--------------------------------
                 // Copy offscreen render result to main canvas
                 //--------------------------------
                 mainCtx.transferFromImageBitmap(offscreen.transferToImageBitmap());
@@ -1067,7 +1130,7 @@
                 sensorCanvasCtx.reset();
                 sensorCanvasCtx.fillRect(0, 0, this.sensorCanvas.width, this.sensorCanvas.height); // background
                 const sensorCanvasScale = this.sensorCanvas.height / (this.sensor.size);
-                sensorCanvasCtx.transform(this.scale * 256, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
+                sensorCanvasCtx.transform(1 << 12, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
                 sensorCanvasCtx.globalCompositeOperation = 'lighten';
 
                 sensorIntersections.forEach((sensorIntersectionsForLight, idx) => {
