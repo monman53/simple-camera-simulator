@@ -1012,7 +1012,7 @@
                             // Collision to the box
                             const [hitBox, txBox, tyBox, rBox] = getIntersectionBox(x, y, theta, this.maxR, false);
 
-                            if (rBox < r) {
+                            if (this.options.showBody && rBox < r) {
                                 // Draw light source to the box ray
                                 drawSegment(ctx, x, y, txBox, tyBox);
                                 continue;
