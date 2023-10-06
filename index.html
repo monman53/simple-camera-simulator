@@ -1152,7 +1152,7 @@
 
                         // Draw inner ray
                         const notHitAperture = -this.effectiveLensRadius < ty && ty < this.effectiveLensRadius
-                        if (notHitAperture || !this.options.useIdealLens) {
+                        if (notHitAperture || (this.options.showLens && !this.options.useIdealLens)) {
 
                             if (!this.options.showBody) {
                                 drawSegment(ctx, tx, ty, tx + this.maxR * Math.cos(phi), ty + this.maxR * Math.sin(phi));
