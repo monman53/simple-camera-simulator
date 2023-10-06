@@ -107,17 +107,18 @@
                     <line class="svg-axis" :x1="viewBox.x" y1="0" :x2="viewBox.x+viewBox.w" y2="0" />
                     <line class="svg-axis" x1="0" :y1="-viewBox.y" x2="0" :y2="viewBox.y" />
                 </g>
-                <!-- Box -->
+                <!-- Body -->
                 <g v-if="options.showBody">
-                    <line class="svg-line" :x1="lens.x" :y1="-boxHeight/2" :x2="lens.x+boxWidth" :y2="-boxHeight/2" />
-                    <line class="svg-line" :x1="lens.x" :y1="boxHeight/2" :x2="lens.x+boxWidth" :y2="boxHeight/2" />
-                    <line class="svg-line" :x1="lens.x+boxWidth" :y1="-boxHeight/2" :x2="lens.x+boxWidth"
-                        :y2="boxHeight/2" />
-                    <line class="svg-line" :x1="lens.x" :y1="-boxHeight/2" :x2="lens.x" :y2="-lens.r" />
-                    <line class="svg-line" :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="boxHeight/2" />
+                    <line class="svg-line" :x1="lens.x" :y1="-bodyHeight/2" :x2="lens.x+bodyWidth"
+                        :y2="-bodyHeight/2" />
+                    <line class="svg-line" :x1="lens.x" :y1="bodyHeight/2" :x2="lens.x+bodyWidth" :y2="bodyHeight/2" />
+                    <line class="svg-line" :x1="lens.x+bodyWidth" :y1="-bodyHeight/2" :x2="lens.x+bodyWidth"
+                        :y2="bodyHeight/2" />
+                    <line class="svg-line" :x1="lens.x" :y1="-bodyHeight/2" :x2="lens.x" :y2="-lens.r" />
+                    <line class="svg-line" :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="bodyHeight/2" />
                 </g>
                 <!-- Angle -->
-                <g v-if="options.showAngle && options.showBody">
+                <g v-if="options.showAngle && options.showBody && options.showLens">
                     <!-- Inside camera -->
                     <line class="svg-line-dot" :x1="sensor.x" :y1="-sensor.size/2" :x2="lens.x"
                         :y2="-effectiveLensRadius" />
@@ -147,10 +148,6 @@
                     <line class="svg-line-dot" :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size"
                         :x2="focalInfo.focalPos.x" :y2="focalInfo.focalPos.size" />
                 </g>
-                <!-- Focal point -->
-                <circle class="svg-focal-point" :cx="lens.x-lens.f" :cy="0" :r="uiCircleR/3" />
-                <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" :r="uiCircleR/3" />
-                <circle class="svg-hover" :cx="lens.x-lens.f" :cy="0" r="2.4" @mousedown="focalLengthMoveHandler" />
                 <!-- Light sources position -->
                 <g v-for="(light, idx) in lights">
                     <circle class="svg-light-source" v-if="light.enabled" :cx="light.x" :cy="light.y" :r="uiCircleR"
@@ -158,7 +155,7 @@
                         @dblclick="deleteLightSource($event, idx)" />
                 </g>
                 <!-- Lens -->
-                <g>
+                <g v-if="options.showLens">
                     <path class="svg-line"
                         :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" />
                     <path class="svg-line"
@@ -171,16 +168,20 @@
                     <!-- Thickness -->
                     <circle class="svg-hover" :cx="lens.x-lensD/2" :cy="0" :r="uiCircleR"
                         @mousedown="lensThicknessMoveHandler" />
-                    <!-- Aperture -->
-                    <g v-if="options.showAperture">
-                        <line class="svg-line" :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-effectiveLensRadius" />
-                        <line class="svg-line" :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="effectiveLensRadius" />
-                        <!-- UI -->
-                        <line class="svg-line" :x1="lens.x" :y1="-effectiveLensRadius"
-                            :x2="lens.x-Math.max(lensD*2/3, 0.5)" :y2="-effectiveLensRadius" />
-                        <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-effectiveLensRadius"
-                            :r="uiCircleR" @mousedown="apertureMoveHandler" />
-                    </g>
+                    <!-- Focal point -->
+                    <circle class="svg-focal-point" :cx="lens.x-lens.f" :cy="0" :r="uiCircleR/3" />
+                    <circle class="svg-focal-point" :cx="lens.x+lens.f" :cy="0" :r="uiCircleR/3" />
+                    <circle class="svg-hover" :cx="lens.x-lens.f" :cy="0" r="2.4" @mousedown="focalLengthMoveHandler" />
+                </g>
+                <!-- Aperture -->
+                <g v-if="options.showAperture">
+                    <line class="svg-line" :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-effectiveLensRadius" />
+                    <line class="svg-line" :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="effectiveLensRadius" />
+                    <!-- UI -->
+                    <line class="svg-line" :x1="lens.x" :y1="-effectiveLensRadius" :x2="lens.x-Math.max(lensD*2/3, 0.5)"
+                        :y2="-effectiveLensRadius" v-if="options.showApertureGuide" />
+                    <circle class="svg-hover" :cx="lens.x-Math.max(lensD*2/3, 0.5)" :cy="-effectiveLensRadius"
+                        :r="uiCircleR" @mousedown="apertureMoveHandler" />
                 </g>
                 <!-- Sensor -->
                 <g v-if="options.showBody">
@@ -266,8 +267,18 @@
                     <br>
                 </label>
                 <label>
+                    <input type="checkbox" v-model="options.showLens">
+                    Show lens
+                    <br>
+                </label>
+                <label>
                     <input type="checkbox" v-model="options.showAperture">
                     Show aperture
+                    <br>
+                </label>
+                <label>
+                    <input type="checkbox" v-model="options.showApertureGuide">
+                    Show aperture guide
                     <br>
                 </label>
                 <label>
@@ -438,6 +449,8 @@
                 options: {
                     showAxes: true,
                     showAperture: true,
+                    showApertureGuide: true,
+                    showLens: true,
                     showBody: true,
                     showAngle: true,
                     useIdealLens: true,
@@ -472,10 +485,10 @@
             lensD() {
                 return this.calcLensD(this.lens.r, this.lensR);
             },
-            boxWidth() {
+            bodyWidth() {
                 return this.sensor.x - this.lens.x + 2;
             },
-            boxHeight() {
+            bodyHeight() {
                 return Math.max(this.lens.r * 2, this.sensor.size + 0.8);
             },
             viewBoxStr() {
@@ -858,10 +871,10 @@
                 return Math.asin((x1 * y2 - x2 * y1) / (norm1 * norm2));
             };
 
-            const getIntersectionBox = (cx, cy, theta, maxR, isInner) => {
+            const getIntersectionBody = (cx, cy, theta, maxR, isInner) => {
                 // Front
                 if (!isInner) {
-                    const [hit0, x0, y0, r0] = getIntersectionY(cx, cy, theta, this.lens.x, -this.boxHeight / 2, this.boxHeight / 2, maxR);
+                    const [hit0, x0, y0, r0] = getIntersectionY(cx, cy, theta, this.lens.x, -this.bodyHeight / 2, this.bodyHeight / 2, maxR);
                     if (hit0 && r0 > 0) {
                         // NOTICE: Assume all rays passes left to right
                         // r0 > 0 condition is for inner rays.
@@ -869,12 +882,12 @@
                     }
                 }
                 // Top
-                const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, -this.boxHeight / 2, maxR);
+                const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.bodyWidth, -this.bodyHeight / 2, maxR);
                 if (hit1 && isInner) {
                     return [hit1, x1, y1, r1];
                 }
                 // Bottom
-                const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.boxWidth, this.boxHeight / 2, maxR);
+                const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.bodyWidth, this.bodyHeight / 2, maxR);
                 if (hit2 && isInner) {
                     return [hit2, x2, y2, r2];
                 }
@@ -888,7 +901,7 @@
                 }
 
                 // Behind the sensor
-                const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.boxWidth, -this.boxHeight / 2, this.boxHeight / 2, maxR);
+                const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.bodyWidth, -this.bodyHeight / 2, this.bodyHeight / 2, maxR);
                 if (hit3) {
                     return [hit3, x3, y3, r3];
                 }
@@ -984,12 +997,12 @@
 
                     // Find a range that needs intersection calculation
                     const thetaMin = Math.min(
-                        Math.atan2(-this.boxHeight / 2 - y, this.lens.x - x),// top left
-                        Math.atan2(-this.boxHeight / 2 - y, this.lens.x + (this.options.showBody ? this.boxWidth : 0) - x) // top right
+                        Math.atan2(-this.bodyHeight / 2 - y, this.lens.x - x),// top left
+                        Math.atan2(-this.bodyHeight / 2 - y, this.lens.x + (this.options.showBody ? this.bodyWidth : 0) - x) // top right
                     );
                     const thetaMax = Math.max(
-                        Math.atan2(this.boxHeight / 2 - y, this.lens.x - x), // bottom left
-                        Math.atan2(this.boxHeight / 2 - y, this.lens.x + (this.options.showBody ? this.boxWidth : 0) - x) // bottom right
+                        Math.atan2(this.bodyHeight / 2 - y, this.lens.x - x), // bottom left
+                        Math.atan2(this.bodyHeight / 2 - y, this.lens.x + (this.options.showBody ? this.bodyWidth : 0) - x) // bottom right
                     );
 
 
@@ -1011,18 +1024,50 @@
 
                         let innerStartX, innerStartY, innerPhi;
 
-                        if (-Math.PI / 2 < theta && theta < Math.PI / 2 && !this.options.useIdealLens) {
+                        if (!this.options.showLens) {
+                            //--------------------------------
+                            // Pinhole lens
+                            //--------------------------------
+                            // Pruning intersection check of left oriented rays for optimization
+                            if (theta < thetaMin || thetaMax < theta) {
+                                // Draw light source to infinity ray
+                                drawSegment(ctx, x, y, x + this.maxR * Math.cos(theta), y + this.maxR * Math.sin(theta));
+                                continue;
+                            }
+
+                            // Check intersection with lens
+                            const [hitLens, tx, ty] = getIntersectionY(x, y, theta, this.lens.x, -this.lens.r, this.lens.r, this.maxR);
+
+                            if (!hitLens && this.options.showBody) {
+                                // Draw rays don't enter into the lens
+                                const [hitBody, tx, ty] = getIntersectionBody(x, y, theta, this.maxR, false);
+                                drawSegment(ctx, x, y, tx, ty);
+                                continue;
+                            }
+
+                            // Draw light to lens ray
+                            drawSegment(ctx, x, y, tx, ty);
+
+                            // Just through the pinhole
+                            innerPhi = theta;
+
+                            innerStartX = tx;
+                            innerStartY = ty;
+                        } else if (-Math.PI / 2 < theta && theta < Math.PI / 2 && !this.options.useIdealLens) {
+                            //--------------------------------
+                            // Actual lens
+                            //--------------------------------
                             // Collision to the left side of the lens
                             const cx = this.lens.x + this.lensR - this.lensD / 2;
                             const cy = 0;
                             const [hit, tx, ty, r] = getIntersectionLens(x, y, theta, cx, cy, this.lens.r, this.lensR, this.maxR, true);
 
-                            // Collision to the box
-                            const [hitBox, txBox, tyBox, rBox] = getIntersectionBox(x, y, theta, this.maxR, false);
+                            // Collision to the body
+                            const [hitBody, txBody, tyBody, rBody] = getIntersectionBody(x, y, theta, this.maxR, false);
 
-                            if (this.options.showBody && rBox < r) {
-                                // Draw light source to the box ray
-                                drawSegment(ctx, x, y, txBox, tyBox);
+                            if (this.options.showBody && rBody < r) {
+                                // Draw light source to the body ray
+                                drawSegment(ctx, x, y, txBody, tyBody);
                                 continue;
                             }
                             // Draw light source to the lens surface ray
@@ -1037,7 +1082,7 @@
                                 // Aperture collision
                                 {
                                     const [hitLensCenter, dummyX, dummyY] = getIntersectionY(tx, ty, phi3, this.lens.x, -this.effectiveLensRadius, this.effectiveLensRadius, this.maxR);
-                                    const [hitBoxFront, wx, wy] = getIntersectionY(tx, ty, phi3, this.lens.x, -this.boxHeight / 2, this.boxHeight / 2, this.maxR);
+                                    const [hitBodyFront, wx, wy] = getIntersectionY(tx, ty, phi3, this.lens.x, -this.bodyHeight / 2, this.bodyHeight / 2, this.maxR);
                                     if (!hitLensCenter) {
                                         drawSegment(ctx, tx, ty, wx, wy);
                                         continue;
@@ -1065,6 +1110,9 @@
                                 }
                             }
                         } else {
+                            //--------------------------------
+                            // Ideal lens
+                            //--------------------------------
                             // Pruning intersection check of left oriented rays for optimization
                             if (theta < thetaMin || thetaMax < theta) {
                                 // Draw light source to infinity ray
@@ -1077,7 +1125,7 @@
 
                             if (!hitLens && this.options.showBody) {
                                 // Draw rays don't enter into the lens
-                                const [hitBox, tx, ty] = getIntersectionBox(x, y, theta, this.maxR, false);
+                                const [hitBody, tx, ty] = getIntersectionBody(x, y, theta, this.maxR, false);
                                 drawSegment(ctx, x, y, tx, ty);
                                 continue;
                             }
@@ -1112,8 +1160,8 @@
                             if (hitSensor) {
                                 drawSegment(ctx, tx, ty, vx, vy);
                             } else {
-                                const [hitBox, vx, vy] = getIntersectionBox(tx, ty, phi, this.maxR, true);
-                                console.assert(hitBox); // Inner rays should always hit to the box
+                                const [hitBody, vx, vy] = getIntersectionBody(tx, ty, phi, this.maxR, true);
+                                console.assert(hitBody); // Inner rays should always hit to the box
                                 drawSegment(ctx, tx, ty, vx, vy);
                             }
 
