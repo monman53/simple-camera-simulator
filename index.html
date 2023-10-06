@@ -1090,7 +1090,7 @@
 
                         // Draw inner ray
                         const notHitAperture = -this.effectiveLensRadius < ty && ty < this.effectiveLensRadius
-                        if (notHitAperture) {
+                        if (notHitAperture || !this.options.useIdealLens) {
 
                             if (!this.options.showBody) {
                                 drawSegment(ctx, tx, ty, tx + this.maxR * Math.cos(phi), ty + this.maxR * Math.sin(phi));
@@ -1130,7 +1130,7 @@
                 sensorCanvasCtx.reset();
                 sensorCanvasCtx.fillRect(0, 0, this.sensorCanvas.width, this.sensorCanvas.height); // background
                 const sensorCanvasScale = this.sensorCanvas.height / (this.sensor.size);
-                sensorCanvasCtx.transform(1 << 12, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
+                sensorCanvasCtx.transform((1 << 6) / this.rayWidth, 0, 0, sensorCanvasScale, this.sensorCanvas.width / 2, this.sensorCanvas.height / 2);
                 sensorCanvasCtx.globalCompositeOperation = 'lighten';
 
                 sensorIntersections.forEach((sensorIntersectionsForLight, idx) => {
@@ -1138,7 +1138,7 @@
                     sensorCanvasCtx.fillStyle = color;
                     sensorIntersectionsForLight.forEach((y) => {
                         sensorCanvasCtx.beginPath();
-                        sensorCanvasCtx.arc(0, y, this.rayWidth / 16, 0, Math.PI * 2);
+                        sensorCanvasCtx.arc(0, y, this.rayWidth / 2, 0, Math.PI * 2);
                         sensorCanvasCtx.fill();
                     });
                 });
