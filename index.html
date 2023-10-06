@@ -190,7 +190,7 @@
                         @mousedown="sensorSizeMoveHandler" />
                 </g>
             </svg>
-            <div id="info">
+            <div id="info" v-if="options.showInfo">
                 Focal length: {{humanReadable(lens.f)}} mm<br>
                 f-number: {{humanReadable(fNumber)}}<br></span>
                 <span v-if="options.showBody">Sensor size: {{humanReadable(sensor.size)}}<br></span>
@@ -284,6 +284,11 @@
                 <label>
                     <input type="checkbox" v-model="options.renderOmissionWhileMoving">
                     Rendering omission while components moving (for better usability)
+                    <br>
+                </label>
+                <label>
+                    <input type="checkbox" v-model="options.showInfo">
+                    Show info
                     <br>
                 </label>
                 <label>
@@ -453,6 +458,7 @@
                     showLens: true,
                     showBody: true,
                     showAngle: true,
+                    showInfo: true,
                     useIdealLens: true,
                     renderOmissionWhileMoving: false,
                     randomRays: false,
