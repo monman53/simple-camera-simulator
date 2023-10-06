@@ -232,8 +232,8 @@
                 <br>
             </label>
             <label>
-                <input type="checkbox" v-model="options.exactRefraction">
-                Simulate refraction on the surface of the lens.
+                <input type="checkbox" v-model="options.useIdealLens">
+                Use ideal lens
                 <br>
             </label>
             <!-- Range sliders -->
@@ -409,16 +409,16 @@
                 rayWidth: 0.2,
                 aperture: 0.8,
                 lens: {
-                    x: -28,
-                    r: 12,
-                    f: 25,
+                    x: -64,
+                    r: 26,
+                    f: 50,
                     n: 1.5,
                 },
                 uiCircleR: 2.4,
                 lensMoveSensitivity: 1,
                 sensor: {
                     x: 0.0,
-                    size: 12, // Height is 2*size
+                    size: 24, // Height is 2*size
                 },
                 newLight: {
                     hue: 120
@@ -432,7 +432,7 @@
                     showAperture: true,
                     showBody: true,
                     showAngle: true,
-                    exactRefraction: false,
+                    useIdealLens: true,
                     renderOmissionWhileMoving: true,
                     randomRays: false,
                 },
@@ -921,7 +921,7 @@
             const mainCtx = this.canvas.getContext("bitmaprenderer");
 
             // Define scale factor
-            this.scale = this.canvas.height / (this.sensor.size * 16);
+            this.scale = this.canvas.height / (this.sensor.size * 8);
 
             //================================
             // Render callback function
@@ -1003,7 +1003,7 @@
 
                         let innerStartX, innerStartY, innerPhi;
 
-                        if (-Math.PI / 2 < theta && theta < Math.PI / 2 && this.options.exactRefraction) {
+                        if (-Math.PI / 2 < theta && theta < Math.PI / 2 && !this.options.useIdealLens) {
                             // Collision to the left side of the lens
                             const cx = this.lens.x + this.lensR - this.lensD / 2;
                             const cy = 0;
