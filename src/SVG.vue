@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state } from './state'
+import { state } from './grobals'
 import * as h from './handlers'
 
 // Reference to the svg element

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, ref } from 'vue'
 
-import { state } from './state'
+import { state, infR } from './grobals'
 
+// Reference to the canvas
 const canvas = ref()
 
 // Prepare offscreen canvas
@@ -14,12 +15,6 @@ if (!ctx) {
   throw new Error()
 }
 
-const infR = computed(() => {
-  const w = state.value.width / 2 / state.value.scale;
-  const h = state.value.height / 2 / state.value.scale;
-  return (Math.sqrt(w * w + h * h) + Math.sqrt(state.value.cx * state.value.cx + state.value.cy * state.value.cy)) * 3;
-})
-
 const drawSegment = (sx: number, sy: number, tx: number, ty: number) => {
   ctx.beginPath();
   ctx.moveTo(sx, sy);
@@ -28,23 +23,21 @@ const drawSegment = (sx: number, sy: number, tx: number, ty: number) => {
 };
 
 const draw = () => {
-  if (!mainCtx) {
-    return
-  }
+  const params = state.value;
 
   ctx.reset()
-  ctx.transform(state.value.scale, 0, 0, state.value.scale, state.value.width * 0.5 - state.value.cx * state.value.scale, state.value.height * 0.5 - state.value.cy * state.value.scale);
-  // ctx.fillRect(state.value.viewBox.x, state.value.viewBox.y, state.value.viewBox.w, state.value.viewBox.h); // background
+  ctx.transform(params.scale, 0, 0, params.scale, params.width * 0.5 - params.cx * params.scale, params.height * 0.5 - params.cy * params.scale);
+  // ctx.fillRect(params.viewBox.x, params.viewBox.y, params.viewBox.w, params.viewBox.h); // background
   ctx.globalCompositeOperation = 'lighten';
 
   //================================
   // Light path drawing like ray-tracing
   //================================
-  for (const light of state.value.lights) {
+  for (const light of params.lights) {
     ctx.strokeStyle = light.color
-    ctx.lineWidth = state.value.style.rayWidth
+    ctx.lineWidth = params.style.rayWidth
     // Draw 2^nRaysLog rays from light center
-    const nRays = (1 << state.value.nRaysLog);
+    const nRays = (1 << params.nRaysLog);
     for (let i = 0; i < nRays; i++) {
       // Initial position and direction
       let sx = light.x
@@ -81,14 +74,14 @@ onMounted(() => {
   window.requestAnimationFrame(draw)
 })
 
-// TODO: Optimize here
+// TODO: Optimize here ('deep' is enabled)
 watch(state, () => {
   canvas.value.width = state.value.width
   canvas.value.height = state.value.height
   offscreenCanvas.width = state.value.width
   offscreenCanvas.height = state.value.height
   window.requestAnimationFrame(draw)
-}, {deep: true})
+}, { deep: true })
 
 </script>
 
