@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, ref } from 'vue'
 
-const props = defineProps(['params'])
-const params = props.params
+import { state } from './state'
 
 const canvas = ref()
 
 // Prepare offscreen canvas
-const offscreenCanvas = new OffscreenCanvas(params.width, params.height);
+const offscreenCanvas = new OffscreenCanvas(state.value.width, state.value.height);
 const ctx = offscreenCanvas.getContext("2d", { alpha: false });
 let mainCtx: any = null;
 
@@ -16,9 +15,9 @@ if (!ctx) {
 }
 
 const infR = computed(() => {
-  const w = params.width / 2 / params.scale;
-  const h = params.height / 2 / params.scale;
-  return (Math.sqrt(w * w + h * h) + Math.sqrt(params.cx * params.cx + params.cy * params.cy)) * 3;
+  const w = state.value.width / 2 / state.value.scale;
+  const h = state.value.height / 2 / state.value.scale;
+  return (Math.sqrt(w * w + h * h) + Math.sqrt(state.value.cx * state.value.cx + state.value.cy * state.value.cy)) * 3;
 })
 
 const drawSegment = (sx: number, sy: number, tx: number, ty: number) => {
@@ -34,31 +33,38 @@ const draw = () => {
   }
 
   ctx.reset()
-  ctx.transform(params.scale, 0, 0, params.scale, params.width * 0.5 - params.cx * params.scale, params.height * 0.5 - params.cy * params.scale);
-  // ctx.fillRect(params.viewBox.x, params.viewBox.y, params.viewBox.w, params.viewBox.h); // background
+  ctx.transform(state.value.scale, 0, 0, state.value.scale, state.value.width * 0.5 - state.value.cx * state.value.scale, state.value.height * 0.5 - state.value.cy * state.value.scale);
+  // ctx.fillRect(state.value.viewBox.x, state.value.viewBox.y, state.value.viewBox.w, state.value.viewBox.h); // background
   ctx.globalCompositeOperation = 'lighten';
 
   //================================
-  // Ray-tracing like light path drawing
+  // Light path drawing like ray-tracing
   //================================
-  for (const light of params.lights) {
+  for (const light of state.value.lights) {
     ctx.strokeStyle = light.color
-    ctx.lineWidth = params.style.rayWidth
+    ctx.lineWidth = state.value.style.rayWidth
     // Draw 2^nRaysLog rays from light center
-    const nRays = (1 << params.nRaysLog);
+    const nRays = (1 << state.value.nRaysLog);
     for (let i = 0; i < nRays; i++) {
-      const sx = light.x
-      const sy = light.y
-      const tx = sx + infR.value * Math.cos(2 * Math.PI * i / nRays)
-      const ty = sy + infR.value * Math.sin(2 * Math.PI * i / nRays)
+      // Initial position and direction
+      let sx = light.x
+      let sy = light.y
+      let theta = 2 * Math.PI * i / nRays
+
+      // default destination
+      let tx = sx + infR.value * Math.cos(theta)
+      let ty = sy + infR.value * Math.sin(theta)
+
+      //--------------------------------
+      // Collision to lens
+      //--------------------------------
+      {
+
+      }
+
+      // to infinity
       drawSegment(sx, sy, tx, ty)
     }
-    // // debug
-    // ctx.beginPath();
-    // ctx.arc(light.x, light.y, params.style.rLight, 0, 2 * Math.PI, false)
-    // ctx.fillStyle = light.color
-    // ctx.fill()
-    // ctx.stroke()
   }
 
   //--------------------------------
@@ -75,21 +81,21 @@ onMounted(() => {
   window.requestAnimationFrame(draw)
 })
 
-watch([() => params.width, () => params.height], () => {
-  canvas.value.width = params.width
-  canvas.value.height = params.height
-  offscreenCanvas.width = params.width
-  offscreenCanvas.height = params.height
+watch([() => state.value.width, () => state.value.height], () => {
+  canvas.value.width = state.value.width
+  canvas.value.height = state.value.height
+  offscreenCanvas.width = state.value.width
+  offscreenCanvas.height = state.value.height
 })
 
-watch([params], () => {
+watch([state], () => {
   window.requestAnimationFrame(draw)
 })
 
 </script>
 
 <template>
-  <canvas ref="canvas" :width="params.width" :height="params.height"></canvas>
+  <canvas ref="canvas" :width="state.value.width" :height="state.value.height"></canvas>
 </template>
 
 <style scoped></style>

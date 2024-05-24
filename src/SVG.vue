@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-const props = defineProps(['params'])
-const params = props.params;
+import { state } from './state'
 
 const svg = ref();
 
 // Computed
 const svgViewBox = computed(() => {
-  const x = params.cx - params.width * 0.5 / params.scale
-  const y = params.cy - params.height * 0.5 / params.scale
-  const w = params.width / params.scale
-  const h = params.height / params.scale
+  const x = state.value.cx - state.value.width * 0.5 / state.value.scale
+  const y = state.value.cy - state.value.height * 0.5 / state.value.scale
+  const w = state.value.width / state.value.scale
+  const h = state.value.height / state.value.scale
   return `${x} ${y} ${w} ${h}`
 })
 
@@ -24,8 +23,8 @@ const getPositionOnSvg = (clientX: number, clientY: number) => {
 }
 const getPositionOnSvgApp = (clientX: number, clientY: number) => {
   const [mx, my] = getPositionOnSvg(clientX, clientY);
-  const x = (mx - params.width / 2) / params.scale + params.cx;
-  const y = (my - params.height / 2) / params.scale + params.cy;
+  const x = (mx - state.value.width / 2) / state.value.scale + state.value.cx;
+  const y = (my - state.value.height / 2) / state.value.scale + state.value.cy;
   return [x, y]
 }
 
@@ -51,7 +50,7 @@ const svgMoveStartHandler = (e: any) => {
   //   scale0 = svg.scale;
   // }
   const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
-  const [cx0, cy0] = [params.cx, params.cy];
+  const [cx0, cy0] = [state.value.cx, state.value.cy];
   const handler = (e_: any) => {
     e_.preventDefault();
     let clientX = e_.clientX
@@ -61,10 +60,10 @@ const svgMoveStartHandler = (e: any) => {
       clientY = e_.touches[0].clientY
     }
     const [x, y] = getPositionOnSvg(clientX, clientY);
-    const dx = (x - x0) / params.scale
-    const dy = (y - y0) / params.scale
-    params.cx = cx0 - dx
-    params.cy = cy0 - dy
+    const dx = (x - x0) / state.value.scale
+    const dy = (y - y0) / state.value.scale
+    state.value.cx = cx0 - dx
+    state.value.cy = cy0 - dy
   }
   moveHandler = handler;
 }
@@ -115,9 +114,9 @@ const svgScaleHandler = (e: any) => {
   const [x, y] = getPositionOnSvgApp(e.clientX, e.clientY);
   const scaleFactor = 1.2;
   const r = e.deltaY > 0 ? 1.2 : 1 / 1.2;
-  params.cx = params.cx + (x - params.cx) * (1 - r);
-  params.cy = params.cy + (y - params.cy) * (1 - r);
-  params.scale /= r;
+  state.value.cx = state.value.cx + (x - state.value.cx) * (1 - r);
+  state.value.cy = state.value.cy + (y - state.value.cy) * (1 - r);
+  state.value.scale /= r;
 }
 const lightMoveStartHandler = (e: any, light: any) => {
   e.preventDefault();
@@ -128,8 +127,8 @@ const lightMoveStartHandler = (e: any, light: any) => {
     e_.preventDefault();
     e_.stopPropagation();
     const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
-    const dx = (x - x0) / params.scale
-    const dy = (y - y0) / params.scale
+    const dx = (x - x0) / state.value.scale
+    const dy = (y - y0) / state.value.scale
     light.x = cx0 + dx
     light.y = cy0 + dy
   }
@@ -139,12 +138,14 @@ const lightMoveStartHandler = (e: any, light: any) => {
 </script>
 
 <template>
-  <svg id="main-svg" ref="svg" :view-box.camel="svgViewBox" :width="params.width" :height="params.height"
+  <svg id="main-svg" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
     @mousedown="svgMoveStartHandler" @mousemove="svgMoveHandler" @mouseup="svgMoveEndHandler"
     @mouseleave="svgMoveEndHandler" @wheel="svgScaleHandler">
-    <g v-for="light of params.lights">
-      <circle :cx="light.x" :cy="light.y" :r="params.style.rLight" :fill="light.color" stroke="white" stroke-width="1"
-        @mousedown="lightMoveStartHandler($event, light)">
+
+    <!-- Lights -->
+    <g v-for="light of state.lights">
+      <circle :cx="light.x" :cy="light.y" :r="state.style.rLight" :fill="light.color" stroke="white"
+        :stroke-width="state.style.lightStrokeWidth" @mousedown="lightMoveStartHandler($event, light)">
       </circle>
     </g>
   </svg>
@@ -155,8 +156,4 @@ svg {
   overflow: hidden;
   display: block;
 }
-
-/* circle {
-  mix-blend-mode: overlay;
-} */
 </style>
