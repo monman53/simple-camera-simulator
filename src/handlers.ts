@@ -1,5 +1,9 @@
 import type { Ref } from "vue";
-import { state } from "./state";
+import { state } from "./grobals";
+
+//================================
+// SVG handlers
+//================================
 
 // Reference to the svg element
 // let svg: Ref<any>;

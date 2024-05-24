@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed} from 'vue'
 
-import { state, createInitialParams } from './state'
+import { state, createInitialParams, infR } from './grobals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -46,7 +46,8 @@ const nRays = computed(() => {
             width: {{ state.width }}<br>
             height: {{ state.height }}<br>
             (cx, cy): ({{ humanReadable(state.cx) }}, {{ humanReadable(state.cy) }})<br>
-            scale: {{ humanReadable(state.scale) }}
+            scale: {{ humanReadable(state.scale) }}<br>
+            infR: {{ humanReadable(infR) }}
         </fieldset>
     </div>
 </template>

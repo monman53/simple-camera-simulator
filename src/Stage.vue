@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { state } from './state'
+import { state } from './grobals'
 
 import SVG from './SVG.vue'
 import Canvas from './Canvas.vue'
