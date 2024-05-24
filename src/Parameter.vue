@@ -24,13 +24,13 @@ const nRays = computed(() => {
     <div>
         <fieldset>
             <legend># of rays</legend>
-            <input type="range" min="0" max="16" v-model="state.value.nRaysLog">
+            <input type="range" min="0" max="16" v-model="state.nRaysLog">
             {{ nRays }}
         </fieldset>
         <fieldset>
             <legend>Ray width</legend>
-            <input type="range" min="0.001" :max="state.value.style.rLight" step="0.001" v-model="state.value.style.rayWidth">
-            {{ humanReadable(state.value.style.rayWidth) }}
+            <input type="range" min="0.001" :max="state.style.rLight" step="0.001" v-model="state.style.rayWidth">
+            {{ humanReadable(state.style.rayWidth) }}
         </fieldset>
         <fieldset>
             <legend>Reset</legend>
@@ -39,10 +39,10 @@ const nRays = computed(() => {
         </fieldset>
         <fieldset>
             <legend>state</legend>
-            width: {{ state.value.width }}<br>
-            height: {{ state.value.height }}<br>
-            (cx, cy): ({{ humanReadable(state.value.cx) }}, {{ humanReadable(state.value.cy) }})<br>
-            scale: {{ humanReadable(state.value.scale) }}
+            width: {{ state.width }}<br>
+            height: {{ state.height }}<br>
+            (cx, cy): ({{ humanReadable(state.cx) }}, {{ humanReadable(state.cy) }})<br>
+            scale: {{ humanReadable(state.scale) }}
         </fieldset>
     </div>
 </template>

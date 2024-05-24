@@ -6,7 +6,7 @@ import Canvas from './Canvas.vue'
 import Parameter from './Parameter.vue'
 
 window.addEventListener('resize', () => {
-  state.value.value.width = window.innerWidth
+  state.value.width = window.innerWidth
   state.value.height = window.innerHeight
 })
 </script>

@@ -81,21 +81,19 @@ onMounted(() => {
   window.requestAnimationFrame(draw)
 })
 
-watch([() => state.value.width, () => state.value.height], () => {
+// TODO: Optimize here
+watch(state, () => {
   canvas.value.width = state.value.width
   canvas.value.height = state.value.height
   offscreenCanvas.width = state.value.width
   offscreenCanvas.height = state.value.height
-})
-
-watch([state], () => {
   window.requestAnimationFrame(draw)
-})
+}, {deep: true})
 
 </script>
 
 <template>
-  <canvas ref="canvas" :width="state.value.width" :height="state.value.height"></canvas>
+  <canvas ref="canvas" :width="state.width" :height="state.height"></canvas>
 </template>
 
 <style scoped></style>
