@@ -11,24 +11,55 @@ const offscreenCanvas = new OffscreenCanvas(params.width, params.height);
 const ctx = offscreenCanvas.getContext("2d", { alpha: false });
 let mainCtx: any = null;
 
+if (!ctx) {
+  throw new Error()
+}
+
+const infR = computed(() => {
+  const w = params.width / 2 / params.scale;
+  const h = params.height / 2 / params.scale;
+  return (Math.sqrt(w * w + h * h) + Math.sqrt(params.cx * params.cx + params.cy * params.cy)) * 3;
+})
+
+const drawSegment = (sx: number, sy: number, tx: number, ty: number) => {
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(tx, ty);
+  ctx.stroke();
+};
+
 const draw = () => {
-  if (!ctx || !mainCtx) {
-    return;
+  if (!mainCtx) {
+    return
   }
 
-  ctx.reset();
+  ctx.reset()
   ctx.transform(params.scale, 0, 0, params.scale, params.width * 0.5 - params.cx * params.scale, params.height * 0.5 - params.cy * params.scale);
   // ctx.fillRect(params.viewBox.x, params.viewBox.y, params.viewBox.w, params.viewBox.h); // background
-  // ctx.fillRect(0, 0, 100, 100); // black background
   ctx.globalCompositeOperation = 'lighten';
 
-  ctx.beginPath();
-  ctx.arc(0, 0, 14, 0, 2 * Math.PI, false);
-  ctx.fillStyle = 'red';
-  ctx.fill();
-  // ctx.lineWidth = 5;
-  // ctx.strokeStyle = '#003300';
-  ctx.stroke();
+  //================================
+  // Ray-tracing like light path drawing
+  //================================
+  for (const light of params.lights) {
+    ctx.strokeStyle = light.color
+    ctx.lineWidth = params.style.rayWidth
+    // Draw 2^nRaysLog rays from light center
+    const nRays = (1 << params.nRaysLog);
+    for (let i = 0; i < nRays; i++) {
+      const sx = light.x
+      const sy = light.y
+      const tx = sx + infR.value * Math.cos(2 * Math.PI * i / nRays)
+      const ty = sy + infR.value * Math.sin(2 * Math.PI * i / nRays)
+      drawSegment(sx, sy, tx, ty)
+    }
+    // // debug
+    // ctx.beginPath();
+    // ctx.arc(light.x, light.y, params.style.rLight, 0, 2 * Math.PI, false)
+    // ctx.fillStyle = light.color
+    // ctx.fill()
+    // ctx.stroke()
+  }
 
   //--------------------------------
   // Copy offscreen render result to main canvas
