@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import {computed} from 'vue'
 
-import { state } from './state'
+import { state, createInitialParams } from './state'
 import { humanReadable } from './utils';
-import { createParams } from './constants';
 
 const resetView = () => {
-    const state0 = createParams()
+    const state0 = createInitialParams()
     state.value.cx = state0.cx
     state.value.cy = state0.cy
     state.value.scale = state0.scale
 }
 const resetStyle = () => {
-    const state0 = createParams()
+    const state0 = createInitialParams()
     state.value.style = state0.style
+}
+const resetAll = () => {
+    const state0 = createInitialParams()
+    state.value = state0
 }
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
@@ -36,6 +39,7 @@ const nRays = computed(() => {
             <legend>Reset</legend>
             <button @click="resetView">View</button>
             <button @click="resetStyle">Style</button>
+            <button @click="resetAll">All</button>
         </fieldset>
         <fieldset>
             <legend>state</legend>
