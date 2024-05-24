@@ -5,15 +5,9 @@ import SVG from './SVG.vue'
 import Canvas from './Canvas.vue'
 import Parameter from './Parameter.vue'
 
-import { constants } from './constants'
+import {createParams} from './constants'
 
-const params = ref({
-  width: window.innerWidth,
-  height: window.innerHeight,
-  cx: 0,
-  cy: 0,
-  scale: constants.scale0,
-})
+const params = ref(createParams())
 
 window.addEventListener('resize', () => {
   params.value.width = window.innerWidth

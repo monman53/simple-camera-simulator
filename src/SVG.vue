@@ -68,7 +68,7 @@ const svgMoveStartHandler = (e: any) => {
   }
   moveHandler = handler;
 }
-const svgMoveHandler = (e) => {
+const svgMoveHandler = (e: any) => {
   e.preventDefault();
 
   // if (e.targetTouches.length === 1) {
@@ -119,6 +119,22 @@ const svgScaleHandler = (e: any) => {
   params.cy = params.cy + (y - params.cy) * (1 - r);
   params.scale /= r;
 }
+const lightMoveStartHandler = (e: any, light: any) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+  const [cx0, cy0] = [light.x, light.y];
+  const handler = (e_: any) => {
+    e_.preventDefault();
+    e_.stopPropagation();
+    const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+    const dx = (x - x0) / params.scale
+    const dy = (y - y0) / params.scale
+    light.x = cx0 + dx
+    light.y = cy0 + dy
+  }
+  moveHandler = handler;
+}
 
 </script>
 
@@ -126,7 +142,11 @@ const svgScaleHandler = (e: any) => {
   <svg id="main-svg" ref="svg" :view-box.camel="svgViewBox" :width="params.width" :height="params.height"
     @mousedown="svgMoveStartHandler" @mousemove="svgMoveHandler" @mouseup="svgMoveEndHandler"
     @mouseleave="svgMoveEndHandler" @wheel="svgScaleHandler">
-    <circle cx="0" cy="0" r="10" fill="white"></circle>
+    <g v-for="light of params.lights">
+      <circle :cx="light.x" :cy="light.y" :r="params.style.rLight" :fill="light.color" stroke="white" stroke-width="1"
+        @mousedown="lightMoveStartHandler($event, light)">
+      </circle>
+    </g>
   </svg>
 </template>
 
@@ -135,4 +155,8 @@ svg {
   overflow: hidden;
   display: block;
 }
+
+/* circle {
+  mix-blend-mode: overlay;
+} */
 </style>
