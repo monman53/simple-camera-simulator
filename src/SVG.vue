@@ -118,9 +118,10 @@ const svgScaleHandler = (e: any) => {
   state.value.cy = state.value.cy + (y - state.value.cy) * (1 - r);
   state.value.scale /= r;
 }
-const lightMoveStartHandler = (e: any, light: any) => {
+const lightMoveStartHandler = (e: any, idx:number) => {
   e.preventDefault();
   e.stopPropagation();
+  const light = state.value.lights[idx];
   const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
   const [cx0, cy0] = [light.x, light.y];
   const handler = (e_: any) => {
@@ -143,9 +144,9 @@ const lightMoveStartHandler = (e: any, light: any) => {
     @mouseleave="svgMoveEndHandler" @wheel="svgScaleHandler">
 
     <!-- Lights -->
-    <g v-for="light of state.lights">
+    <g v-for="(light, idx) of state.lights">
       <circle :cx="light.x" :cy="light.y" :r="state.style.rLight" :fill="light.color" stroke="white"
-        :stroke-width="state.style.lightStrokeWidth" @mousedown="lightMoveStartHandler($event, light)">
+        :stroke-width="state.style.lightStrokeWidth" @mousedown="lightMoveStartHandler($event, idx)">
       </circle>
     </g>
   </svg>

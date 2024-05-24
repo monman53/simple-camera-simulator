@@ -7,7 +7,7 @@ export const createParams = () => {
         scale: 0.5,
         lights: [
             { x: -1000, y: 0, color: `hsl(120, 100%, 50%)` }, // green
-            // { x: -20, y: 0, color: `hsl(0, 100%, 50%)` }, // green
+            { x: -20, y: 0, color: `hsl(0, 100%, 50%)` }, // green
             // { x: 20, y: 0, color: `hsl(240, 100%, 50%)` }, // green
             // { x: 20, y: 40, color: `hsl(120, 100%, 50%)` }, // green
         ],
