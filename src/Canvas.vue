@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, ref } from 'vue'
 
-import { state, lights, lens, options, style, infR } from './grobals'
+import { state, lights, lens, sensor, options, style, infR } from './grobals'
 import { getIntersectionY } from './math'
 
 // Reference to the canvas
@@ -68,6 +68,19 @@ const draw = () => {
           sx = tx;
           sy = ty;
           theta = Math.atan2(imageY - ty, imageX);
+        }
+      }
+
+      //--------------------------------
+      // Collision to sensor
+      //--------------------------------
+      if (options.value.sensor) {
+        const p = getIntersectionY(sx, sy, theta, sensor.value.x, -sensor.value.r, sensor.value.r);
+        if (p) {
+          tx = p.x
+          ty = p.y
+          drawSegment(sx, sy, tx, ty)
+          continue;
         }
       }
 

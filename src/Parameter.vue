@@ -40,6 +40,11 @@ const nRays = computed(() => {
                 Lens
                 <br>
             </label>
+            <label>
+                <input type="checkbox" v-model="options.sensor">
+                Sensor
+                <br>
+            </label>
             <button @click="options = options0()">Reset</button>
         </fieldset>
         <fieldset>
