@@ -8,9 +8,9 @@ export const createInitialParams = () => {
     return {
         width: window.innerWidth,
         height: window.innerHeight,
-        cx: 0,
+        cx: -200,
         cy: 0,
-        scale: 0.5,
+        scale: 2,
         nRaysLog: 9,
     }
 }
@@ -22,7 +22,7 @@ export const state = ref(createInitialParams())
 
 export const lights0 = () => {
     return [
-        { x: -1000, y: 0, color: `hsl(120, 100%, 50%)` }, // green
+        { x: -400, y: 0, color: `hsl(120, 100%, 50%)` }, // green
         // { x: -100, y: -100, color: `hsl(0, 100%, 50%)` }, // green
         // { x: -200, y: 100, color: `hsl(240, 100%, 50%)` }, // green
         // { x: 20, y: 40, color: `hsl(120, 100%, 50%)` }, // green
@@ -37,8 +37,8 @@ export const lights = ref(lights0())
 export const lens0 = () => {
     return {
         x: 0,
-        r: 100,
-        d: 10,
+        r: 40,
+        d: 3,
         f: 50,
     }
 }
@@ -61,13 +61,13 @@ export const options = ref(options0())
 
 export const style0 = () => {
     return {
-        defaultStrokeWidth: 2,
+        defaultStrokeWidth: 1,
 
         // Lights
-        rLight: 16,
+        rLight: 4,
 
         // Rays
-        rayWidth: 2,
+        rayWidth: 0.5,
     }
 }
 export const style = ref(style0())
