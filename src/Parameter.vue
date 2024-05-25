@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed} from 'vue'
 
-import { state, style, style0, createInitialParams, infR } from './grobals'
+import { state, options, options0, style, style0, createInitialParams, infR } from './grobals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -32,6 +32,15 @@ const nRays = computed(() => {
             <legend>Ray width</legend>
             <input type="range" min="0.001" :max="style.rLight / 2" step="0.001" v-model="style.rayWidth">
             {{ humanReadable(style.rayWidth) }}
+        </fieldset>
+        <fieldset>
+            <legend>Options</legend>
+            <label>
+                <input type="checkbox" v-model="options.lens">
+                Lens
+                <br>
+            </label>
+            <button @click="options = options0()">Reset</button>
         </fieldset>
         <fieldset>
             <legend>Reset</legend>
