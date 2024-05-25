@@ -64,7 +64,7 @@ export const options0 = () => {
     return {
         lens: true,
         sensor: true,
-        body: true,
+        body:false,
     }
 }
 export const options = ref(options0())
@@ -75,7 +75,6 @@ export const options = ref(options0())
 
 export const style0 = () => {
     return {
-        defaultStrokeWidth: 1,
         // Lights
         rLight: 4,
         // Rays

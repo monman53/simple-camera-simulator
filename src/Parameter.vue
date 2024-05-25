@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, options, options0, style, style0, createInitialParams, infR, maxLightX } from './grobals'
+import { state, lens, options, options0, style, style0, createInitialParams, infR, maxLightX } from './grobals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -30,7 +30,7 @@ const nRays = computed(() => {
         </fieldset>
         <fieldset>
             <legend>Ray width</legend>
-            <input type="range" min="0.001" :max="style.rLight / 2" step="0.001" v-model="style.rayWidth">
+            <input type="range" min="0.001" max="1" step="0.001" v-model="style.rayWidth">
             {{ humanReadable(style.rayWidth) }}
         </fieldset>
         <fieldset>
@@ -65,7 +65,10 @@ const nRays = computed(() => {
             (cx, cy): ({{ humanReadable(state.cx) }}, {{ humanReadable(state.cy) }})<br>
             scale: {{ humanReadable(state.scale) }}<br>
             infR: {{ humanReadable(infR) }}<br>
-            maxLightX: {{ humanReadable(maxLightX) }}
+            maxLightX: {{ humanReadable(maxLightX) }}<br>
+            lens.x: {{ humanReadable(lens.x)}}<br>
+            lens.f: {{ humanReadable(lens.f)}}<br>
+            lens.d: {{ humanReadable(lens.d)}}<br>
         </fieldset>
     </div>
 </template>
