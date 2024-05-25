@@ -8,9 +8,9 @@ export const createInitialParams = () => {
     return {
         width: window.innerWidth,
         height: window.innerHeight,
-        cx: -200,
+        cx: -100,
         cy: 0,
-        scale: 2,
+        scale: 4,
         nRaysLog: 10,
         newLightColor: 120,
     }
@@ -23,7 +23,7 @@ export const state = ref(createInitialParams())
 
 export const lights0 = () => {
     return [
-        { x: -400, y: 0, color: `hsl(120, 100%, 50%)` }, // green
+        { x: -200, y: 0, color: `hsl(120, 100%, 50%)` }, // green
         // { x: -100, y: -100, color: `hsl(0, 100%, 50%)` }, // green
         // { x: -200, y: 100, color: `hsl(240, 100%, 50%)` }, // green
         // { x: 20, y: 40, color: `hsl(120, 100%, 50%)` }, // green
@@ -38,8 +38,8 @@ export const lights = ref(lights0())
 export const lens0 = () => {
     return {
         x: 0,
-        r: 40,
-        d: 8,
+        r: 20,
+        d: 6,
         f: 50,
     }
 }
@@ -51,8 +51,8 @@ export const lens = ref(lens0())
 
 export const sensor0 = () => {
     return {
-        x: 100,
-        r: 40,
+        x: 80,
+        r: 20,
     }
 }
 export const sensor = ref(sensor0())
@@ -78,7 +78,7 @@ export const options = ref(options0())
 export const style0 = () => {
     return {
         // Lights
-        rLight: 4,
+        rLight: 2,
         // Rays
         rayWidth: 0.2,
     }

@@ -82,6 +82,7 @@ const nRays = computed(() => {
             maxLightX: {{ humanReadable(maxLightX) }}<br>
             lens.x: {{ humanReadable(lens.x)}}<br>
             lens.f: {{ humanReadable(lens.f)}}<br>
+            lens.r: {{ humanReadable(lens.r)}}<br>
             lens.d: {{ humanReadable(lens.d)}}<br>
         </fieldset>
     </div>
