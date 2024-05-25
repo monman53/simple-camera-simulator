@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, lens, maxLightX } from "./grobals";
+import { state, lights, lens, sensor, maxLightX } from "./grobals";
 
 //================================
 // SVG handlers
@@ -128,8 +128,8 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
         const dx = (x - x0) / state.value.scale
         const dy = (y - y0) / state.value.scale
-        if (cx0 + dx > lens.value.x) {
-            light.x = lens.value.x
+        if (cx0 + dx > lens.value.x - lens.value.d / 2) {
+            light.x = lens.value.x - lens.value.d / 2
         } else {
             light.x = cx0 + dx
         }
@@ -149,8 +149,28 @@ export const lensMoveStartHandler = (e: any) => {
         const dx = (x - x0) / state.value.scale
         if (cx0 + dx < maxLightX.value) {
             lens.value.x = maxLightX.value
+        } else if (sensor.value.x < cx0 + dx) {
+            lens.value.x = sensor.value.x
         } else {
             lens.value.x = cx0 + dx
+        }
+    }
+    moveHandler = handler;
+}
+export const focalPointMoveStartHandler = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+    const f0 = lens.value.f;
+    const handler = (e_: any) => {
+        e_.preventDefault();
+        e_.stopPropagation();
+        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+        const dx = (x - x0) / state.value.scale
+        if (f0 - dx < lens.value.d / 2) {
+            lens.value.f = lens.value.d / 2
+        } else {
+            lens.value.f = f0 - dx
         }
     }
     moveHandler = handler;

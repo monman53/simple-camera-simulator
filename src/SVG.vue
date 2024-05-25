@@ -34,44 +34,41 @@ const R = computed(() => {
     @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler">
 
     <!-- Lights -->
-    <g v-for="(light, idx) of lights">
-      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="light.color" stroke="white"
-        :stroke-width="style.defaultStrokeWidth" @mousedown="h.lightMoveStartHandler($event, idx)">
+    <g v-for="(light, idx) of lights" class="hover-parent">
+      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="light.color"
+        @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
       </circle>
     </g>
 
     <!-- Lens -->
     <g v-if="options.lens">
-      <g>
+      <g class="hover-parent">
         <!-- left half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" stroke="white"
-          :stroke-width="style.defaultStrokeWidth" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
         <!-- right half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" stroke="white"
-          :stroke-width="style.defaultStrokeWidth" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
         <!-- dummy for ui -->
         <rect class='ui' :x="lens.x - lens.d / 2" :y="-lens.r" :width="lens.d" :height="2 * lens.r"
           @mousedown="h.lensMoveStartHandler" />
       </g>
       <!-- Focal points -->
-      <g>
+      <g class="hover-parent">
         <circle :cx="lens.x - lens.f" cy="0" r="1" fill="white"></circle>
         <circle :cx="lens.x + lens.f" cy="0" r="1" fill="white"></circle>
+        <!-- UI -->
+        <circle :cx="lens.x - lens.f" cy="0" r="4" @mousedown="h.focalPointMoveStartHandler" class="hidden-hover-child"></circle>
       </g>
     </g>
 
     <!-- Body -->
     <g v-if="options.body">
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="infR" stroke="white"
-        :stroke-width="style.defaultStrokeWidth" />
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-infR" stroke="white"
-        :stroke-width="style.defaultStrokeWidth" />
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="infR" class="hover-child" />
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-infR" class="hover-child" />
     </g>
 
     <!-- Sensor -->
     <g v-if="options.sensor">
-      <line class="svg-sensor" :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" stroke="white"
-        :stroke-width="style.defaultStrokeWidth" />
+      <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="line"/>
     </g>
   </svg>
 </template>
@@ -84,5 +81,25 @@ svg {
 
 .ui {
   fill: transparent;
+}
+
+.hidden-hover-child {
+  fill: transparent;
+}
+
+.hover-child {
+  stroke: white;
+  stroke-width: 0.5;
+}
+
+.hover-parent:hover .hover-child,
+.hover-parent:hover .hidden-hover-child {
+  stroke: white;
+  stroke-width: 1;
+}
+
+.line {
+  stroke: white;
+  stroke-width: 1;
 }
 </style>
