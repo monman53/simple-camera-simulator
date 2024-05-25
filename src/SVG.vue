@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, options, style, infR } from './grobals'
+import { state, lights, lens, sensor, options, style, infR } from './globals'
 import * as h from './handlers'
 
 // Reference to the svg element
@@ -72,7 +72,7 @@ const R = computed(() => {
 
     <!-- Lights -->
     <g v-for="(light, idx) of lights" class="hover-parent">
-      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="light.color" @dblclick="h.deleteLight($event, idx)"
+      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="`hsl(${light.color}, 100%, 50%)`" @dblclick="h.deleteLight($event, idx)"
         @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
       </circle>
     </g>

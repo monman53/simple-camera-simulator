@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, lens, sensor, maxLightX } from "./grobals";
+import { state, lights, lens, sensor, maxLightX } from "./globals";
 
 //================================
 // SVG handlers
@@ -218,7 +218,7 @@ export const addLight = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
     const [x, y] = getPositionOnSvgApp(e.clientX, e.clientY);
-    lights.value.push({x: x, y: y, color: `hsl(${state.value.newLightColor}, 100%, 50%)`})
+    lights.value.push({x: x, y: y, color: state.value.newLightColor})
 }
 export const deleteLight = (e: any, idx: number) => {
     e.preventDefault();

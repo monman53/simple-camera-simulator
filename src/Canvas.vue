@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, ref } from 'vue'
 
-import { state, lights, lens, sensor, options, style, infR } from './grobals'
+import { state, lights, lens, sensor, sensorData, options, style, infR } from './globals'
 import { getIntersectionY } from './math'
 
 // Reference to the canvas
@@ -31,11 +31,13 @@ const draw = () => {
   // ctx.fillRect(params.viewBox.x, params.viewBox.y, params.viewBox.w, params.viewBox.h); // background
   ctx.globalCompositeOperation = 'lighten';
 
+  const sensorDataTmp = []
+
   //================================
   // Light path drawing like ray-tracing
   //================================
   for (const light of lights.value) {
-    ctx.strokeStyle = light.color
+    ctx.strokeStyle = `hsl(${light.color}, 100%, 50%)`
     ctx.lineWidth = style.value.rayWidth
 
     // Find image position of the light source
@@ -112,6 +114,7 @@ const draw = () => {
           tx = p.x
           ty = p.y
           drawSegment(sx, sy, tx, ty)
+          sensorDataTmp.push({y: p.y, color: light.color})
           continue;
         }
       }
@@ -122,6 +125,8 @@ const draw = () => {
       drawSegment(sx, sy, tx, ty)
     }
   }
+
+  sensorData.value = sensorDataTmp
 
   //--------------------------------
   // Copy offscreen render result to main canvas
