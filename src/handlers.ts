@@ -137,6 +137,27 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     }
     moveHandler = handler;
 }
+export const cameraMoveStartHandler = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+    const lensX0 = lens.value.x;
+    const sensorX0 = sensor.value.x;
+    const handler = (e_: any) => {
+        e_.preventDefault();
+        e_.stopPropagation();
+        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+        const dx = (x - x0) / state.value.scale
+        if (lensX0 + dx < maxLightX.value) {
+            lens.value.x = maxLightX.value
+            sensor.value.x = maxLightX.value + (sensorX0 - lensX0)
+        } else {
+            lens.value.x = lensX0 + dx
+            sensor.value.x = sensorX0 + dx
+        }
+    }
+    moveHandler = handler;
+}
 export const lensMoveStartHandler = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
