@@ -37,6 +37,13 @@ const draw = () => {
   for (const light of lights.value) {
     ctx.strokeStyle = light.color
     ctx.lineWidth = style.value.rayWidth
+
+    // Find image position of the light source
+    const s1 = lens.value.x - light.x;
+    const s2 = lens.value.f * s1 / (s1 - lens.value.f);
+    const imageX = s2;
+    const imageY = -light.y * (s2 / s1)
+
     // Draw 2^nRaysLog rays from light center
     const nRays = (1 << params.nRaysLog);
     for (let i = 0; i < nRays; i++) {
@@ -44,10 +51,8 @@ const draw = () => {
       let sx = light.x
       let sy = light.y
       let theta = 2 * Math.PI * i / nRays
-
-      // default destination
-      let tx = sx + infR.value * Math.cos(theta)
-      let ty = sy + infR.value * Math.sin(theta)
+      let tx: number;
+      let ty: number;
 
       //--------------------------------
       // Collision to lens
@@ -57,10 +62,18 @@ const draw = () => {
         if (p) {
           tx = p.x
           ty = p.y
+          drawSegment(sx, sy, tx, ty)
+
+          // Refracted ray
+          sx = tx;
+          sy = ty;
+          theta = Math.atan2(imageY - ty, imageX);
         }
       }
 
       // to infinity
+      tx = sx + infR.value * Math.cos(theta)
+      ty = sy + infR.value * Math.sin(theta)
       drawSegment(sx, sy, tx, ty)
     }
   }

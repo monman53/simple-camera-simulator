@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed} from 'vue'
+import { computed } from 'vue'
 
 import { state, options, options0, style, style0, createInitialParams, infR } from './grobals'
 import { humanReadable } from './utils';
@@ -61,9 +61,9 @@ const nRays = computed(() => {
 
 <style scoped>
 .base {
-  padding: 0.5em;
-  color: white;
-  background-color: #0008;
-  backdrop-filter: blur(4px);
+    padding: 0.5em;
+    color: white;
+    background-color: #0008;
+    backdrop-filter: blur(4px);
 }
 </style>

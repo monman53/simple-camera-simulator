@@ -48,6 +48,11 @@ const R = computed(() => {
       <!-- right half -->
       <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" stroke="white"
         :stroke-width="style.defaultStrokeWidth" />
+      <!-- Focal points -->
+      <g>
+        <circle :cx="lens.x-lens.f" cy="0" r="1" fill="white"></circle>
+        <circle :cx="lens.x+lens.f" cy="0" r="1" fill="white"></circle>
+      </g>
     </g>
   </svg>
 </template>
