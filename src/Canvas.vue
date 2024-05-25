@@ -69,10 +69,36 @@ const draw = () => {
           sy = ty;
           theta = Math.atan2(imageY - ty, imageX);
           if (imageX === Infinity) {
-            theta = Math.atan2(-light.y, -(light.x-lens.value.x));
+            theta = Math.atan2(-light.y, -(light.x - lens.value.x));
           }
-          if (lens.value.x - lens.value.f < light.x ) {
+          if (lens.value.x - lens.value.f < light.x) {
             theta += Math.PI;
+          }
+        }
+      }
+
+      //--------------------------------
+      // Collision to body
+      //--------------------------------
+      if (options.value.body) {
+        // Upper
+        {
+          const p = getIntersectionY(sx, sy, theta, lens.value.x, lens.value.r, infR.value);
+          if (p) {
+            tx = p.x
+            ty = p.y
+            drawSegment(sx, sy, tx, ty)
+            continue;
+          }
+        }
+        // Lower
+        {
+          const p = getIntersectionY(sx, sy, theta, lens.value.x, -infR.value, -lens.value.r);
+          if (p) {
+            tx = p.x
+            ty = p.y
+            drawSegment(sx, sy, tx, ty)
+            continue;
           }
         }
       }

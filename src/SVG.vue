@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, options, style } from './grobals'
+import { state, lights, lens, sensor, options, style, infR } from './grobals'
 import * as h from './handlers'
 
 // Reference to the svg element
@@ -58,6 +58,14 @@ const R = computed(() => {
         <circle :cx="lens.x - lens.f" cy="0" r="1" fill="white"></circle>
         <circle :cx="lens.x + lens.f" cy="0" r="1" fill="white"></circle>
       </g>
+    </g>
+
+    <!-- Body -->
+    <g v-if="options.body">
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="infR" stroke="white"
+        :stroke-width="style.defaultStrokeWidth" />
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-infR" stroke="white"
+        :stroke-width="style.defaultStrokeWidth" />
     </g>
 
     <!-- Sensor -->

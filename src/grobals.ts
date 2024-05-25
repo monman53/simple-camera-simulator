@@ -11,7 +11,7 @@ export const createInitialParams = () => {
         cx: -200,
         cy: 0,
         scale: 2,
-        nRaysLog: 9,
+        nRaysLog: 10,
     }
 }
 export const state = ref(createInitialParams())
@@ -64,6 +64,7 @@ export const options0 = () => {
     return {
         lens: true,
         sensor: true,
+        body: true,
     }
 }
 export const options = ref(options0())
@@ -75,12 +76,10 @@ export const options = ref(options0())
 export const style0 = () => {
     return {
         defaultStrokeWidth: 1,
-
         // Lights
         rLight: 4,
-
         // Rays
-        rayWidth: 0.5,
+        rayWidth: 0.2,
     }
 }
 export const style = ref(style0())
