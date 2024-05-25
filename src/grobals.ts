@@ -23,7 +23,7 @@ export const state = ref(createInitialParams())
 export const lights0 = () => {
     return [
         { x: -400, y: 0, color: `hsl(120, 100%, 50%)` }, // green
-        { x: -100, y: -100, color: `hsl(0, 100%, 50%)` }, // green
+        // { x: -100, y: -100, color: `hsl(0, 100%, 50%)` }, // green
         // { x: -200, y: 100, color: `hsl(240, 100%, 50%)` }, // green
         // { x: 20, y: 40, color: `hsl(120, 100%, 50%)` }, // green
     ]
@@ -38,7 +38,7 @@ export const lens0 = () => {
     return {
         x: 0,
         r: 40,
-        d: 3,
+        d: 8,
         f: 50,
     }
 }
@@ -106,4 +106,12 @@ export const infR = computed(() => {
         distanceMax = Math.max(distanceMax, d);
     }
     return (screen + distanceMax) * 3 /* 3 for safety */;
+})
+
+export const maxLightX = computed(() => {
+    let max = -infR.value
+    for(const light of lights.value) {
+        max = Math.max(max, light.x)
+    }
+    return max
 })

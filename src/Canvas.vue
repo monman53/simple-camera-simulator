@@ -68,6 +68,12 @@ const draw = () => {
           sx = tx;
           sy = ty;
           theta = Math.atan2(imageY - ty, imageX);
+          if (imageX === Infinity) {
+            theta = Math.atan2(-light.y, -(light.x-lens.value.x));
+          }
+          if (lens.value.x - lens.value.f < light.x ) {
+            theta += Math.PI;
+          }
         }
       }
 
@@ -106,7 +112,7 @@ onMounted(() => {
 })
 
 // TODO: Optimize here ('deep' is enabled)
-watch([state, lights, lens, options, style], () => {
+watch([state, lights, lens, sensor, options, style], () => {
   canvas.value.width = state.value.width
   canvas.value.height = state.value.height
   offscreenCanvas.width = state.value.width

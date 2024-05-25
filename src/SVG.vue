@@ -23,7 +23,7 @@ const svgViewBox = computed(() => {
 const R = computed(() => {
   const r = lens.value.r;
   const d = lens.value.d;
-  return r * r / d / 4 + d / 2;
+  return r * r / d + d / 4;
 })
 
 </script>
@@ -42,12 +42,17 @@ const R = computed(() => {
 
     <!-- Lens -->
     <g v-if="options.lens">
-      <!-- left half -->
-      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" stroke="white"
-        :stroke-width="style.defaultStrokeWidth" />
-      <!-- right half -->
-      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" stroke="white"
-        :stroke-width="style.defaultStrokeWidth" />
+      <g>
+        <!-- left half -->
+        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" stroke="white"
+          :stroke-width="style.defaultStrokeWidth" />
+        <!-- right half -->
+        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" stroke="white"
+          :stroke-width="style.defaultStrokeWidth" />
+        <!-- dummy for ui -->
+        <rect class='ui' :x="lens.x - lens.d / 2" :y="-lens.r" :width="lens.d" :height="2 * lens.r"
+          @mousedown="h.lensMoveStartHandler" />
+      </g>
       <!-- Focal points -->
       <g>
         <circle :cx="lens.x - lens.f" cy="0" r="1" fill="white"></circle>
@@ -67,5 +72,9 @@ const R = computed(() => {
 svg {
   overflow: hidden;
   display: block;
+}
+
+.ui {
+  fill: transparent;
 }
 </style>

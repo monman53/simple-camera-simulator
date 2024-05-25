@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights } from "./grobals";
+import { state, lights, lens, maxLightX } from "./grobals";
 
 //================================
 // SVG handlers
@@ -128,8 +128,30 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
         const dx = (x - x0) / state.value.scale
         const dy = (y - y0) / state.value.scale
-        light.x = cx0 + dx
+        if (cx0 + dx > lens.value.x) {
+            light.x = lens.value.x
+        } else {
+            light.x = cx0 + dx
+        }
         light.y = cy0 + dy
+    }
+    moveHandler = handler;
+}
+export const lensMoveStartHandler = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+    const cx0 = lens.value.x;
+    const handler = (e_: any) => {
+        e_.preventDefault();
+        e_.stopPropagation();
+        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+        const dx = (x - x0) / state.value.scale
+        if (cx0 + dx < maxLightX.value) {
+            lens.value.x = maxLightX.value
+        } else {
+            lens.value.x = cx0 + dx
+        }
     }
     moveHandler = handler;
 }
