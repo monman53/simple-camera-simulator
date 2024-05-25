@@ -45,6 +45,17 @@ export const lens0 = () => {
 export const lens = ref(lens0())
 
 //--------------------------------
+// Options
+//--------------------------------
+
+export const options0 = () => {
+    return {
+        lens: true,
+    }
+}
+export const options = ref(options0())
+
+//--------------------------------
 // Style
 //--------------------------------
 

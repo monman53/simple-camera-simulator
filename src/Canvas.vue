@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, ref } from 'vue'
 
-import { state, lights, lens, style, infR } from './grobals'
+import { state, lights, lens, options, style, infR } from './grobals'
+import { getIntersectionY } from './math'
 
 // Reference to the canvas
 const canvas = ref()
@@ -51,8 +52,12 @@ const draw = () => {
       //--------------------------------
       // Collision to lens
       //--------------------------------
-      {
-
+      if (options.value.lens) {
+        const p = getIntersectionY(sx, sy, theta, lens.value.x, -lens.value.r, lens.value.r);
+        if (p) {
+          tx = p.x
+          ty = p.y
+        }
       }
 
       // to infinity
@@ -75,7 +80,7 @@ onMounted(() => {
 })
 
 // TODO: Optimize here ('deep' is enabled)
-watch([state, style, lens], () => {
+watch([state, lights, lens, options, style], () => {
   canvas.value.width = state.value.width
   canvas.value.height = state.value.height
   offscreenCanvas.width = state.value.width

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, style } from './grobals'
+import { state, lights, lens, options, style } from './grobals'
 import * as h from './handlers'
 
 // Reference to the svg element
@@ -41,7 +41,7 @@ const R = computed(() => {
     </g>
 
     <!-- Lens -->
-    <g class="lens">
+    <g class="lens" v-if="options.lens">
       <!-- left half -->
       <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" stroke="white"
         :stroke-width="style.defaultStrokeWidth" />
