@@ -12,6 +12,7 @@ export const createInitialParams = () => {
         cy: 0,
         scale: 2,
         nRaysLog: 10,
+        newLightColor: 120,
     }
 }
 export const state = ref(createInitialParams())

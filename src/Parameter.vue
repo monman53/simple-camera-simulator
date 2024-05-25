@@ -34,6 +34,15 @@ const nRays = computed(() => {
             {{ humanReadable(style.rayWidth) }}
         </fieldset>
         <fieldset>
+            <legend>Light Color</legend>
+            <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
+            <span :style="`color: hsl(${state.newLightColor}, 100%, 50%)`"> █ </span>
+            <br>
+            <button @click="state.newLightColor=0">Red</button>
+            <button @click="state.newLightColor=120">Green</button>
+            <button @click="state.newLightColor=240">Blue</button>
+        </fieldset>
+        <fieldset>
             <legend>Options</legend>
             <label>
                 <input type="checkbox" v-model="options.lens">
