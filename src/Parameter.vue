@@ -40,6 +40,11 @@ const nRays = computed(() => {
                 Lens
                 <br>
             </label>
+            <label v-if="options.lens" class="indent">
+                <input type="checkbox" v-model="options.lensFocalPoints">
+                Focal Points
+                <br>
+            </label>
             <label>
                 <input type="checkbox" v-model="options.sensor">
                 Sensor
@@ -79,5 +84,8 @@ const nRays = computed(() => {
     color: white;
     background-color: #0008;
     backdrop-filter: blur(4px);
+}
+.indent {
+    padding-left: 1em;
 }
 </style>
