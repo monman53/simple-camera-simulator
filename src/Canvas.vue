@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, onMounted, ref } from 'vue'
 
-import { state, infR } from './grobals'
+import { state, lights, lens, style, infR } from './grobals'
 
 // Reference to the canvas
 const canvas = ref()
@@ -33,9 +33,9 @@ const draw = () => {
   //================================
   // Light path drawing like ray-tracing
   //================================
-  for (const light of params.lights) {
+  for (const light of lights.value) {
     ctx.strokeStyle = light.color
-    ctx.lineWidth = params.style.rayWidth
+    ctx.lineWidth = style.value.rayWidth
     // Draw 2^nRaysLog rays from light center
     const nRays = (1 << params.nRaysLog);
     for (let i = 0; i < nRays; i++) {
@@ -75,7 +75,7 @@ onMounted(() => {
 })
 
 // TODO: Optimize here ('deep' is enabled)
-watch(state, () => {
+watch([state, style, lens], () => {
   canvas.value.width = state.value.width
   canvas.value.height = state.value.height
   offscreenCanvas.width = state.value.width

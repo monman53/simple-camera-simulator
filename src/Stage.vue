@@ -29,10 +29,4 @@ window.addEventListener('resize', () => {
 #parameter {
   position: absolute;
 }
-
-#parameter {
-  padding: 0.5em;
-  color: white;
-  background-color: #3337;
-}
 </style>

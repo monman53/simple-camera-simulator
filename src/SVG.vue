@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state } from './grobals'
+import { state, lights, lens, style } from './grobals'
 import * as h from './handlers'
 
 // Reference to the svg element
@@ -20,6 +20,12 @@ const svgViewBox = computed(() => {
   return `${x} ${y} ${w} ${h}`
 })
 
+const R = computed(() => {
+  const r = lens.value.r;
+  const d = lens.value.d;
+  return r * r / d / 4 + d / 2;
+})
+
 </script>
 
 <template>
@@ -28,10 +34,20 @@ const svgViewBox = computed(() => {
     @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler">
 
     <!-- Lights -->
-    <g v-for="(light, idx) of state.lights">
-      <circle :cx="light.x" :cy="light.y" :r="state.style.rLight" :fill="light.color" stroke="white"
-        :stroke-width="state.style.lightStrokeWidth" @mousedown="h.lightMoveStartHandler($event, idx)">
+    <g v-for="(light, idx) of lights">
+      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="light.color" stroke="white"
+        :stroke-width="style.defaultStrokeWidth" @mousedown="h.lightMoveStartHandler($event, idx)">
       </circle>
+    </g>
+
+    <!-- Lens -->
+    <g class="lens">
+      <!-- left half -->
+      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" stroke="white"
+        :stroke-width="style.defaultStrokeWidth" />
+      <!-- right half -->
+      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" stroke="white"
+        :stroke-width="style.defaultStrokeWidth" />
     </g>
   </svg>
 </template>
