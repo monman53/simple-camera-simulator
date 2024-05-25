@@ -31,7 +31,7 @@ const R = computed(() => {
 <template>
   <svg id="main-svg" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
-    @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler">
+    @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="h.addLight">
 
     <!-- Lens -->
     <g v-if="options.lens">
@@ -56,6 +56,7 @@ const R = computed(() => {
     <!-- Lights -->
     <g v-for="(light, idx) of lights" class="hover-parent">
       <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="light.color"
+        @dblclick="h.deleteLight($event, idx)"
         @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
       </circle>
     </g>

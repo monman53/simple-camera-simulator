@@ -193,3 +193,14 @@ export const sensorMoveStartHandler = (e: any) => {
     }
     moveHandler = handler;
 }
+export const addLight = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x, y] = getPositionOnSvgApp(e.clientX, e.clientY);
+    lights.value.push({x: x, y: y, color: `hsl(${state.value.newLightColor}, 100%, 50%)`})
+}
+export const deleteLight = (e: any, idx: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    lights.value.splice(idx, 1)
+}
