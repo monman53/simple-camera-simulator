@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {computed} from 'vue'
 
-import { state, createInitialParams, infR } from './grobals'
+import { state, style, style0, createInitialParams, infR } from './grobals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -11,20 +11,18 @@ const resetView = () => {
     state.value.scale = state0.scale
 }
 const resetStyle = () => {
-    const state0 = createInitialParams()
-    state.value.style = state0.style
+    style.value = style0()
 }
-const resetAll = () => {
-    const state0 = createInitialParams()
-    state.value = state0
-}
+// const resetAll = () => {
+//     state.value = createInitialParams()
+// }
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
 </script>
 
 <template>
-    <div>
+    <div class="base">
         <fieldset>
             <legend># of rays</legend>
             <input type="range" min="0" max="16" v-model="state.nRaysLog">
@@ -32,14 +30,14 @@ const nRays = computed(() => {
         </fieldset>
         <fieldset>
             <legend>Ray width</legend>
-            <input type="range" min="0.001" :max="state.style.rLight" step="0.001" v-model="state.style.rayWidth">
-            {{ humanReadable(state.style.rayWidth) }}
+            <input type="range" min="0.001" :max="style.rLight / 2" step="0.001" v-model="style.rayWidth">
+            {{ humanReadable(style.rayWidth) }}
         </fieldset>
         <fieldset>
             <legend>Reset</legend>
             <button @click="resetView">View</button>
             <button @click="resetStyle">Style</button>
-            <button @click="resetAll">All</button>
+            <!-- <button @click="resetAll">All</button> -->
         </fieldset>
         <fieldset>
             <legend>state</legend>
@@ -52,4 +50,11 @@ const nRays = computed(() => {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.base {
+  padding: 0.5em;
+  color: white;
+  background-color: #0008;
+  backdrop-filter: blur(4px);
+}
+</style>

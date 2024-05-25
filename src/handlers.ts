@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state } from "./grobals";
+import { state, lights } from "./grobals";
 
 //================================
 // SVG handlers
@@ -119,7 +119,7 @@ export const svgScaleHandler = (e: any) => {
 export const lightMoveStartHandler = (e: any, idx: number) => {
     e.preventDefault();
     e.stopPropagation();
-    const light = state.value.lights[idx];
+    const light = lights.value[idx];
     const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
     const [cx0, cy0] = [light.x, light.y];
     const handler = (e_: any) => {
