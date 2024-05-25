@@ -63,6 +63,7 @@ export const sensor = ref(sensor0())
 export const options0 = () => {
     return {
         lens: true,
+        lensFocalPoints: false,
         sensor: true,
         body:false,
     }

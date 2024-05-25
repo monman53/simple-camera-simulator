@@ -175,3 +175,21 @@ export const focalPointMoveStartHandler = (e: any) => {
     }
     moveHandler = handler;
 }
+export const sensorMoveStartHandler = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+    const cx0 = sensor.value.x;
+    const handler = (e_: any) => {
+        e_.preventDefault();
+        e_.stopPropagation();
+        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+        const dx = (x - x0) / state.value.scale
+        if (cx0 + dx < lens.value.x) {
+            sensor.value.x = lens.value.x
+        } else {
+            sensor.value.x = cx0 + dx
+        }
+    }
+    moveHandler = handler;
+}

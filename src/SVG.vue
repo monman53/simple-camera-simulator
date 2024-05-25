@@ -33,13 +33,6 @@ const R = computed(() => {
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
     @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler">
 
-    <!-- Lights -->
-    <g v-for="(light, idx) of lights" class="hover-parent">
-      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="light.color"
-        @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
-      </circle>
-    </g>
-
     <!-- Lens -->
     <g v-if="options.lens">
       <g class="hover-parent">
@@ -52,12 +45,19 @@ const R = computed(() => {
           @mousedown="h.lensMoveStartHandler" />
       </g>
       <!-- Focal points -->
-      <g class="hover-parent">
+      <g v-if="options.lensFocalPoints" class="hover-parent">
         <circle :cx="lens.x - lens.f" cy="0" r="1" fill="white"></circle>
         <circle :cx="lens.x + lens.f" cy="0" r="1" fill="white"></circle>
         <!-- UI -->
         <circle :cx="lens.x - lens.f" cy="0" r="4" @mousedown="h.focalPointMoveStartHandler" class="hidden-hover-child"></circle>
       </g>
+    </g>
+
+    <!-- Lights -->
+    <g v-for="(light, idx) of lights" class="hover-parent">
+      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="light.color"
+        @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
+      </circle>
     </g>
 
     <!-- Body -->
@@ -68,7 +68,12 @@ const R = computed(() => {
 
     <!-- Sensor -->
     <g v-if="options.sensor">
-      <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="line"/>
+      <g class="hover-parent">
+        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child"/>
+        <!-- dummy for ui -->
+        <rect class='ui' :x="sensor.x-2" :y="-sensor.r" :width="4" :height="2 * sensor.r"
+          @mousedown="h.sensorMoveStartHandler" />
+      </g>
     </g>
   </svg>
 </template>
