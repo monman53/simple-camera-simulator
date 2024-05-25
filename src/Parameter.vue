@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lens, options, options0, style, style0, createInitialParams, infR, maxLightX } from './grobals'
+import { state, lens, options, options0, style, style0, createInitialParams, infR, maxLightX } from './globals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -38,9 +38,9 @@ const nRays = computed(() => {
             <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
             <span :style="`color: hsl(${state.newLightColor}, 100%, 50%)`"> █ </span>
             <br>
-            <button @click="state.newLightColor=0">Red</button>
-            <button @click="state.newLightColor=120">Green</button>
-            <button @click="state.newLightColor=240">Blue</button>
+            <button @click="state.newLightColor = 0">Red</button>
+            <button @click="state.newLightColor = 120">Green</button>
+            <button @click="state.newLightColor = 240">Blue</button>
         </fieldset>
         <fieldset>
             <legend>Options</legend>
@@ -59,6 +59,20 @@ const nRays = computed(() => {
                 Sensor
                 <br>
             </label>
+            <div v-if="options.sensor" class="indent">
+                <label>
+                    <input type="checkbox" v-model="options.sensorPreview">
+                    Preview
+                    <br>
+                </label>
+                <!-- <div v-if="options.sensorPreview" class="indent">
+                    <label>
+                        <input type="checkbox" v-model="options.sensorMemory">
+                        Memory
+                        <br>
+                    </label>
+                </div> -->
+            </div>
             <label>
                 <input type="checkbox" v-model="options.body">
                 Body
@@ -80,10 +94,10 @@ const nRays = computed(() => {
             scale: {{ humanReadable(state.scale) }}<br>
             infR: {{ humanReadable(infR) }}<br>
             maxLightX: {{ humanReadable(maxLightX) }}<br>
-            lens.x: {{ humanReadable(lens.x)}}<br>
-            lens.f: {{ humanReadable(lens.f)}}<br>
-            lens.r: {{ humanReadable(lens.r)}}<br>
-            lens.d: {{ humanReadable(lens.d)}}<br>
+            lens.x: {{ humanReadable(lens.x) }}<br>
+            lens.f: {{ humanReadable(lens.f) }}<br>
+            lens.r: {{ humanReadable(lens.r) }}<br>
+            lens.d: {{ humanReadable(lens.d) }}<br>
         </fieldset>
     </div>
 </template>
@@ -95,6 +109,7 @@ const nRays = computed(() => {
     background-color: #0008;
     backdrop-filter: blur(4px);
 }
+
 .indent {
     padding-left: 1em;
 }

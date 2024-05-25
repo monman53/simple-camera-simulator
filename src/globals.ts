@@ -23,10 +23,9 @@ export const state = ref(createInitialParams())
 
 export const lights0 = () => {
     return [
-        { x: -200, y: 0, color: `hsl(120, 100%, 50%)` }, // green
-        // { x: -100, y: -100, color: `hsl(0, 100%, 50%)` }, // green
-        // { x: -200, y: 100, color: `hsl(240, 100%, 50%)` }, // green
-        // { x: 20, y: 40, color: `hsl(120, 100%, 50%)` }, // green
+        { x: -200, y: 100, color: 0 }, // red
+        { x: -200, y: 0, color: 120 }, // green
+        { x: -200, y: -100, color: 240 }, // blue
     ]
 }
 export const lights = ref(lights0())
@@ -56,6 +55,7 @@ export const sensor0 = () => {
     }
 }
 export const sensor = ref(sensor0())
+export const sensorData = ref()
 
 //--------------------------------
 // Options
@@ -66,6 +66,8 @@ export const options0 = () => {
         lens: true,
         lensFocalPoints: false,
         sensor: true,
+        sensorPreview: true,
+        sensorMemory: false,
         body:false,
     }
 }
