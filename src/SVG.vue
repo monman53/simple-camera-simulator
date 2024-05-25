@@ -33,6 +33,18 @@ const R = computed(() => {
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
     @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="h.addLight">
 
+    <!-- Lens and Sensor move dummy element-->
+    <g v-if="options.lens && options.sensor" class="hover-parent">
+      <!-- lens -->
+      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+      <!-- sensor -->
+      <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
+      <!-- dummy for ui -->
+      <rect class="dummy" :x="lens.x" :y="-Math.max(lens.r, sensor.r)" :width="sensor.x - lens.x"
+        :height="2 * Math.max(lens.r, sensor.r)" @mousedown="h.cameraMoveStartHandler" />
+    </g>
+
     <!-- Lens -->
     <g v-if="options.lens">
       <g class="hover-parent">
@@ -41,7 +53,7 @@ const R = computed(() => {
         <!-- right half -->
         <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
         <!-- dummy for ui -->
-        <rect class='ui' :x="lens.x - lens.d / 2" :y="-lens.r" :width="lens.d" :height="2 * lens.r"
+        <rect class='dummy' :x="lens.x - lens.d / 2" :y="-lens.r" :width="lens.d" :height="2 * lens.r"
           @mousedown="h.lensMoveStartHandler" />
       </g>
       <!-- Focal points -->
@@ -76,7 +88,7 @@ const R = computed(() => {
       <g class="hover-parent">
         <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
         <!-- dummy for ui -->
-        <rect class='ui' :x="sensor.x - 2" :y="-sensor.r" :width="4" :height="2 * sensor.r"
+        <rect class='dummy' :x="sensor.x - 2" :y="-sensor.r" :width="4" :height="2 * sensor.r"
           @mousedown="h.sensorMoveStartHandler" />
       </g>
     </g>
@@ -89,7 +101,7 @@ svg {
   display: block;
 }
 
-.ui {
+.dummy {
   fill: transparent;
 }
 
