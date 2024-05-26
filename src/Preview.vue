@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, ref } from 'vue'
+import { watch, onMounted, ref } from 'vue'
 
-import { state, sensor, sensorData, options, style } from './globals'
+import { state, sensor, sensorData, options, style, memoryCanvasCtx} from './globals'
 
 // Reference to the canvas
 const canvas = ref()
@@ -20,13 +20,13 @@ const draw = () => {
   const scale = height / (sensor.value.r * 2)
   ctx.reset()
   ctx.transform(scale*2, 0, 0, scale, 100 * 0.5, height * 0.5);
-  // ctx.fillRect(params.viewBox.x, params.viewBox.y, params.viewBox.w, params.viewBox.h); // background
   ctx.globalCompositeOperation = 'lighten';
 
   for (const p of sensorData.value) {
     ctx.beginPath()
-    ctx.fillStyle = `hsl(${p.color}, 100%, 50%)`;
-    ctx.arc(0, p.y, style.value.rayWidth, 0, 2 * Math.PI);
+    ctx.fillStyle = `hsl(${p.color}, 100%, 50%, ${state.value.lightAlpha})`;
+    // ctx.arc(0, p.y, style.value.rayWidth, 0, 2 * Math.PI);
+    ctx.rect(-10, p.y-style.value.rayWidth/2, 20, style.value.rayWidth)
     ctx.fill()
     ctx.stroke();
   }
@@ -50,10 +50,21 @@ watch([sensor, sensorData], () => {
   window.requestAnimationFrame(draw)
 }, { deep: true })
 
+const save = () => {
+  memoryCanvasCtx.drawImage(mainCtx.canvas, 0, 0)
+  options.value.sensorMemory = true
+}
+
 </script>
 
 <template>
   <canvas ref="canvas" width="100" :height="state.height"></canvas>
+  <button @click="save">save</button>
 </template>
 
-<style scoped></style>
+<style scoped>
+canvas,
+button {
+  position: absolute
+}
+</style>
