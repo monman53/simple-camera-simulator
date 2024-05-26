@@ -7,6 +7,7 @@ import SVG from './SVG.vue'
 import Canvas from './Canvas.vue'
 import Parameter from './Parameter.vue'
 import Preview from './Preview.vue'
+import Memory from './Memory.vue'
 
 const main = ref()
 
@@ -45,11 +46,12 @@ onMounted(() => {
       <SVG id="svg"></SVG>
       <Parameter id="parameter"></Parameter>
     </div>
-    <div v-if="options.sensor && options.sensorPreview">
-      <Preview id="preview"></Preview>
+    <div v-show="options.sensor && options.sensorPreview">
+      <Preview></Preview>
     </div>
-    <!-- <div v-if="options.sensorPreview && options.sensorMemory">
-    </div> -->
+    <div v-show="options.sensor && options.sensorPreview && options.sensorMemory">
+      <Memory></Memory>
+    </div>
   </div>
 </template>
 
@@ -79,11 +81,9 @@ onMounted(() => {
 
 #canvas,
 #svg,
-#parameter {
-  position: absolute;
-}
-
-#preview {
+#parameter,
+#preview,
+#memory {
   position: absolute;
 }
 </style>

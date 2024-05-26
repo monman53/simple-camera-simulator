@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, onMounted, ref } from 'vue'
+import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lens, sensor, sensorData, options, style, infR } from './globals'
 import { getIntersectionY } from './math'
@@ -37,7 +37,7 @@ const draw = () => {
   // Light path drawing like ray-tracing
   //================================
   for (const light of lights.value) {
-    ctx.strokeStyle = `hsl(${light.color}, 100%, 50%)`
+    ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${state.value.lightAlpha})`
     ctx.lineWidth = style.value.rayWidth
 
     // Find image position of the light source

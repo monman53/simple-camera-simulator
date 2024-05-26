@@ -13,6 +13,7 @@ export const createInitialParams = () => {
         scale: 4,
         nRaysLog: 10,
         newLightColor: 120,
+        lightAlpha: 0.5,
     }
 }
 export const state = ref(createInitialParams())
@@ -23,9 +24,9 @@ export const state = ref(createInitialParams())
 
 export const lights0 = () => {
     return [
-        { x: -200, y: 100, color: 0 }, // red
-        { x: -200, y: 0, color: 120 }, // green
-        { x: -200, y: -100, color: 240 }, // blue
+        { x: -200, y: 20, color: 0 }, // red
+        { x: -160, y: 0, color: 120 }, // green
+        { x: -120, y: -20, color: 240 }, // blue
     ]
 }
 export const lights = ref(lights0())
@@ -56,6 +57,10 @@ export const sensor0 = () => {
 }
 export const sensor = ref(sensor0())
 export const sensorData = ref()
+export let memoryCanvasCtx: CanvasRenderingContext2D;
+export const setMemoryCanvasCtx = (ctx: any) => {
+    memoryCanvasCtx = ctx
+}
 
 //--------------------------------
 // Options
@@ -68,7 +73,7 @@ export const options0 = () => {
         sensor: true,
         sensorPreview: true,
         sensorMemory: false,
-        body:false,
+        body: false,
     }
 }
 export const options = ref(options0())
@@ -112,7 +117,7 @@ export const infR = computed(() => {
 
 export const maxLightX = computed(() => {
     let max = -infR.value
-    for(const light of lights.value) {
+    for (const light of lights.value) {
         max = Math.max(max, light.x)
     }
     return max

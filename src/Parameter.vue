@@ -65,13 +65,13 @@ const nRays = computed(() => {
                     Preview
                     <br>
                 </label>
-                <!-- <div v-if="options.sensorPreview" class="indent">
+                <div v-if="options.sensorPreview" class="indent">
                     <label>
                         <input type="checkbox" v-model="options.sensorMemory">
                         Memory
                         <br>
                     </label>
-                </div> -->
+                </div>
             </div>
             <label>
                 <input type="checkbox" v-model="options.body">

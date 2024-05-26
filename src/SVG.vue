@@ -111,17 +111,12 @@ svg {
 
 .hover-child {
   stroke: white;
-  stroke-width: 0.5;
+  stroke-width: 0.2;
 }
 
 .hover-parent:hover .hover-child,
 .hover-parent:hover .hidden-hover-child {
   stroke: white;
-  stroke-width: 1;
-}
-
-.line {
-  stroke: white;
-  stroke-width: 1;
+  stroke-width: 0.5;
 }
 </style>
