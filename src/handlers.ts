@@ -214,6 +214,24 @@ export const sensorMoveStartHandler = (e: any) => {
     }
     moveHandler = handler;
 }
+export const sensorSizeChangeStartHandler = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+    const r0 = sensor.value.r;
+    const handler = (e_: any) => {
+        e_.preventDefault();
+        e_.stopPropagation();
+        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+        const dy = (y - y0) / state.value.scale
+        if (r0 - dy < 0.1) {
+            sensor.value.r = 0.1;
+        } else {
+            sensor.value.r = r0 - dy;
+        }
+    }
+    moveHandler = handler;
+}
 export const addLight = (e: any) => {
     e.preventDefault();
     e.stopPropagation();

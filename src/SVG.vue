@@ -62,8 +62,8 @@ const R = computed(() => {
         <g class="hover-parent">
           <circle :cx="lens.x - lens.f" cy="0" r="1" fill="white"></circle>
           <!-- UI -->
-          <circle :cx="lens.x - lens.f" cy="0" r="4" @mousedown="h.focalPointMoveStartHandler"
-            class="hidden-hover-child"></circle>
+          <circle :cx="lens.x - lens.f" cy="0" r="4" @mousedown="h.focalPointMoveStartHandler" class="hidden-hover-child">
+          </circle>
         </g>
         <!-- right hand -->
         <circle :cx="lens.x + lens.f" cy="0" r="1" fill="white"></circle>
@@ -72,8 +72,8 @@ const R = computed(() => {
 
     <!-- Lights -->
     <g v-for="(light, idx) of lights" class="hover-parent">
-      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="`hsl(${light.color}, 100%, 50%)`" @dblclick="h.deleteLight($event, idx)"
-        @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
+      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="`hsl(${light.color}, 100%, 50%)`"
+        @dblclick="h.deleteLight($event, idx)" @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
       </circle>
     </g>
 
@@ -91,6 +91,8 @@ const R = computed(() => {
         <rect class='dummy' :x="sensor.x - 2" :y="-sensor.r" :width="4" :height="2 * sensor.r"
           @mousedown="h.sensorMoveStartHandler" />
       </g>
+
+      <circle :cx="sensor.x" :cy="-sensor.r" r="2" class="hover transparent" @mousedown="h.sensorSizeChangeStartHandler"></circle>
     </g>
   </svg>
 </template>
@@ -114,8 +116,13 @@ svg {
   stroke-width: 0.2;
 }
 
+.transparent {
+  fill: transparent;
+}
+
 .hover-parent:hover .hover-child,
-.hover-parent:hover .hidden-hover-child {
+.hover-parent:hover .hidden-hover-child,
+.hover:hover {
   stroke: white;
   stroke-width: 0.5;
 }
