@@ -19,6 +19,9 @@ const resetStyle = () => {
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
+const fNumber = computed(() => {
+    return lens.value.f / (2 * lens.value.r * lens.value.aperture)
+})
 </script>
 
 <template>
@@ -83,6 +86,11 @@ const nRays = computed(() => {
                 Body
                 <br>
             </label>
+            <label>
+                <input type="checkbox" v-model="options.aperture">
+                Aperture
+                <br>
+            </label>
             <button @click="options = options0()">Reset</button>
         </fieldset>
         <fieldset>
@@ -92,7 +100,12 @@ const nRays = computed(() => {
             <!-- <button @click="resetAll">All</button> -->
         </fieldset>
         <fieldset>
-            <legend>state</legend>
+            <legend>Info</legend>
+            Focal length: {{ humanReadable(lens.f) }}<br>
+            f-number: {{ humanReadable(fNumber) }}<br>
+        </fieldset>
+        <fieldset>
+            <legend>Debug output</legend>
             width: {{ state.width }}<br>
             height: {{ state.height }}<br>
             (cx, cy): ({{ humanReadable(state.cx) }}, {{ humanReadable(state.cy) }})<br>

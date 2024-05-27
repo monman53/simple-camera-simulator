@@ -214,6 +214,27 @@ export const focalPointMoveStartHandler = (e: any) => {
     }
     moveHandler = handler;
 }
+export const apertureSizeChangeStartHandler = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+    const a0 = lens.value.aperture * lens.value.r;
+    const handler = (e_: any) => {
+        e_.preventDefault();
+        e_.stopPropagation();
+        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+        const dy = (y - y0) / state.value.scale
+        const an = (a0 + dy) / lens.value.r;
+        if (an < 0) {
+            lens.value.aperture = 0;
+        }else if (an > 1) {
+            lens.value.aperture = 1;
+        } else {
+            lens.value.aperture = an;
+        }
+    }
+    moveHandler = handler;
+}
 export const sensorMoveStartHandler = (e: any) => {
     e.preventDefault();
     e.stopPropagation();

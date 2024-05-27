@@ -41,6 +41,7 @@ export const lens0 = () => {
         r: 20,
         n: 1.5,
         f: 50,
+        aperture: 0.5,
     }
 }
 export const lens = ref(lens0())
@@ -70,10 +71,11 @@ export const options0 = () => {
     return {
         lens: true,
         lensFocalPoints: false,
-        sensor: true,
+        sensor: false,
         sensorPreview: true,
         sensorMemory: false,
         body: false,
+        aperture: true,
     }
 }
 export const options = ref(options0())
