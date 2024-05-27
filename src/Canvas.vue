@@ -3,6 +3,7 @@ import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lens, sensor, sensorData, options, style, infR } from './globals'
 import { getIntersectionY } from './math'
+import { validateLocaleAndSetLanguage } from 'typescript';
 
 // Reference to the canvas
 const canvas = ref()
@@ -66,6 +67,13 @@ const draw = () => {
           ty = p.y
           drawSegment(sx, sy, tx, ty)
 
+          //--------------------------------
+          // Collision to aperture
+          //--------------------------------
+          if(p.y < -lens.value.aperture * lens.value.r || lens.value.aperture * lens.value.r < p.y) {
+            continue;
+          }
+
           // Refracted ray
           sx = tx;
           sy = ty;
@@ -114,7 +122,7 @@ const draw = () => {
           tx = p.x
           ty = p.y
           drawSegment(sx, sy, tx, ty)
-          sensorDataTmp.push({y: p.y, color: light.color})
+          sensorDataTmp.push({ y: p.y, color: light.color })
           continue;
         }
       }

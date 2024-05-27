@@ -43,9 +43,11 @@ const svgViewBox = computed(() => {
     <g v-if="options.lens">
       <g class="hover-parent">
         <!-- left half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" fill="none"
+          class="hover-child" />
         <!-- right half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" fill="none"
+          class="hover-child" />
         <!-- dummy for ui -->
         <rect class='dummy' :x="lens.x - lensD / 2" :y="-lens.r" :width="lensD" :height="2 * lens.r"
           @mousedown="h.lensMoveStartHandler" />
@@ -63,7 +65,15 @@ const svgViewBox = computed(() => {
         <circle :cx="lens.x + lens.f" cy="0" r="1" fill="white"></circle>
       </g>
       <!-- Lens size change UI-->
-      <circle :cx="lens.x" :cy="-lens.r" r="2" class="hover transparent" @mousedown="h.lensSizeChangeStartHandler"></circle>
+      <circle :cx="lens.x" :cy="-lens.r" r="2" class="hover transparent" @mousedown="h.lensSizeChangeStartHandler">
+      </circle>
+    </g>
+
+    <!-- Aperture -->
+    <g v-if="options.aperture">
+      <circle :cx="lens.x" :cy="lens.r * lens.aperture" r="2" @mousedown="h.apertureSizeChangeStartHandler" class="hover-sibling-master hover transparent"></circle>
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture" class="hover-sibling no-pointer-events"></line>
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events"></line>
     </g>
 
     <!-- Lights -->
@@ -88,7 +98,8 @@ const svgViewBox = computed(() => {
           @mousedown="h.sensorMoveStartHandler" />
       </g>
 
-      <circle :cx="sensor.x" :cy="-sensor.r" r="2" class="hover transparent" @mousedown="h.sensorSizeChangeStartHandler"></circle>
+      <circle :cx="sensor.x" :cy="-sensor.r" r="2" class="hover transparent" @mousedown="h.sensorSizeChangeStartHandler">
+      </circle>
     </g>
   </svg>
 </template>
@@ -97,6 +108,11 @@ const svgViewBox = computed(() => {
 svg {
   overflow: hidden;
   display: block;
+}
+
+line {
+  stroke: white;
+  stroke-width: 0.2
 }
 
 .dummy {
@@ -116,6 +132,11 @@ svg {
   fill: transparent;
 }
 
+.no-pointer-events{
+    pointer-events: none;
+}
+
+.hover-sibling-master:hover ~ .hover-sibling,
 .hover-parent:hover .hover-child,
 .hover-parent:hover .hidden-hover-child,
 .hover:hover {
