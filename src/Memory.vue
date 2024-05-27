@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { watch, onMounted, ref } from 'vue'
 
-import { state, setMemoryCanvasCtx } from './globals'
+import { state, options, setMemoryCanvasCtx } from './globals'
 
 // Reference to the canvas
 const canvas = ref()
@@ -14,6 +14,12 @@ onMounted(() => {
   mainCtx = canvas.value.getContext("2d");
   setMemoryCanvasCtx(mainCtx)
 })
+
+// TODO: Optimize here ('deep' is enabled)
+watch([() => state.value.height], () => {
+  canvas.value.height = state.value.height
+  options.value.sensorMemory = false
+}, { deep: true })
 
 </script>
 

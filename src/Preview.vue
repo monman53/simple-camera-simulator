@@ -50,6 +50,12 @@ watch([sensor, sensorData], () => {
   window.requestAnimationFrame(draw)
 }, { deep: true })
 
+// TODO: Optimize here ('deep' is enabled)
+watch([state, sensor, options, style], () => {
+  canvas.value.height = state.value.height
+  offscreenCanvas.height = state.value.height
+}, { deep: true })
+
 const save = () => {
   memoryCanvasCtx.drawImage(mainCtx.canvas, 0, 0)
   options.value.sensorMemory = true
