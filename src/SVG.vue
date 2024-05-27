@@ -68,6 +68,8 @@ const R = computed(() => {
         <!-- right hand -->
         <circle :cx="lens.x + lens.f" cy="0" r="1" fill="white"></circle>
       </g>
+      <!-- Lens size change UI-->
+      <circle :cx="lens.x" :cy="-lens.r" r="2" class="hover transparent" @mousedown="h.lensSizeChangeStartHandler"></circle>
     </g>
 
     <!-- Lights -->

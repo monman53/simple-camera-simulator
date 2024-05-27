@@ -178,6 +178,24 @@ export const lensMoveStartHandler = (e: any) => {
     }
     moveHandler = handler;
 }
+export const lensSizeChangeStartHandler = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+    const r0 = lens.value.r;
+    const handler = (e_: any) => {
+        e_.preventDefault();
+        e_.stopPropagation();
+        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+        const dy = (y - y0) / state.value.scale
+        if (r0 - dy < 0.1) {
+            lens.value.r = 0.1;
+        } else {
+            lens.value.r = r0 - dy;
+        }
+    }
+    moveHandler = handler;
+}
 export const focalPointMoveStartHandler = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
@@ -236,7 +254,7 @@ export const addLight = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
     const [x, y] = getPositionOnSvgApp(e.clientX, e.clientY);
-    lights.value.push({x: x, y: y, color: state.value.newLightColor})
+    lights.value.push({ x: x, y: y, color: state.value.newLightColor })
 }
 export const deleteLight = (e: any, idx: number) => {
     e.preventDefault();
