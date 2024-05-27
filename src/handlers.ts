@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, lens, sensor, maxLightX } from "./globals";
+import { state, lights, lens, sensor, maxLightX, lensD } from "./globals";
 
 //================================
 // SVG handlers
@@ -128,8 +128,8 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
         const dx = (x - x0) / state.value.scale
         const dy = (y - y0) / state.value.scale
-        if (cx0 + dx > lens.value.x - lens.value.d / 2) {
-            light.x = lens.value.x - lens.value.d / 2
+        if (cx0 + dx > lens.value.x - lensD.value / 2) {
+            light.x = lens.value.x - lensD.value / 2
         } else {
             light.x = cx0 + dx
         }
@@ -206,8 +206,8 @@ export const focalPointMoveStartHandler = (e: any) => {
         e_.stopPropagation();
         const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
         const dx = (x - x0) / state.value.scale
-        if (f0 - dx < lens.value.d / 2) {
-            lens.value.f = lens.value.d / 2
+        if (f0 - dx < lensD.value / 2) {
+            lens.value.f = lensD.value / 2
         } else {
             lens.value.f = f0 - dx
         }

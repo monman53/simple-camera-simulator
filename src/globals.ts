@@ -39,7 +39,7 @@ export const lens0 = () => {
     return {
         x: 0,
         r: 20,
-        d: 6,
+        n: 1.5,
         f: 50,
     }
 }
@@ -95,6 +95,16 @@ export const style = ref(style0())
 //================================
 // Computed
 //================================
+
+export const lensR = computed(() => {
+    return 2 * (lens.value.n - 1) * (2 * lens.value.f)
+})
+
+export const lensD = computed(() => {
+    const R = lensR.value
+    const r = lens.value.r
+    return 2 * (R - Math.sqrt(R * R - r * r))
+})
 
 export const infR = computed(() => {
     // Screen diagonal length

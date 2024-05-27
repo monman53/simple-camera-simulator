@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, options, style, infR } from './globals'
+import { state, lights, lens, sensor, options, style, lensR, lensD, infR } from './globals'
 import * as h from './handlers'
 
 // Reference to the svg element
@@ -20,12 +20,6 @@ const svgViewBox = computed(() => {
   return `${x} ${y} ${w} ${h}`
 })
 
-const R = computed(() => {
-  const r = lens.value.r;
-  const d = lens.value.d;
-  return r * r / d + d / 4;
-})
-
 </script>
 
 <template>
@@ -36,8 +30,8 @@ const R = computed(() => {
     <!-- Lens and Sensor move dummy element-->
     <g v-if="options.lens && options.sensor" class="hover-parent">
       <!-- lens -->
-      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
-      <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
       <!-- sensor -->
       <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
       <!-- dummy for ui -->
@@ -49,11 +43,11 @@ const R = computed(() => {
     <g v-if="options.lens">
       <g class="hover-parent">
         <!-- left half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
         <!-- right half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${R} ${R} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
         <!-- dummy for ui -->
-        <rect class='dummy' :x="lens.x - lens.d / 2" :y="-lens.r" :width="lens.d" :height="2 * lens.r"
+        <rect class='dummy' :x="lens.x - lensD / 2" :y="-lens.r" :width="lensD" :height="2 * lens.r"
           @mousedown="h.lensMoveStartHandler" />
       </g>
       <!-- Focal points -->

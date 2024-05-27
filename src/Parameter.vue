@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lens, options, options0, style, style0, createInitialParams, infR, maxLightX } from './globals'
+import { state, lens, options, options0, style, style0, createInitialParams, lensD, infR, maxLightX } from './globals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -30,8 +30,13 @@ const nRays = computed(() => {
         </fieldset>
         <fieldset>
             <legend>Ray width</legend>
-            <input type="range" min="0.001" max="1" step="0.001" v-model="style.rayWidth">
+            <input type="range" min="0.01" max="1" step="0.001" v-model="style.rayWidth">
             {{ humanReadable(style.rayWidth) }}
+        </fieldset>
+        <fieldset>
+            <legend>Lens n</legend>
+            <input type="range" min="1.01" max="3" step="0.001" v-model="lens.n">
+            {{ humanReadable(lens.n) }}
         </fieldset>
         <fieldset>
             <legend>Light Color</legend>
@@ -97,7 +102,8 @@ const nRays = computed(() => {
             lens.x: {{ humanReadable(lens.x) }}<br>
             lens.f: {{ humanReadable(lens.f) }}<br>
             lens.r: {{ humanReadable(lens.r) }}<br>
-            lens.d: {{ humanReadable(lens.d) }}<br>
+            lens.n: {{ humanReadable(lens.n) }}<br>
+            lensD: {{ humanReadable(lensD) }}<br>
         </fieldset>
     </div>
 </template>
