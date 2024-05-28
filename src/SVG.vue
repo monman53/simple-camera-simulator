@@ -155,11 +155,6 @@ svg {
   display: block;
 }
 
-/* line {
-  stroke: white;
-  stroke-width: 0.2;
-} */
-
 .hover-child {
   stroke: white;
   stroke-width: 0.2;
