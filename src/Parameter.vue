@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lens, sensor, options, options0, style, style0, createInitialParams, lensD, infR, maxLightX } from './globals'
+import { state, lens, sensor, field, options, options0, style, style0, createInitialParams, lensD, infR, maxLightX } from './globals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -35,17 +35,17 @@ const fNumber = computed(() => {
             <legend>Rays</legend>
             <fieldset>
                 <legend># of rays</legend>
-                <input type="range" min="0" max="16" v-model="state.nRaysLog">
+                <input type="range" min="0" max="16" v-model.number="state.nRaysLog">
                 {{ nRays }}
             </fieldset>
             <fieldset>
                 <legend>Intensity</legend>
-                <input type="range" min="0" max="1" step="0.001" v-model="style.rayIntensity">
+                <input type="range" min="0" max="1" step="0.001" v-model.number="style.rayIntensity">
                 {{ humanReadable(style.rayIntensity) }}
             </fieldset>
             <fieldset>
                 <legend>Thickness</legend>
-                <input type="range" min="0.01" max="1" step="0.001" v-model="style.rayWidth">
+                <input type="range" min="0.01" max="1" step="0.001" v-model.number="style.rayWidth">
                 {{ humanReadable(style.rayWidth) }}
             </fieldset>
         </fieldset>
@@ -78,7 +78,7 @@ const fNumber = computed(() => {
                 </fieldset>
                 <fieldset>
                     <legend>Refractive index</legend>
-                    <input type="range" min="1.01" max="3" step="0.001" v-model="lens.n">
+                    <input type="range" min="1.01" max="3" step="0.001" v-model.number="lens.n">
                     {{ humanReadable(lens.n) }}
                 </fieldset>
                 <fieldset>
@@ -115,6 +115,30 @@ const fNumber = computed(() => {
                 <fieldset>
                     <legend>Info</legend>
                     Diameter: {{ humanReadable(sensor.r * 2) }}<br>
+                </fieldset>
+            </div>
+        </fieldset>
+        <!-- Field -->
+        <fieldset>
+            <legend>
+                Field
+            </legend>
+            <div>
+                <fieldset>
+                    <legend>Options</legend>
+                    <label>
+                        <input type="checkbox" v-model="options.grid">
+                        Grid
+                        <br>
+                    </label>
+                </fieldset>
+                <fieldset>
+                    <legend>Grid interval</legend>
+                    <button @click="field.gridInterval = 1">1</button>
+                    <button @click="field.gridInterval = 10">10</button>
+                    <button @click="field.gridInterval = 100">100</button>
+                    <!-- <input type="range" min="5" max="100" step="5" v-model.number="field.gridInterval">
+                    {{ humanReadable(field.gridInterval) }}<br> -->
                 </fieldset>
             </div>
         </fieldset>
