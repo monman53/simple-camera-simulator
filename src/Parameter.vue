@@ -20,7 +20,11 @@ const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
 const fNumber = computed(() => {
-    return lens.value.f / (2 * lens.value.r * lens.value.aperture)
+    if (options.value.aperture) {
+        return lens.value.f / (2 * lens.value.r * lens.value.aperture)
+    } else {
+        return lens.value.f / (2 * lens.value.r)
+    }
 })
 </script>
 
@@ -64,7 +68,7 @@ const fNumber = computed(() => {
             </label>
             <label>
                 <input type="checkbox" v-model="options.sensor">
-                Sensor
+                Screen
                 <br>
             </label>
             <div v-if="options.sensor" class="indent">

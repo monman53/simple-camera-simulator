@@ -58,21 +58,26 @@ const draw = () => {
       let ty: number;
 
       //--------------------------------
+      // Collision to aperture
+      //--------------------------------
+      const p = getIntersectionY(sx, sy, theta, lens.value.x, -lens.value.r, lens.value.r);
+      if (options.value.aperture && p) {
+        if (p.y < -lens.value.aperture * lens.value.r || lens.value.aperture * lens.value.r < p.y) {
+          tx = p.x
+          ty = p.y
+          drawSegment(sx, sy, tx, ty)
+          continue
+        }
+      }
+
+      //--------------------------------
       // Collision to lens
       //--------------------------------
       if (options.value.lens) {
-        const p = getIntersectionY(sx, sy, theta, lens.value.x, -lens.value.r, lens.value.r);
         if (p) {
           tx = p.x
           ty = p.y
           drawSegment(sx, sy, tx, ty)
-
-          //--------------------------------
-          // Collision to aperture
-          //--------------------------------
-          if(p.y < -lens.value.aperture * lens.value.r || lens.value.aperture * lens.value.r < p.y) {
-            continue;
-          }
 
           // Refracted ray
           sx = tx;
