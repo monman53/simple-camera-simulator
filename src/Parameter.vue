@@ -132,6 +132,9 @@ const fNumber = computed(() => {
             <tr>
                 <td><label><input type="checkbox" v-model="options.opticalAxis"> Optical axis</label></td>
             </tr>
+            <tr v-if="options.lens && options.sensor">
+                <td><label><input type="checkbox" v-model="options.angleOfView"> Angle of view</label></td>
+            </tr>
             <!-- Field -->
             <tr>
                 <th colspan="3">

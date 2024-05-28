@@ -47,6 +47,39 @@ const grid = computed(() => {
   return { xs, ys, bxs, bys }
 })
 
+const effectiveLensRadius = computed(() => {
+  if (options.value.aperture) {
+    return lens.value.r * lens.value.aperture;
+  } else {
+    return lens.value.r;
+  }
+})
+
+const extendSegment = (sx: number, sy:number, tx:number, ty:number) => {
+  const theta = Math.atan2(ty - sy, tx - sx);
+  const ntx = sx + infR.value * Math.cos(theta);
+  const nty = sy + infR.value * Math.sin(theta);
+  return [ntx, nty];
+}
+
+const focalInfo = computed(() => {
+  const f = lens.value.f;
+  const b = sensor.value.x - lens.value.x;
+  const a = f * b / (b - f);
+
+  const focalPosX = lens.value.x - a;
+  const focalPosSize = sensor.value.r * (a / b);
+
+  const [innerX, innerY] = extendSegment(lens.value.x, -effectiveLensRadius.value, focalPosX, -focalPosSize);
+  const [outerX, outerY] = extendSegment(lens.value.x, -effectiveLensRadius.value, focalPosX, focalPosSize);
+
+  return {
+    focalPos: { x: focalPosX, size: focalPosSize },
+    inner: { x: innerX, y: innerY },
+    outer: { x: outerX, y: outerY },
+  }
+})
+
 </script>
 
 <template>
@@ -58,7 +91,6 @@ const grid = computed(() => {
     <g v-if="options.opticalAxis">
       <line :x1="-infR" y1="0" :x2="infR" y2="0" stroke="white" :stroke-width="0.5 / state.scale"></line>
     </g>
-
 
     <!-- Grid -->
     <g v-if="options.grid">
@@ -74,13 +106,43 @@ const grid = computed(() => {
 
     <!-- Curvature -->
     <g v-if="options.lens && options.curvature">
-      <circle :cx="lens.x + lensD / 2 - lensR" :cy="0" :r="lensR" stroke='white' class="dotted">
+      <circle :cx="lens.x + lensD / 2 - lensR" :cy="0" :r="lensR" class="dotted">
       </circle>
-      <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" stroke='white' class="dotted">
+      <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" class="dotted">
       </circle>
       <!-- center point -->
-          <circle :cx="lens.x + lensD / 2 - lensR" cy="0" r="0.6" class="white"></circle>
-          <circle :cx="lens.x - lensD / 2 + lensR" cy="0" r="0.6" class="white"></circle>
+      <circle :cx="lens.x + lensD / 2 - lensR" cy="0" r="0.6" class="white"></circle>
+      <circle :cx="lens.x - lensD / 2 + lensR" cy="0" r="0.6" class="white"></circle>
+    </g>
+
+    <!-- Angle of view -->
+    <g v-if="options.lens && options.sensor && options.angleOfView">
+      <!-- Inside camera -->
+      <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="effectiveLensRadius" class="dotted"></line>
+      <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted"></line>
+      <!-- Lens to focal plane (outer) -->
+      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="lens.x" :y2="-effectiveLensRadius"
+        class="dotted"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="lens.x" :y2="effectiveLensRadius"
+        class="dotted"></line>
+      <!-- Lens to focal plane (inner) -->
+      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="lens.x" :y2="effectiveLensRadius"
+        class="dotted-thick"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="lens.x" :y2="-effectiveLensRadius"
+        class="dotted-thick"></line>
+      <!-- Focal plane -->
+      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.focalPos.x"
+        :y2="focalInfo.focalPos.size" class="dotted"></line>
+      <!-- Focal plane to inf (outer) -->
+      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.outer.x"
+        :y2="focalInfo.outer.y" class="dotted"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.outer.x"
+        :y2="-focalInfo.outer.y" class="dotted"></line>
+      <!-- Focal plane to inf (inner) -->
+      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.inner.x"
+        :y2="-focalInfo.inner.y" class="dotted-thick"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.inner.x"
+        :y2="focalInfo.inner.y" class="dotted-thick"></line>
     </g>
 
     <!-- Lens and Sensor move dummy element-->
@@ -223,8 +285,16 @@ svg {
 }
 
 .dotted {
+  stroke: white;
   stroke-dasharray: 2;
   stroke-width: 0.2;
+  fill: none;
+}
+
+.dotted-thick {
+  stroke: white;
+  stroke-dasharray: 2;
+  stroke-width: 0.05;
   fill: none;
 }
 
