@@ -88,6 +88,7 @@ export const options0 = () => {
         aperture: false,
         grid: false,
         opticalAxis: false,
+        curvature: false,
     }
 }
 export const options = ref(options0())
