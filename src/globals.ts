@@ -89,6 +89,7 @@ export const options0 = () => {
         grid: false,
         opticalAxis: false,
         curvature: false,
+        angleOfView: true,
     }
 }
 export const options = ref(options0())
