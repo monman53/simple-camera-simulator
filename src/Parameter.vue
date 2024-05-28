@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lens, options, options0, style, style0, createInitialParams, lensD, infR, maxLightX } from './globals'
+import { state, lens, sensor, options, options0, style, style0, createInitialParams, lensD, infR, maxLightX } from './globals'
 import { humanReadable } from './utils';
 
 const resetView = () => {
@@ -30,6 +30,7 @@ const fNumber = computed(() => {
 
 <template>
     <div class="base">
+        <!-- Rays -->
         <fieldset>
             <legend>Rays</legend>
             <fieldset>
@@ -43,18 +44,83 @@ const fNumber = computed(() => {
                 {{ humanReadable(style.rayIntensity) }}
             </fieldset>
             <fieldset>
-                <legend>Width</legend>
+                <legend>Thickness</legend>
                 <input type="range" min="0.01" max="1" step="0.001" v-model="style.rayWidth">
                 {{ humanReadable(style.rayWidth) }}
             </fieldset>
         </fieldset>
-        <fieldset v-if="options.lens">
-            <legend>Lens n</legend>
-            <input type="range" min="1.01" max="3" step="0.001" v-model="lens.n">
-            {{ humanReadable(lens.n) }}
-        </fieldset>
+        <!-- Lens -->
         <fieldset>
-            <legend>Light Color</legend>
+            <legend>
+                <label>
+                    <input type="checkbox" v-model="options.lens">
+                    Lens
+                </label>
+            </legend>
+            <div v-if="options.lens">
+                <fieldset>
+                    <legend>Options</legend>
+                    <label>
+                        <input type="checkbox" v-model="options.lensFocalPoints">
+                        Focal points
+                        <br>
+                    </label>
+                    <label>
+                        <input type="checkbox" v-model="options.aperture">
+                        Aperture
+                        <br>
+                    </label>
+                    <label>
+                        <input type="checkbox" v-model="options.body">
+                        Wall
+                        <br>
+                    </label>
+                </fieldset>
+                <fieldset>
+                    <legend>Refractive index</legend>
+                    <input type="range" min="1.01" max="3" step="0.001" v-model="lens.n">
+                    {{ humanReadable(lens.n) }}
+                </fieldset>
+                <fieldset>
+                    <legend>Info</legend>
+                    Focal length: {{ humanReadable(lens.f) }}<br>
+                    f-number: {{ humanReadable(fNumber) }}<br>
+                </fieldset>
+            </div>
+        </fieldset>
+        <!-- Screen -->
+        <fieldset>
+            <legend>
+                <label>
+                    <input type="checkbox" v-model="options.sensor">
+                    Screen
+                </label>
+            </legend>
+            <div v-if="options.sensor">
+                <fieldset>
+                    <legend>Options</legend>
+                    <label>
+                        <input type="checkbox" v-model="options.sensorPreview">
+                        Preview
+                        <br>
+                    </label>
+                    <div v-if="options.sensorPreview" class="indent">
+                        <label>
+                            <input type="checkbox" v-model="options.sensorMemory">
+                            Memory
+                            <br>
+                        </label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Info</legend>
+                    Diameter: {{ humanReadable(sensor.r * 2) }}<br>
+                </fieldset>
+            </div>
+        </fieldset>
+        <!-- Lights -->
+        <fieldset>
+            <legend>Color palette for new light</legend>
             <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
             <span :style="`color: hsl(${state.newLightColor}, 100%, 50%)`"> █ </span>
             <br>
@@ -62,61 +128,7 @@ const fNumber = computed(() => {
             <button @click="state.newLightColor = 120">Green</button>
             <button @click="state.newLightColor = 240">Blue</button>
         </fieldset>
-        <fieldset>
-            <legend>Options</legend>
-            <label>
-                <input type="checkbox" v-model="options.lens">
-                Lens
-                <br>
-            </label>
-            <label v-if="options.lens" class="indent">
-                <input type="checkbox" v-model="options.lensFocalPoints">
-                Focal Points
-                <br>
-            </label>
-            <label>
-                <input type="checkbox" v-model="options.sensor">
-                Screen
-                <br>
-            </label>
-            <div v-if="options.sensor" class="indent">
-                <label>
-                    <input type="checkbox" v-model="options.sensorPreview">
-                    Preview
-                    <br>
-                </label>
-                <div v-if="options.sensorPreview" class="indent">
-                    <label>
-                        <input type="checkbox" v-model="options.sensorMemory">
-                        Memory
-                        <br>
-                    </label>
-                </div>
-            </div>
-            <label>
-                <input type="checkbox" v-model="options.body">
-                Body
-                <br>
-            </label>
-            <label>
-                <input type="checkbox" v-model="options.aperture">
-                Aperture
-                <br>
-            </label>
-            <button @click="options = options0()">Reset</button>
-        </fieldset>
-        <fieldset>
-            <legend>Reset</legend>
-            <button @click="resetView">View</button>
-            <button @click="resetStyle">Style</button>
-            <!-- <button @click="resetAll">All</button> -->
-        </fieldset>
-        <fieldset>
-            <legend>Info</legend>
-            Focal length: {{ humanReadable(lens.f) }}<br>
-            f-number: {{ humanReadable(fNumber) }}<br>
-        </fieldset>
-        <fieldset>
+        <!-- <fieldset>
             <legend>Debug output</legend>
             width: {{ state.width }}<br>
             height: {{ state.height }}<br>
@@ -129,7 +141,7 @@ const fNumber = computed(() => {
             lens.r: {{ humanReadable(lens.r) }}<br>
             lens.n: {{ humanReadable(lens.n) }}<br>
             lensD: {{ humanReadable(lensD) }}<br>
-        </fieldset>
+        </fieldset> -->
     </div>
 </template>
 
