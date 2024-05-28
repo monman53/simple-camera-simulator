@@ -24,21 +24,28 @@ const svgViewBox = computed(() => {
 const grid = computed(() => {
   const xs: number[] = []
   const ys: number[] = []
-  const interval = field.value.gridInterval;
+  const bxs: number[] = []
+  const bys: number[] = []
   const xMin = state.value.cx - state.value.width / 2 / state.value.scale;
   const xMax = state.value.cx + state.value.width / 2 / state.value.scale
   const yMin = state.value.cy - state.value.height / 2 / state.value.scale;
   const yMax = state.value.cy + state.value.height / 2 / state.value.scale;
-  const n = Math.floor(Math.max((xMax - xMin) / interval, (yMax - yMin) / interval))
-  if (n < 100) {
-    for (let x = Math.floor(xMin / interval) * interval; x < xMax; x += interval) {
-      xs.push(x)
-    }
-    for (let y = Math.floor(yMin / interval) * interval; y < yMax; y += interval) {
-      ys.push(y)
-    }
+  const size = Math.max(xMax - xMin, yMax - yMin);
+  const interval = Math.pow(10, Math.floor(Math.log10(size * 0.3)));
+  const boldInterval = interval * 10;
+  for (let x = Math.floor(xMin / interval) * interval; x < xMax; x += interval) {
+    xs.push(x)
   }
-  return { xs, ys }
+  for (let y = Math.floor(yMin / interval) * interval; y < yMax; y += interval) {
+    ys.push(y)
+  }
+  for (let x = Math.floor(xMin / boldInterval) * boldInterval; x < xMax; x += boldInterval) {
+    bxs.push(x)
+  }
+  for (let y = Math.floor(yMin / boldInterval) * boldInterval; y < yMax; y += boldInterval) {
+    bys.push(y)
+  }
+  return { xs, ys, bxs, bys }
 })
 
 </script>
@@ -48,10 +55,18 @@ const grid = computed(() => {
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
     @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="h.addLight">
 
+    <!-- Optical axis -->
+    <g v-if="options.opticalAxis">
+      <line :x1="-infR" y1="0" :x2="infR" y2="0" stroke="white" :stroke-width="0.5 / state.scale"></line>
+      </g>
+
+
     <!-- Grid -->
     <g v-if="options.grid">
-      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="grid-thick"></line>
-      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="grid-thick"></line>
+      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="0.5 / state.scale"></line>
+      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="0.5 / state.scale"></line>
+      <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="1 / state.scale"></line>
+      <line v-for="y of grid.bys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="1 / state.scale"></line>
     </g>
 
     <!-- Lens and Sensor move dummy element-->
@@ -98,9 +113,9 @@ const grid = computed(() => {
     <g v-if="options.aperture">
       <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="style.rUI" @mousedown="h.apertureSizeChangeStartHandler"
         class="hover-sibling-master ui-hidden"></circle>
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture" class="hover-sibling no-pointer-events">
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture" class="hover-sibling no-pointer-events thick">
       </line>
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events">
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events thick">
       </line>
     </g>
 
@@ -140,10 +155,10 @@ svg {
   display: block;
 }
 
-line {
+/* line {
   stroke: white;
   stroke-width: 0.2;
-}
+} */
 
 .hover-child {
   stroke: white;
@@ -188,6 +203,7 @@ line {
 }
 
 .thick {
+  stroke: white;
   stroke-width: 0.2;
 }
 

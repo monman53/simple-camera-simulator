@@ -131,15 +131,18 @@ const fNumber = computed(() => {
                         Grid
                         <br>
                     </label>
+                    <label>
+                        <input type="checkbox" v-model="options.opticalAxis">
+                        Optical axis
+                        <br>
+                    </label>
                 </fieldset>
-                <fieldset>
+                <!-- <fieldset>
                     <legend>Grid interval</legend>
                     <button @click="field.gridInterval = 1">1</button>
                     <button @click="field.gridInterval = 10">10</button>
                     <button @click="field.gridInterval = 100">100</button>
-                    <!-- <input type="range" min="5" max="100" step="5" v-model.number="field.gridInterval">
-                    {{ humanReadable(field.gridInterval) }}<br> -->
-                </fieldset>
+                </fieldset> -->
             </div>
         </fieldset>
         <!-- Lights -->

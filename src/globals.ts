@@ -86,7 +86,8 @@ export const options0 = () => {
         sensorMemory: false,
         body: false,
         aperture: false,
-        grid: true,
+        grid: false,
+        opticalAxis: false,
     }
 }
 export const options = ref(options0())
