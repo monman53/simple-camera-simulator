@@ -65,7 +65,7 @@ const save = () => {
 
 <template>
   <canvas ref="canvas" width="100" :height="state.height"></canvas>
-  <button @click="save">save</button>
+  <button @click="save">Take a shot</button>
 </template>
 
 <style scoped>
