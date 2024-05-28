@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, options, style, lensR, lensD, infR } from './globals'
+import { state, lights, lens, sensor, field, options, style, lensR, lensD, infR } from './globals'
 import * as h from './handlers'
+import { isBinaryOperatorToken, isSwitchStatement } from 'typescript';
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -20,12 +21,38 @@ const svgViewBox = computed(() => {
   return `${x} ${y} ${w} ${h}`
 })
 
+const grid = computed(() => {
+  const xs: number[] = []
+  const ys: number[] = []
+  const interval = field.value.gridInterval;
+  const xMin = state.value.cx - state.value.width / 2 / state.value.scale;
+  const xMax = state.value.cx + state.value.width / 2 / state.value.scale
+  const yMin = state.value.cy - state.value.height / 2 / state.value.scale;
+  const yMax = state.value.cy + state.value.height / 2 / state.value.scale;
+  const n = Math.floor(Math.max((xMax - xMin) / interval, (yMax - yMin) / interval))
+  if (n < 100) {
+    for (let x = Math.floor(xMin / interval) * interval; x < xMax; x += interval) {
+      xs.push(x)
+    }
+    for (let y = Math.floor(yMin / interval) * interval; y < yMax; y += interval) {
+      ys.push(y)
+    }
+  }
+  return { xs, ys }
+})
+
 </script>
 
 <template>
   <svg id="main-svg" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
     @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="h.addLight">
+
+    <!-- Grid -->
+    <g v-if="options.grid">
+      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="grid-thick"></line>
+      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="grid-thick"></line>
+    </g>
 
     <!-- Lens and Sensor move dummy element-->
     <g v-if="options.lens && options.sensor" class="hover-parent">
@@ -115,12 +142,12 @@ svg {
 
 line {
   stroke: white;
-  stroke-width: 0.3;
+  stroke-width: 0.2;
 }
 
 .hover-child {
   stroke: white;
-  stroke-width: 0.3;
+  stroke-width: 0.2;
 }
 
 .fill-none {
@@ -140,7 +167,7 @@ line {
 
 .ui {
   stroke: white;
-  stroke-width: 0.3;
+  stroke-width: 0.2;
   fill: transparent
 }
 
@@ -161,10 +188,15 @@ line {
 }
 
 .thick {
-  stroke-width: 0.3;
+  stroke-width: 0.2;
 }
 
 .bold {
   stroke-width: 0.6;
+}
+
+.grid-thick {
+  stroke: white;
+  stroke-width: 0.04;
 }
 </style>

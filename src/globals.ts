@@ -63,6 +63,17 @@ export const setMemoryCanvasCtx = (ctx: any) => {
 }
 
 //--------------------------------
+// Field
+//--------------------------------
+
+export const field0= () => {
+    return {
+        gridInterval: 10,
+    }
+}
+export const field = ref(field0())
+
+//--------------------------------
 // Options
 //--------------------------------
 
@@ -75,6 +86,7 @@ export const options0 = () => {
         sensorMemory: false,
         body: false,
         aperture: false,
+        grid: true,
     }
 }
 export const options = ref(options0())
