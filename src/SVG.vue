@@ -30,12 +30,12 @@ const svgViewBox = computed(() => {
     <!-- Lens and Sensor move dummy element-->
     <g v-if="options.lens && options.sensor" class="hover-parent">
       <!-- lens -->
-      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
-      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" fill="none" class="hover-child" />
+      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
+      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
       <!-- sensor -->
       <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
       <!-- dummy for ui -->
-      <rect class="dummy" :x="lens.x" :y="-Math.max(lens.r, sensor.r)" :width="sensor.x - lens.x"
+      <rect class="ui-transparent" :x="lens.x" :y="-Math.max(lens.r, sensor.r)" :width="sensor.x - lens.x"
         :height="2 * Math.max(lens.r, sensor.r)" @mousedown="h.cameraMoveStartHandler" />
     </g>
 
@@ -43,50 +43,53 @@ const svgViewBox = computed(() => {
     <g v-if="options.lens">
       <g class="hover-parent">
         <!-- left half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" fill="none"
-          class="hover-child" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
         <!-- right half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" fill="none"
-          class="hover-child" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
         <!-- dummy for ui -->
-        <rect class='dummy' :x="lens.x - lensD / 2" :y="-lens.r" :width="lensD" :height="2 * lens.r"
+        <rect class='ui-transparent' :x="lens.x - lensD / 2" :y="-lens.r" :width="lensD" :height="2 * lens.r"
           @mousedown="h.lensMoveStartHandler" />
       </g>
       <!-- Focal points -->
       <g v-if="options.lensFocalPoints">
         <!-- left hand -->
-        <g class="hover-parent">
-          <circle :cx="lens.x - lens.f" cy="0" r="1" fill="white"></circle>
+        <g>
+          <circle :cx="lens.x - lens.f" cy="0" r="0.6" class="white"></circle>
           <!-- UI -->
-          <circle :cx="lens.x - lens.f" cy="0" r="4" @mousedown="h.focalPointMoveStartHandler" class="hidden-hover-child">
+          <circle :cx="lens.x - lens.f" cy="0" :r="style.rUI" @mousedown="h.focalPointMoveStartHandler" class="ui-hidden">
           </circle>
         </g>
         <!-- right hand -->
-        <circle :cx="lens.x + lens.f" cy="0" r="1" fill="white"></circle>
+        <circle :cx="lens.x + lens.f" cy="0" r="0.6" class="white"></circle>
       </g>
       <!-- Lens size change UI-->
-      <circle :cx="lens.x" :cy="-lens.r" r="2" class="hover transparent" @mousedown="h.lensSizeChangeStartHandler">
+      <circle :cx="lens.x" :cy="-lens.r" :r="style.rUI" class="ui-hidden" @mousedown="h.lensSizeChangeStartHandler">
       </circle>
     </g>
 
     <!-- Aperture -->
     <g v-if="options.aperture">
-      <circle :cx="lens.x" :cy="lens.r * lens.aperture" r="2" @mousedown="h.apertureSizeChangeStartHandler" class="hover-sibling-master hover transparent"></circle>
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture" class="hover-sibling no-pointer-events"></line>
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events"></line>
+      <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="style.rUI" @mousedown="h.apertureSizeChangeStartHandler"
+        class="hover-sibling-master ui-hidden"></circle>
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture" class="hover-sibling no-pointer-events">
+      </line>
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events">
+      </line>
     </g>
 
     <!-- Lights -->
-    <g v-for="(light, idx) of lights" class="hover-parent">
-      <circle :cx="light.x" :cy="light.y" :r="style.rLight" :fill="`hsl(${light.color}, 100%, 50%)`"
-        @dblclick="h.deleteLight($event, idx)" @mousedown="h.lightMoveStartHandler($event, idx)" class="hover-child">
+    <g v-for="(light, idx) of lights">
+      <circle :cx="light.x" :cy="light.y" :r="style.rUI" :fill="`hsl(${light.color}, 100%, 50%)`">
+      </circle>
+      <circle :cx="light.x" :cy="light.y" :r="style.rUI" @dblclick="h.deleteLight($event, idx)"
+        @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
       </circle>
     </g>
 
     <!-- Body -->
     <g v-if="options.body">
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="infR" class="hover-child" />
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-infR" class="hover-child" />
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="infR" class="white thick" />
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-infR" class="white thick" />
     </g>
 
     <!-- Sensor -->
@@ -94,11 +97,11 @@ const svgViewBox = computed(() => {
       <g class="hover-parent">
         <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
         <!-- dummy for ui -->
-        <rect class='dummy' :x="sensor.x - 2" :y="-sensor.r" :width="4" :height="2 * sensor.r"
-          @mousedown="h.sensorMoveStartHandler" />
+        <rect :y="-sensor.r" :width="style.rUI * 2" :height="2 * sensor.r" @mousedown="h.sensorMoveStartHandler"
+          class='ui-transparent' :x="sensor.x - 2" />
       </g>
 
-      <circle :cx="sensor.x" :cy="-sensor.r" r="2" class="hover transparent" @mousedown="h.sensorSizeChangeStartHandler">
+      <circle :cx="sensor.x" :cy="-sensor.r" :r="style.rUI" class="ui-hidden" @mousedown="h.sensorSizeChangeStartHandler">
       </circle>
     </g>
   </svg>
@@ -112,35 +115,56 @@ svg {
 
 line {
   stroke: white;
-  stroke-width: 0.2
-}
-
-.dummy {
-  fill: transparent;
-}
-
-.hidden-hover-child {
-  fill: transparent;
+  stroke-width: 0.3;
 }
 
 .hover-child {
   stroke: white;
-  stroke-width: 0.2;
+  stroke-width: 0.3;
 }
 
-.transparent {
+.fill-none {
+  fill: none;
+}
+
+.no-pointer-events {
+  pointer-events: none;
+}
+
+.hover-sibling-master:hover~.hover-sibling,
+.hover-parent:hover .hover-child,
+.hover-parent:hover .hidden-hover-child {
+  stroke: white;
+  stroke-width: 0.6;
+}
+
+.ui {
+  stroke: white;
+  stroke-width: 0.3;
+  fill: transparent
+}
+
+.ui-transparent,
+.ui-hidden {
+  stroke: none;
   fill: transparent;
 }
 
-.no-pointer-events{
-    pointer-events: none;
+.ui:hover,
+.ui-hidden:hover {
+  stroke: white;
+  stroke-width: 0.6;
 }
 
-.hover-sibling-master:hover ~ .hover-sibling,
-.hover-parent:hover .hover-child,
-.hover-parent:hover .hidden-hover-child,
-.hover:hover {
-  stroke: white;
-  stroke-width: 0.5;
+.white {
+  fill: white;
+}
+
+.thick {
+  stroke-width: 0.3;
+}
+
+.bold {
+  stroke-width: 0.6;
 }
 </style>
