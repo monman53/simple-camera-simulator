@@ -24,8 +24,7 @@ const draw = () => {
 
   for (const p of sensorData.value) {
     ctx.beginPath()
-    ctx.fillStyle = `hsl(${p.color}, 100%, 50%, ${state.value.lightAlpha})`;
-    // ctx.arc(0, p.y, style.value.rayWidth, 0, 2 * Math.PI);
+    ctx.fillStyle = `hsl(${p.color}, 100%, 50%, ${style.value.rayIntensity})`;
     ctx.rect(-10, p.y-style.value.rayWidth/2, 20, style.value.rayWidth)
     ctx.fill()
     ctx.stroke();
