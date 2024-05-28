@@ -3,7 +3,6 @@ import { computed, ref, onMounted } from 'vue'
 
 import { state, lights, lens, sensor, field, options, style, lensR, lensD, infR } from './globals'
 import * as h from './handlers'
-import { isBinaryOperatorToken, isSwitchStatement } from 'typescript';
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -58,15 +57,30 @@ const grid = computed(() => {
     <!-- Optical axis -->
     <g v-if="options.opticalAxis">
       <line :x1="-infR" y1="0" :x2="infR" y2="0" stroke="white" :stroke-width="0.5 / state.scale"></line>
-      </g>
+    </g>
 
 
     <!-- Grid -->
     <g v-if="options.grid">
-      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="0.5 / state.scale"></line>
-      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="0.5 / state.scale"></line>
-      <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="1 / state.scale"></line>
-      <line v-for="y of grid.bys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="1 / state.scale"></line>
+      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="0.5 / state.scale">
+      </line>
+      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="0.5 / state.scale">
+      </line>
+      <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="1 / state.scale">
+      </line>
+      <line v-for="y of grid.bys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="1 / state.scale">
+      </line>
+    </g>
+
+    <!-- Curvature -->
+    <g v-if="options.lens && options.curvature">
+      <circle :cx="lens.x + lensD / 2 - lensR" :cy="0" :r="lensR" stroke='white' class="dotted">
+      </circle>
+      <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" stroke='white' class="dotted">
+      </circle>
+      <!-- center point -->
+          <circle :cx="lens.x + lensD / 2 - lensR" cy="0" r="0.6" class="white"></circle>
+          <circle :cx="lens.x - lensD / 2 + lensR" cy="0" r="0.6" class="white"></circle>
     </g>
 
     <!-- Lens and Sensor move dummy element-->
@@ -113,9 +127,11 @@ const grid = computed(() => {
     <g v-if="options.aperture">
       <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="style.rUI" @mousedown="h.apertureSizeChangeStartHandler"
         class="hover-sibling-master ui-hidden"></circle>
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture" class="hover-sibling no-pointer-events thick">
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
+        class="hover-sibling no-pointer-events thick">
       </line>
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events thick">
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture"
+        class="hover-sibling no-pointer-events thick">
       </line>
     </g>
 
@@ -206,8 +222,10 @@ svg {
   stroke-width: 0.6;
 }
 
-.grid-thick {
-  stroke: white;
-  stroke-width: 0.04;
+.dotted {
+  stroke-dasharray: 2;
+  stroke-width: 0.2;
+  fill: none;
 }
+
 </style>

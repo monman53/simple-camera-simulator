@@ -1,21 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lens, sensor, field, options, options0, style, style0, createInitialParams, lensD, infR, maxLightX } from './globals'
+import { state, lens, sensor, options, style, lensD, lensR } from './globals'
 import { humanReadable } from './utils';
 
-const resetView = () => {
-    const state0 = createInitialParams()
-    state.value.cx = state0.cx
-    state.value.cy = state0.cy
-    state.value.scale = state0.scale
-}
-const resetStyle = () => {
-    style.value = style0()
-}
-// const resetAll = () => {
-//     state.value = createInitialParams()
-// }
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
@@ -78,6 +66,11 @@ const fNumber = computed(() => {
                     <td><label><input type="checkbox" v-model="options.body"> Wall</label></td>
                 </tr>
                 <tr>
+                    <td><label><input type="checkbox" v-model="options.curvature"> Curvature</label></td>
+                    <td></td>
+                    <td>{{ humanReadable(lensR) }}</td>
+                </tr>
+                <tr>
                     <td>Refractive index</td>
                     <td><input type="range" min="1.01" max="3" step="0.001" v-model.number="lens.n"></td>
                     <td>{{ humanReadable(lens.n) }}</td>
@@ -88,12 +81,12 @@ const fNumber = computed(() => {
                     <td>{{ humanReadable(lens.f) }}</td>
                 </tr>
                 <tr>
-                    <td>f-number</td>
+                    <td>F-number</td>
                     <td></td>
                     <td>{{ humanReadable(fNumber) }}</td>
                 </tr>
                 <tr>
-                    <td>position</td>
+                    <td>Position</td>
                     <td></td>
                     <td>{{ humanReadable(lens.x) }}</td>
                 </tr>
@@ -127,9 +120,11 @@ const fNumber = computed(() => {
                     <td>{{ humanReadable(sensor.r * 2) }}<br></td>
                 </tr>
             </template>
-            <!-- Field -->
+            <!-- Other options -->
             <tr>
-                <th colspan="3"><hr>Other Options</th>
+                <th colspan="3">
+                    <hr>Other Options
+                </th>
             </tr>
             <tr>
                 <td><label><input type="checkbox" v-model="options.grid"> Grid</label></td>
@@ -139,7 +134,9 @@ const fNumber = computed(() => {
             </tr>
             <!-- Field -->
             <tr>
-                <th colspan="3"><hr>Field</th>
+                <th colspan="3">
+                    <hr>Field
+                </th>
             </tr>
             <tr>
                 <td>Width</td>
@@ -203,4 +200,5 @@ table th {
     /* padding-top: 1em; */
     /* border-top: solid white; */
     /* text-align: left; */
-}</style>
+}
+</style>
