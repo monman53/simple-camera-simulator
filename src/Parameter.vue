@@ -31,16 +31,24 @@ const fNumber = computed(() => {
 <template>
     <div class="base">
         <fieldset>
-            <legend># of rays</legend>
-            <input type="range" min="0" max="16" v-model="state.nRaysLog">
-            {{ nRays }}
+            <legend>Rays</legend>
+            <fieldset>
+                <legend># of rays</legend>
+                <input type="range" min="0" max="16" v-model="state.nRaysLog">
+                {{ nRays }}
+            </fieldset>
+            <fieldset>
+                <legend>Intensity</legend>
+                <input type="range" min="0" max="1" step="0.001" v-model="style.rayIntensity">
+                {{ humanReadable(style.rayIntensity) }}
+            </fieldset>
+            <fieldset>
+                <legend>Width</legend>
+                <input type="range" min="0.01" max="1" step="0.001" v-model="style.rayWidth">
+                {{ humanReadable(style.rayWidth) }}
+            </fieldset>
         </fieldset>
-        <fieldset>
-            <legend>Ray width</legend>
-            <input type="range" min="0.01" max="1" step="0.001" v-model="style.rayWidth">
-            {{ humanReadable(style.rayWidth) }}
-        </fieldset>
-        <fieldset>
+        <fieldset v-if="options.lens">
             <legend>Lens n</legend>
             <input type="range" min="1.01" max="3" step="0.001" v-model="lens.n">
             {{ humanReadable(lens.n) }}

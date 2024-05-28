@@ -38,7 +38,7 @@ const draw = () => {
   // Light path drawing like ray-tracing
   //================================
   for (const light of lights.value) {
-    ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${state.value.lightAlpha})`
+    ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
     ctx.lineWidth = style.value.rayWidth
 
     // Find image position of the light source

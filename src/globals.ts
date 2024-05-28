@@ -13,7 +13,6 @@ export const createInitialParams = () => {
         scale: 4,
         nRaysLog: 10,
         newLightColor: 120,
-        lightAlpha: 0.5,
     }
 }
 export const state = ref(createInitialParams())
@@ -90,6 +89,7 @@ export const style0 = () => {
         rLight: 2,
         // Rays
         rayWidth: 0.2,
+        rayIntensity: 0.5,
     }
 }
 export const style = ref(style0())
