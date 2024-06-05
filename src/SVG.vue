@@ -80,6 +80,10 @@ const focalInfo = computed(() => {
   }
 })
 
+const magnification = computed(() => {
+  return (sensor.value.x - lens.value.x) / (lens.value.x - focalInfo.value.focalPos.x)
+})
+
 </script>
 
 <template>

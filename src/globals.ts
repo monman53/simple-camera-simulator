@@ -22,6 +22,14 @@ export const state = ref(createInitialParams())
 //--------------------------------
 
 export const lights0 = () => {
+    // const ret = []
+    // const n = 5;
+    // const r = 50;
+    // for (let i = 0; i < n; i++) {
+    //     const theta = Math.PI * i / (n - 1) - Math.PI / 2;
+    //     ret.push({ x: -200 + r * Math.cos(theta), y: r * Math.sin(theta), color: 120 });
+    // }
+    // return ret;
     return [
         { x: -200, y: 20, color: 0 }, // red
         { x: -160, y: 0, color: 120 }, // green
@@ -41,6 +49,7 @@ export const lens0 = () => {
         n: 1.5,
         f: 50,
         aperture: 0.5,
+        circleOfConfusion: 1,
     }
 }
 export const lens = ref(lens0())
@@ -66,7 +75,7 @@ export const setMemoryCanvasCtx = (ctx: any) => {
 // Field
 //--------------------------------
 
-export const field0= () => {
+export const field0 = () => {
     return {
         gridInterval: 10,
     }
@@ -90,6 +99,7 @@ export const options0 = () => {
         opticalAxis: false,
         curvature: false,
         angleOfView: true,
+        circleOfConfusion: true,
     }
 }
 export const options = ref(options0())
