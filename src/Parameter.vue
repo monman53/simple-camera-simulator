@@ -71,6 +71,13 @@ const fNumber = computed(() => {
                     <td>{{ humanReadable(lensR) }}</td>
                 </tr>
                 <tr>
+                    <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
+                    <template v-if="options.circleOfConfusion">
+                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="lens.circleOfConfusion"></td>
+                        <td>{{ humanReadable(lens.circleOfConfusion) }}</td>
+                    </template>
+                </tr>
+                <tr>
                     <td>Refractive index</td>
                     <td><input type="range" min="1.01" max="3" step="0.001" v-model.number="lens.n"></td>
                     <td>{{ humanReadable(lens.n) }}</td>
