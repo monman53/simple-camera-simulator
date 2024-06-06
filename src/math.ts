@@ -25,7 +25,7 @@ export const getIntersectionY = (px: number, py: number, theta: number, x: numbe
     }
 };
 
-export const getIntersectionLens = (x: number, y: number, theta: number, cx: number, cy: number, r: number /* lens diameter */, R: number /* lens curvature radius */, select: number) => {
+export const getIntersectionLens = (x: number, y: number, theta: number, cx: number, cy: number, r: number /* lens diameter */, R: number /* lens curvature radius */, select: boolean) => {
     const a = 1;
     const b = 2 * ((x - cx) * Math.cos(theta) + (y - cy) * Math.sin(theta));
     const c = Math.pow(x - cx, 2) + Math.pow(y - cy, 2) - R * R;
