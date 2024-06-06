@@ -91,7 +91,7 @@ export const options0 = () => {
         lens: true,
         lensIdeal: true,
         lensFocalPoints: false,
-        sensor: false,
+        sensor: true,
         sensorPreview: true,
         sensorMemory: false,
         body: false,
@@ -99,6 +99,7 @@ export const options0 = () => {
         grid: false,
         opticalAxis: false,
         curvature: false,
+        depthOfField: true,
         angleOfView: true,
         circleOfConfusion: true,
     }
