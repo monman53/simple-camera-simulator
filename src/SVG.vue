@@ -55,7 +55,7 @@ const effectiveLensRadius = computed(() => {
   }
 })
 
-const extendSegment = (sx: number, sy:number, tx:number, ty:number) => {
+const extendSegment = (sx: number, sy: number, tx: number, ty: number) => {
   const theta = Math.atan2(ty - sy, tx - sx);
   const ntx = sx + infR.value * Math.cos(theta);
   const nty = sy + infR.value * Math.sin(theta);
@@ -80,8 +80,17 @@ const focalInfo = computed(() => {
   }
 })
 
-const magnification = computed(() => {
-  return (sensor.value.x - lens.value.x) / (lens.value.x - focalInfo.value.focalPos.x)
+const depthOfField = computed(() => {
+  const delta = lens.value.circleOfConfusion
+  const ls = sensor.value.x - lens.value.x
+  const re = effectiveLensRadius.value
+  const f = lens.value.f
+
+  const lf = ls - delta * ls / (2 * re)
+  const xf = f * lf / (lf - f)
+  const lr = ls + delta * ls / (2 * re)
+  const xr = f * lr / (lr - f)
+  return { xf, xr, }
 })
 
 </script>
@@ -98,9 +107,11 @@ const magnification = computed(() => {
 
     <!-- Grid -->
     <g v-if="options.grid">
-      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="0.5 / state.scale">
+      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white"
+        :stroke-width="0.5 / state.scale">
       </line>
-      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="0.5 / state.scale">
+      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white"
+        :stroke-width="0.5 / state.scale">
       </line>
       <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="1 / state.scale">
       </line>
@@ -138,15 +149,21 @@ const magnification = computed(() => {
       <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.focalPos.x"
         :y2="focalInfo.focalPos.size" class="dotted"></line>
       <!-- Focal plane to inf (outer) -->
-      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.outer.x"
-        :y2="focalInfo.outer.y" class="dotted"></line>
-      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.outer.x"
-        :y2="-focalInfo.outer.y" class="dotted"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.outer.x" :y2="focalInfo.outer.y"
+        class="dotted"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.outer.x" :y2="-focalInfo.outer.y"
+        class="dotted"></line>
       <!-- Focal plane to inf (inner) -->
-      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.inner.x"
-        :y2="-focalInfo.inner.y" class="dotted-thick"></line>
-      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.inner.x"
-        :y2="focalInfo.inner.y" class="dotted-thick"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.inner.x" :y2="-focalInfo.inner.y"
+        class="dotted-thick"></line>
+      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.inner.x" :y2="focalInfo.inner.y"
+        class="dotted-thick"></line>
+    </g>
+
+    <!-- Depth of field -->
+    <g v-if="options.lens && options.sensor && options.circleOfConfusion && options.depthOfField">
+      <line :x1="lens.x - depthOfField.xf" :y1="0" :x2="lens.x - depthOfField.xf" :y2="-infR" class="thick"></line>
+      <line :x1="lens.x - depthOfField.xr" :y1="0" :x2="lens.x - depthOfField.xr" :y2="-infR" class="thick"></line>
     </g>
 
     <!-- Lens and Sensor move dummy element-->
@@ -165,9 +182,11 @@ const magnification = computed(() => {
     <g v-if="options.lens">
       <g class="hover-parent">
         <!-- left half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`"
+          class="hover-child fill-none" />
         <!-- right half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`"
+          class="hover-child fill-none" />
         <!-- dummy for ui -->
         <rect class='ui-transparent' :x="lens.x - lensD / 2" :y="-lens.r" :width="lensD" :height="2 * lens.r"
           @mousedown="h.lensMoveStartHandler" />
@@ -178,7 +197,8 @@ const magnification = computed(() => {
         <g>
           <circle :cx="lens.x - lens.f" cy="0" r="0.6" class="white"></circle>
           <!-- UI -->
-          <circle :cx="lens.x - lens.f" cy="0" :r="style.rUI" @mousedown="h.focalPointMoveStartHandler" class="ui-hidden">
+          <circle :cx="lens.x - lens.f" cy="0" :r="style.rUI" @mousedown="h.focalPointMoveStartHandler"
+            class="ui-hidden">
           </circle>
         </g>
         <!-- right hand -->
@@ -225,7 +245,8 @@ const magnification = computed(() => {
           class='ui-transparent' :x="sensor.x - 2" />
       </g>
 
-      <circle :cx="sensor.x" :cy="-sensor.r" :r="style.rUI" class="ui-hidden" @mousedown="h.sensorSizeChangeStartHandler">
+      <circle :cx="sensor.x" :cy="-sensor.r" :r="style.rUI" class="ui-hidden"
+        @mousedown="h.sensorSizeChangeStartHandler">
       </circle>
     </g>
   </svg>
@@ -301,5 +322,4 @@ svg {
   stroke-width: 0.05;
   fill: none;
 }
-
 </style>
