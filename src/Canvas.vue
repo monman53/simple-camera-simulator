@@ -24,13 +24,14 @@ const drawSegment = (sx: number, sy: number, tx: number, ty: number) => {
 };
 
 const draw = () => {
-  const params = state.value;
+  const params = state.value
 
   ctx.reset()
   ctx.transform(params.scale, 0, 0, params.scale, params.width * 0.5 - params.cx * params.scale, params.height * 0.5 - params.cy * params.scale);
   // ctx.fillRect(params.viewBox.x, params.viewBox.y, params.viewBox.w, params.viewBox.h); // background
   ctx.globalCompositeOperation = 'lighten';
 
+  // Data for screen drawing
   const sensorDataTmp = []
 
   //================================
@@ -62,7 +63,11 @@ const draw = () => {
       // Collision to lens surface (left-side)
       //--------------------------------
       if (!options.value.lensIdeal) {
-        const p = getIntersectionLens(sx, sy, theta, lens.value.x - lensD.value / 2 + lensR.value, 0, lens.value.r, lensR.value, true)
+        // Center of lens curvature circle
+        const cx = lens.value.x - lensD.value / 2 + lensR.value
+        const cy = 0
+
+        const p = getIntersectionLens(sx, sy, theta, cx, cy, lens.value.r, lensR.value, true)
         if (p) {
           tx = p.x
           ty = p.y
@@ -71,8 +76,6 @@ const draw = () => {
           sy = ty
 
           // Refraction (inner lens rays)
-          const cx = lens.value.x - lensD.value / 2 + lensR.value
-          const cy = 0
           const phi1 = crossAngle(tx - cx, ty - cy, -(tx - light.x), -(ty - light.y));
           const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
           theta = Math.atan2(ty - cy, tx - cx) + Math.PI + phi2;
@@ -84,13 +87,17 @@ const draw = () => {
       //--------------------------------
       // Collision to aperture
       //--------------------------------
-      const p = getIntersectionY(sx, sy, theta, lens.value.x, -lens.value.r, lens.value.r);
-      if (options.value.aperture && p) {
-        if (p.y < -lens.value.aperture * lens.value.r || lens.value.aperture * lens.value.r < p.y) {
-          tx = p.x
-          ty = p.y
-          drawSegment(sx, sy, tx, ty)
-          continue
+      if (options.value.aperture) {
+        const p = getIntersectionY(sx, sy, theta, lens.value.x, -lens.value.r, lens.value.r)
+        if (p) {
+          const upperHit = p.y > lens.value.aperture * lens.value.r
+          const lowerHit = p.y < -lens.value.aperture * lens.value.r
+          if (lowerHit || upperHit) {
+            tx = p.x
+            ty = p.y
+            drawSegment(sx, sy, tx, ty)
+            continue
+          }
         }
       }
 
@@ -98,15 +105,17 @@ const draw = () => {
       // Collision to lens surface (right-side)
       //--------------------------------
       if (!options.value.lensIdeal && innerLens) {
-        const p = getIntersectionLens(sx, sy, theta, lens.value.x + lensD.value / 2 - lensR.value, 0, lens.value.r, lensR.value, false)
+        // Center of lens curvature circle
+        const cx = lens.value.x + lensD.value / 2 - lensR.value
+        const cy = 0
+
+        const p = getIntersectionLens(sx, sy, theta, cx, cy, lens.value.r, lensR.value, false)
         if (p) {
           tx = p.x
           ty = p.y
           drawSegment(sx, sy, tx, ty)
 
           // Refraction (inner lens rays)
-          const cx = lens.value.x + lensD.value / 2 - lensR.value
-          const cy = 0
           const phi1 = crossAngle(p.x - cx, p.y - cy, p.x - sx, p.y - sy);
           const phi2 = Math.asin(Math.sin(phi1) * lens.value.n);
           theta = Math.atan2(p.y - cy, p.x - cx) + phi2;
@@ -118,23 +127,22 @@ const draw = () => {
       //--------------------------------
       // Collision to ideal lens
       //--------------------------------
-      if (options.value.lensIdeal) {
-        if (options.value.lens) {
-          if (p) {
-            tx = p.x
-            ty = p.y
-            drawSegment(sx, sy, tx, ty)
+      if (options.value.lensIdeal && options.value.lens) {
+        const p = getIntersectionY(sx, sy, theta, lens.value.x, -lens.value.r, lens.value.r)
+        if (p) {
+          tx = p.x
+          ty = p.y
+          drawSegment(sx, sy, tx, ty)
 
-            // Refracted ray
-            sx = tx;
-            sy = ty;
-            theta = Math.atan2(imageY - ty, imageX);
-            if (imageX === Infinity) {
-              theta = Math.atan2(-light.y, -(light.x - lens.value.x));
-            }
-            if (lens.value.x - lens.value.f < light.x) {
-              theta += Math.PI;
-            }
+          // Refracted ray
+          sx = tx;
+          sy = ty;
+          theta = Math.atan2(imageY - ty, imageX);
+          if (imageX === Infinity) {
+            theta = Math.atan2(-light.y, -(light.x - lens.value.x));
+          }
+          if (lens.value.x - lens.value.f < light.x) {
+            theta += Math.PI;
           }
         }
       }
