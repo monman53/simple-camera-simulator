@@ -52,11 +52,11 @@ export const getIntersectionLens = (x: number, y: number, theta: number, cx: num
 //     return Math.acos((x1 * x2 + y1 * y2) / (norm1 * norm2));
 // };
 
-// export const crossAngle = (x1: number, y1: number, x2: number, y2: number) => {
-//     const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
-//     const norm2 = Math.sqrt(x2 * x2 + y2 * y2);
-//     return Math.asin((x1 * y2 - x2 * y1) / (norm1 * norm2));
-// };
+export const crossAngle = (x1: number, y1: number, x2: number, y2: number) => {
+    const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
+    const norm2 = Math.sqrt(x2 * x2 + y2 * y2);
+    return Math.asin((x1 * y2 - x2 * y1) / (norm1 * norm2));
+};
 
 // const getIntersectionBody = (cx, cy, theta, maxR, isInner) => {
 //     // Front
