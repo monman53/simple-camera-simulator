@@ -89,6 +89,7 @@ export const field = ref(field0())
 export const options0 = () => {
     return {
         lens: true,
+        lensIdeal: true,
         lensFocalPoints: false,
         sensor: false,
         sensorPreview: true,

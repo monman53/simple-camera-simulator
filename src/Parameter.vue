@@ -71,11 +71,7 @@ const fNumber = computed(() => {
                     <td>{{ humanReadable(lensR) }}</td>
                 </tr>
                 <tr>
-                    <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
-                    <template v-if="options.circleOfConfusion">
-                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="lens.circleOfConfusion"></td>
-                        <td>{{ humanReadable(lens.circleOfConfusion) }}</td>
-                    </template>
+                    <td><label><input type="checkbox" v-model="options.lensIdeal"> Ideal lens</label></td>
                 </tr>
                 <tr>
                     <td>Refractive index</td>
@@ -120,6 +116,13 @@ const fNumber = computed(() => {
                 </tr>
                 <tr v-if="options.sensorPreview">
                     <td><label><input type="checkbox" v-model="options.sensorMemory"> Memory</label></td>
+                </tr>
+                <tr>
+                    <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
+                    <template v-if="options.circleOfConfusion">
+                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="lens.circleOfConfusion"></td>
+                        <td>{{ humanReadable(lens.circleOfConfusion) }}</td>
+                    </template>
                 </tr>
                 <tr>
                     <td>Diameter</td>
