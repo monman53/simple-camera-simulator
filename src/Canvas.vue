@@ -2,7 +2,7 @@
 import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lens, sensor, sensorData, options, style, lensR, lensD, infR } from './globals'
-import { getIntersectionY, getIntersectionLens } from './math'
+import { getIntersectionY, getIntersectionLens, crossAngle } from './math'
 
 // Reference to the canvas
 const canvas = ref()
@@ -56,11 +56,25 @@ const draw = () => {
       let tx: number;
       let ty: number;
 
+      
+      //--------------------------------
+      // Collision to lens surface
+      //--------------------------------
       if (!options.value.lensIdeal) {
         const p = getIntersectionLens(sx, sy, theta, lens.value.x - lensD.value / 2 + lensR.value, 0, lens.value.r, lensR.value, 1)
         if (p) {
-          drawSegment(sx, sy, p.x, p.y)
-          continue
+          tx = p.x
+          ty = p.y
+          drawSegment(sx, sy, tx, ty)
+          sx = tx
+          sy = ty
+
+          // Refraction (inner lens rays)
+          const cx = lens.value.x - lensD.value / 2 + lensR.value
+          const cy = 0
+          const phi1 = crossAngle(tx - cx, ty - cy, -(tx - light.x), -(ty - light.y));
+          const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
+          theta = Math.atan2(ty - cy, tx - cx) + Math.PI + phi2;
         }
       }
 
@@ -78,7 +92,7 @@ const draw = () => {
       }
 
       //--------------------------------
-      // Collision to lens
+      // Collision to ideal lens
       //--------------------------------
       if (options.value.lensIdeal) {
         if (options.value.lens) {
