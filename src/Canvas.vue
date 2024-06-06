@@ -56,12 +56,13 @@ const draw = () => {
       let tx: number;
       let ty: number;
 
-      
+      let innerLens = false
+
       //--------------------------------
       // Collision to lens surface (left-side)
       //--------------------------------
       if (!options.value.lensIdeal) {
-        const p = getIntersectionLens(sx, sy, theta, lens.value.x - lensD.value / 2 + lensR.value, 0, lens.value.r, lensR.value, 1)
+        const p = getIntersectionLens(sx, sy, theta, lens.value.x - lensD.value / 2 + lensR.value, 0, lens.value.r, lensR.value, true)
         if (p) {
           tx = p.x
           ty = p.y
@@ -75,6 +76,8 @@ const draw = () => {
           const phi1 = crossAngle(tx - cx, ty - cy, -(tx - light.x), -(ty - light.y));
           const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
           theta = Math.atan2(ty - cy, tx - cx) + Math.PI + phi2;
+
+          innerLens = true
         }
       }
 
@@ -94,22 +97,21 @@ const draw = () => {
       //--------------------------------
       // Collision to lens surface (right-side)
       //--------------------------------
-      if (!options.value.lensIdeal) {
-        const p = getIntersectionLens(sx, sy, theta, lens.value.x + lensD.value / 2 - lensR.value, 0, lens.value.r, lensR.value, 0)
+      if (!options.value.lensIdeal && innerLens) {
+        const p = getIntersectionLens(sx, sy, theta, lens.value.x + lensD.value / 2 - lensR.value, 0, lens.value.r, lensR.value, false)
         if (p) {
           tx = p.x
           ty = p.y
           drawSegment(sx, sy, tx, ty)
-          sx = tx
-          sy = ty
-          continue;
 
           // Refraction (inner lens rays)
-          const cx = lens.value.x - lensD.value / 2 + lensR.value
+          const cx = lens.value.x + lensD.value / 2 - lensR.value
           const cy = 0
-          const phi1 = crossAngle(tx - cx, ty - cy, -(tx - light.x), -(ty - light.y));
-          const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
-          theta = Math.atan2(ty - cy, tx - cx) + Math.PI + phi2;
+          const phi1 = crossAngle(p.x - cx, p.y - cy, p.x - sx, p.y - sy);
+          const phi2 = Math.asin(Math.sin(phi1) * lens.value.n);
+          theta = Math.atan2(p.y - cy, p.x - cx) + phi2;
+          sx = tx
+          sy = ty
         }
       }
 
