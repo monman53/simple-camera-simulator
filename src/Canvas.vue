@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { watch, onMounted, ref } from 'vue'
 
-import { state, lights, lens, sensor, sensorData, options, style, infR } from './globals'
-import { getIntersectionY } from './math'
-import { validateLocaleAndSetLanguage } from 'typescript';
+import { state, lights, lens, sensor, sensorData, options, style, lensR, lensD, infR } from './globals'
+import { getIntersectionY, getIntersectionLens } from './math'
 
 // Reference to the canvas
 const canvas = ref()
@@ -57,6 +56,14 @@ const draw = () => {
       let tx: number;
       let ty: number;
 
+      if (!options.value.lensIdeal) {
+        const p = getIntersectionLens(sx, sy, theta, lens.value.x - lensD.value / 2 + lensR.value, 0, lens.value.r, lensR.value, 1)
+        if (p) {
+          drawSegment(sx, sy, p.x, p.y)
+          continue
+        }
+      }
+
       //--------------------------------
       // Collision to aperture
       //--------------------------------
@@ -73,21 +80,23 @@ const draw = () => {
       //--------------------------------
       // Collision to lens
       //--------------------------------
-      if (options.value.lens) {
-        if (p) {
-          tx = p.x
-          ty = p.y
-          drawSegment(sx, sy, tx, ty)
+      if (options.value.lensIdeal) {
+        if (options.value.lens) {
+          if (p) {
+            tx = p.x
+            ty = p.y
+            drawSegment(sx, sy, tx, ty)
 
-          // Refracted ray
-          sx = tx;
-          sy = ty;
-          theta = Math.atan2(imageY - ty, imageX);
-          if (imageX === Infinity) {
-            theta = Math.atan2(-light.y, -(light.x - lens.value.x));
-          }
-          if (lens.value.x - lens.value.f < light.x) {
-            theta += Math.PI;
+            // Refracted ray
+            sx = tx;
+            sy = ty;
+            theta = Math.atan2(imageY - ty, imageX);
+            if (imageX === Infinity) {
+              theta = Math.atan2(-light.y, -(light.x - lens.value.x));
+            }
+            if (lens.value.x - lens.value.f < light.x) {
+              theta += Math.PI;
+            }
           }
         }
       }

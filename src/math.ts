@@ -19,35 +19,32 @@ export const getIntersectionY = (px: number, py: number, theta: number, x: numbe
     const r = (x - px) / cos;
     const y = py + r * sin;
     if (r >= 0 && minY <= y && y <= maxY) {
-        return {x, y, r}
-        // return {x, y, r}
-        // return [true, x, y, r];
+        return { x, y, r }
     } else {
         return null
-        // return [false, px + maxR * cos, py + maxR * sin, maxR];
     }
 };
 
-// export const getIntersectionLens = (x: number, y: number, theta: number, cx: number, cy: number, r: number, R: number, maxR: number, select: number) => {
-//     const a = 1;
-//     const b = 2 * ((x - cx) * Math.cos(theta) + (y - cy) * Math.sin(theta));
-//     const c = Math.pow(x - cx, 2) + Math.pow(y - cy, 2) - R * R;
-//     const cond = b * b - 4 * a * c;
-//     if (cond < 0) {
-//         return [false, x + maxR * Math.cos(theta), y + maxR * Math.sin(theta), maxR];
-//     }
-//     // NOTICE: Use smaller r
-//     const d1 = (-b - Math.sqrt(cond)) / (2 * a);
-//     const d2 = (-b + Math.sqrt(cond)) / (2 * a);
-//     const d = select ? d1 : d2;
-//     const tx = x + d * Math.cos(theta);
-//     const ty = y + d * Math.sin(theta);
-//     if (Math.abs(ty) > r) {
-//         return [false, x + maxR * Math.cos(theta), y + maxR * Math.sin(theta), maxR];
-//     } else {
-//         return [true, tx, ty, d];
-//     }
-// };
+export const getIntersectionLens = (x: number, y: number, theta: number, cx: number, cy: number, r: number /* lens diameter */, R: number /* lens curvature radius */, select: number) => {
+    const a = 1;
+    const b = 2 * ((x - cx) * Math.cos(theta) + (y - cy) * Math.sin(theta));
+    const c = Math.pow(x - cx, 2) + Math.pow(y - cy, 2) - R * R;
+    const cond = b * b - 4 * a * c;
+    if (cond < 0) {
+        return null
+    }
+    // NOTICE: Use smaller r
+    const d1 = (-b - Math.sqrt(cond)) / (2 * a);
+    const d2 = (-b + Math.sqrt(cond)) / (2 * a);
+    const d = select ? d1 : d2;
+    const tx = x + d * Math.cos(theta);
+    const ty = y + d * Math.sin(theta);
+    if (Math.abs(ty) > r || d < 0) {
+        return null
+    } else {
+        return { x: tx, y: ty, r: d }
+    }
+};
 
 // export const dotAngle = (x1: number, y1: number, x2: number, y2: number) => {
 //     const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
