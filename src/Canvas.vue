@@ -58,7 +58,7 @@ const draw = () => {
 
       
       //--------------------------------
-      // Collision to lens surface
+      // Collision to lens surface (left-side)
       //--------------------------------
       if (!options.value.lensIdeal) {
         const p = getIntersectionLens(sx, sy, theta, lens.value.x - lensD.value / 2 + lensR.value, 0, lens.value.r, lensR.value, 1)
@@ -88,6 +88,28 @@ const draw = () => {
           ty = p.y
           drawSegment(sx, sy, tx, ty)
           continue
+        }
+      }
+
+      //--------------------------------
+      // Collision to lens surface (right-side)
+      //--------------------------------
+      if (!options.value.lensIdeal) {
+        const p = getIntersectionLens(sx, sy, theta, lens.value.x + lensD.value / 2 - lensR.value, 0, lens.value.r, lensR.value, 0)
+        if (p) {
+          tx = p.x
+          ty = p.y
+          drawSegment(sx, sy, tx, ty)
+          sx = tx
+          sy = ty
+          continue;
+
+          // Refraction (inner lens rays)
+          const cx = lens.value.x - lensD.value / 2 + lensR.value
+          const cy = 0
+          const phi1 = crossAngle(tx - cx, ty - cy, -(tx - light.x), -(ty - light.y));
+          const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
+          theta = Math.atan2(ty - cy, tx - cx) + Math.PI + phi2;
         }
       }
 
