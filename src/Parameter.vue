@@ -63,9 +63,6 @@ const fNumber = computed(() => {
                     <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
                 </tr>
                 <tr>
-                    <td><label><input type="checkbox" v-model="options.body"> Wall</label></td>
-                </tr>
-                <tr>
                     <td><label><input type="checkbox" v-model="options.curvature"> Curvature</label></td>
                     <td></td>
                     <td>{{ humanReadable(lensR) }}</td>
@@ -120,7 +117,8 @@ const fNumber = computed(() => {
                 <tr>
                     <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
                     <template v-if="options.circleOfConfusion">
-                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="lens.circleOfConfusion"></td>
+                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="lens.circleOfConfusion">
+                        </td>
                         <td>{{ humanReadable(lens.circleOfConfusion) }}</td>
                     </template>
                 </tr>
@@ -137,13 +135,16 @@ const fNumber = computed(() => {
                 </th>
             </tr>
             <tr>
+                <td><label><input type="checkbox" v-model="options.body"> Wall</label></td>
+            </tr>
+            <tr v-if="options.lens && options.sensor">
+                <td><label><input type="checkbox" v-model="options.angleOfView"> Guide lines</label></td>
+            </tr>
+            <tr>
                 <td><label><input type="checkbox" v-model="options.grid"> Grid</label></td>
             </tr>
             <tr>
                 <td><label><input type="checkbox" v-model="options.opticalAxis"> Optical axis</label></td>
-            </tr>
-            <tr v-if="options.lens && options.sensor">
-                <td><label><input type="checkbox" v-model="options.angleOfView"> Angle of view</label></td>
             </tr>
             <!-- Field -->
             <tr>
