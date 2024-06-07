@@ -86,7 +86,7 @@ const guidelines = computed(() => {
   const xr = f * lr / (lr - f)
 
   const dr = focalPosSize * (xr / a) + (1 - xr / a) * effectiveLensRadius.value
-  const df = (focalPosSize + effectiveLensRadius.value)  * (xf / a) - effectiveLensRadius.value
+  const df = (focalPosSize + effectiveLensRadius.value) * (xf / a) - effectiveLensRadius.value
 
   return {
     focal: { x: focalPosX, d: focalPosSize },
@@ -100,6 +100,7 @@ const guidelines = computed(() => {
 const strokeWidth = computed(() => {
   const scale = 1 / state.value.scale
   return {
+    thicker: 0.2 * scale,
     thick: 0.5 * scale,
     normal: 1 * scale,
     bold: 2 * scale,
@@ -111,6 +112,11 @@ const strokeDashArray = computed(() => {
   return 4 * scale;
 })
 
+const rUI = computed(() => {
+  const scale = 1 / state.value.scale
+  return 8 * scale;
+})
+
 </script>
 
 <template>
@@ -120,20 +126,18 @@ const strokeDashArray = computed(() => {
 
     <!-- Optical axis -->
     <g v-if="options.opticalAxis">
-      <line :x1="-infR" y1="0" :x2="infR" y2="0" stroke="white" :stroke-width="0.5 / state.scale"></line>
+      <line :x1="-infR" y1="0" :x2="infR" y2="0" stroke="white" class="thick"></line>
     </g>
 
     <!-- Grid -->
     <g v-if="options.grid">
-      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white"
-        :stroke-width="0.5 / state.scale">
+      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="thicker">
       </line>
-      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white"
-        :stroke-width="0.5 / state.scale">
+      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="thicker">
       </line>
-      <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" stroke="white" :stroke-width="1 / state.scale">
+      <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="thick">
       </line>
-      <line v-for="y of grid.bys" :y1="y" :x1="-infR" :y2="y" :x2="infR" stroke="white" :stroke-width="1 / state.scale">
+      <line v-for="y of grid.bys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="thick">
       </line>
     </g>
 
@@ -144,8 +148,8 @@ const strokeDashArray = computed(() => {
       <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" class="dotted">
       </circle>
       <!-- center point -->
-      <circle :cx="lens.x + lensD / 2 - lensR" cy="0" r="0.6" class="white"></circle>
-      <circle :cx="lens.x - lensD / 2 + lensR" cy="0" r="0.6" class="white"></circle>
+      <circle :cx="lens.x + lensD / 2 - lensR" cy="0" :r="rUI / 2" class="white"></circle>
+      <circle :cx="lens.x - lensD / 2 + lensR" cy="0" :r="rUI / 2" class="white"></circle>
     </g>
 
     <!-- Angle of view -->
@@ -154,18 +158,18 @@ const strokeDashArray = computed(() => {
       <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="effectiveLensRadius" class="dotted"></line>
       <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted"></line>
       <!-- Lens to focal plane (outer) -->
-      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
-        class="dotted"></line>
-      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
-        class="dotted"></line>
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted">
+      </line>
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius" class="dotted">
+      </line>
       <!-- Lens to focal plane (inner) -->
       <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
         class="dotted-thick"></line>
       <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
         class="dotted-thick"></line>
       <!-- Focal plane -->
-      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x"
-        :y2="guidelines.focal.d" class="dotted"></line>
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x" :y2="guidelines.focal.d"
+        class="dotted"></line>
       <!-- Focal plane to inf (outer) -->
       <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.aovOuter.x" :y2="guidelines.aovOuter.y"
         class="dotted"></line>
@@ -215,23 +219,22 @@ const strokeDashArray = computed(() => {
       <g v-if="options.lensFocalPoints">
         <!-- left hand -->
         <g>
-          <circle :cx="lens.x - lens.f" cy="0" r="0.6" class="white"></circle>
+          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2" class="white"></circle>
           <!-- UI -->
-          <circle :cx="lens.x - lens.f" cy="0" :r="style.rUI" @mousedown="h.focalPointMoveStartHandler"
-            class="ui-hidden">
+          <circle :cx="lens.x - lens.f" cy="0" :r="rUI" @mousedown="h.focalPointMoveStartHandler" class="ui-hidden">
           </circle>
         </g>
         <!-- right hand -->
-        <circle :cx="lens.x + lens.f" cy="0" r="0.6" class="white"></circle>
+        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2" class="white"></circle>
       </g>
       <!-- Lens size change UI-->
-      <circle :cx="lens.x" :cy="-lens.r" :r="style.rUI" class="ui-hidden" @mousedown="h.lensSizeChangeStartHandler">
+      <circle :cx="lens.x" :cy="-lens.r" :r="rUI" class="ui-hidden" @mousedown="h.lensSizeChangeStartHandler">
       </circle>
     </g>
 
     <!-- Aperture -->
     <g v-if="options.aperture">
-      <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="style.rUI" @mousedown="h.apertureSizeChangeStartHandler"
+      <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="rUI" @mousedown="h.apertureSizeChangeStartHandler"
         class="hover-sibling-master ui-hidden"></circle>
       <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
         class="hover-sibling no-pointer-events thick">
@@ -243,9 +246,9 @@ const strokeDashArray = computed(() => {
 
     <!-- Lights -->
     <g v-for="(light, idx) of lights">
-      <circle :cx="light.x" :cy="light.y" :r="style.rUI" :fill="`hsl(${light.color}, 100%, 50%)`">
+      <circle :cx="light.x" :cy="light.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%)`">
       </circle>
-      <circle :cx="light.x" :cy="light.y" :r="style.rUI" @dblclick="h.deleteLight($event, idx)"
+      <circle :cx="light.x" :cy="light.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
         @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
       </circle>
     </g>
@@ -261,12 +264,11 @@ const strokeDashArray = computed(() => {
       <g class="hover-parent">
         <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
         <!-- dummy for ui -->
-        <rect :y="-sensor.r" :width="style.rUI * 2" :height="2 * sensor.r" @mousedown="h.sensorMoveStartHandler"
+        <rect :y="-sensor.r" :width="rUI * 2" :height="2 * sensor.r" @mousedown="h.sensorMoveStartHandler"
           class='ui-transparent' :x="sensor.x - 2" />
       </g>
 
-      <circle :cx="sensor.x" :cy="-sensor.r" :r="style.rUI" class="ui-hidden"
-        @mousedown="h.sensorSizeChangeStartHandler">
+      <circle :cx="sensor.x" :cy="-sensor.r" :r="rUI" class="ui-hidden" @mousedown="h.sensorSizeChangeStartHandler">
       </circle>
     </g>
   </svg>
@@ -320,7 +322,17 @@ svg {
   fill: white;
 }
 
+.thicker {
+  stroke: white;
+  stroke-width: v-bind('strokeWidth.thicker');
+}
+
 .thick {
+  stroke: white;
+  stroke-width: v-bind('strokeWidth.thick');
+}
+
+.normal {
   stroke: white;
   stroke-width: v-bind('strokeWidth.normal');
 }

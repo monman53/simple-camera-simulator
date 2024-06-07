@@ -112,7 +112,6 @@ export const options = ref(options0())
 
 export const style0 = () => {
     return {
-        rUI: 2,
         // Rays
         rayWidth: 0.2,
         rayIntensity: 0.5,
