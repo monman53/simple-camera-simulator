@@ -86,7 +86,7 @@ const guidelines = computed(() => {
   const xr = f * lr / (lr - f)
 
   const dr = focalPosSize * (xr / a) + (1 - xr / a) * effectiveLensRadius.value
-  const df = focalPosSize * ((xf - f) / (a - f))
+  const df = (focalPosSize + effectiveLensRadius.value)  * (xf / a) - effectiveLensRadius.value
 
   return {
     focal: { x: focalPosX, d: focalPosSize },
@@ -95,6 +95,20 @@ const guidelines = computed(() => {
     dofInner: { x: xr, d: dr },
     dofOuter: { x: xf, d: df },
   }
+})
+
+const strokeWidth = computed(() => {
+  const scale = 1 / state.value.scale
+  return {
+    thick: 0.5 * scale,
+    normal: 1 * scale,
+    bold: 2 * scale,
+  }
+})
+
+const strokeDashArray = computed(() => {
+  const scale = 1 / state.value.scale
+  return 4 * scale;
 })
 
 </script>
@@ -266,7 +280,7 @@ svg {
 
 .hover-child {
   stroke: white;
-  stroke-width: 0.2;
+  stroke-width: v-bind('strokeWidth.normal');
 }
 
 .fill-none {
@@ -281,12 +295,12 @@ svg {
 .hover-parent:hover .hover-child,
 .hover-parent:hover .hidden-hover-child {
   stroke: white;
-  stroke-width: 0.6;
+  stroke-width: v-bind('strokeWidth.bold');
 }
 
 .ui {
   stroke: white;
-  stroke-width: 0.2;
+  stroke-width: v-bind('strokeWidth.normal');
   fill: transparent
 }
 
@@ -299,7 +313,7 @@ svg {
 .ui:hover,
 .ui-hidden:hover {
   stroke: white;
-  stroke-width: 0.6;
+  stroke-width: v-bind('strokeWidth.bold');
 }
 
 .white {
@@ -308,24 +322,24 @@ svg {
 
 .thick {
   stroke: white;
-  stroke-width: 0.2;
+  stroke-width: v-bind('strokeWidth.normal');
 }
 
 .bold {
-  stroke-width: 0.6;
+  stroke-width: v-bind('strokeWidth.bold');
 }
 
 .dotted {
   stroke: white;
-  stroke-dasharray: 2;
-  stroke-width: 0.2;
+  stroke-dasharray: v-bind(strokeDashArray);
+  stroke-width: v-bind('strokeWidth.normal');
   fill: none;
 }
 
 .dotted-thick {
   stroke: white;
-  stroke-dasharray: 2;
-  stroke-width: 0.05;
+  stroke-dasharray: v-bind(strokeDashArray);
+  stroke-width: v-bind('strokeWidth.thick');
   fill: none;
 }
 </style>
