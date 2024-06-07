@@ -62,8 +62,10 @@ const extendSegment = (sx: number, sy: number, tx: number, ty: number) => {
   return [ntx, nty];
 }
 
-const focalInfo = computed(() => {
+const guidelines = computed(() => {
   const f = lens.value.f;
+
+  // Angle of view (AOV)
   const b = sensor.value.x - lens.value.x;
   const a = f * b / (b - f);
 
@@ -73,24 +75,26 @@ const focalInfo = computed(() => {
   const [innerX, innerY] = extendSegment(lens.value.x, -effectiveLensRadius.value, focalPosX, -focalPosSize);
   const [outerX, outerY] = extendSegment(lens.value.x, -effectiveLensRadius.value, focalPosX, focalPosSize);
 
-  return {
-    focalPos: { x: focalPosX, size: focalPosSize },
-    inner: { x: innerX, y: innerY },
-    outer: { x: outerX, y: outerY },
-  }
-})
-
-const depthOfField = computed(() => {
+  // Depth of field (DOF)
   const delta = lens.value.circleOfConfusion
   const ls = sensor.value.x - lens.value.x
   const re = effectiveLensRadius.value
-  const f = lens.value.f
 
   const lf = ls - delta * ls / (2 * re)
   const xf = f * lf / (lf - f)
   const lr = ls + delta * ls / (2 * re)
   const xr = f * lr / (lr - f)
-  return { xf, xr, }
+
+  const dr = focalPosSize * (xr / a) + (1 - xr / a) * effectiveLensRadius.value
+  const df = focalPosSize * ((xf - f) / (a - f))
+
+  return {
+    focal: { x: focalPosX, d: focalPosSize },
+    aovInner: { x: innerX, y: innerY },
+    aovOuter: { x: outerX, y: outerY },
+    dofInner: { x: xr, d: dr },
+    dofOuter: { x: xf, d: df },
+  }
 })
 
 </script>
@@ -136,34 +140,36 @@ const depthOfField = computed(() => {
       <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="effectiveLensRadius" class="dotted"></line>
       <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted"></line>
       <!-- Lens to focal plane (outer) -->
-      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="lens.x" :y2="-effectiveLensRadius"
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
         class="dotted"></line>
-      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="lens.x" :y2="effectiveLensRadius"
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
         class="dotted"></line>
       <!-- Lens to focal plane (inner) -->
-      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="lens.x" :y2="effectiveLensRadius"
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
         class="dotted-thick"></line>
-      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="lens.x" :y2="-effectiveLensRadius"
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
         class="dotted-thick"></line>
       <!-- Focal plane -->
-      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.focalPos.x"
-        :y2="focalInfo.focalPos.size" class="dotted"></line>
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x"
+        :y2="guidelines.focal.d" class="dotted"></line>
       <!-- Focal plane to inf (outer) -->
-      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.outer.x" :y2="focalInfo.outer.y"
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.aovOuter.x" :y2="guidelines.aovOuter.y"
         class="dotted"></line>
-      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.outer.x" :y2="-focalInfo.outer.y"
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.aovOuter.x" :y2="-guidelines.aovOuter.y"
         class="dotted"></line>
       <!-- Focal plane to inf (inner) -->
-      <line :x1="focalInfo.focalPos.x" :y1="focalInfo.focalPos.size" :x2="focalInfo.inner.x" :y2="-focalInfo.inner.y"
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.aovInner.x" :y2="-guidelines.aovInner.y"
         class="dotted-thick"></line>
-      <line :x1="focalInfo.focalPos.x" :y1="-focalInfo.focalPos.size" :x2="focalInfo.inner.x" :y2="focalInfo.inner.y"
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.aovInner.x" :y2="guidelines.aovInner.y"
         class="dotted-thick"></line>
     </g>
 
     <!-- Depth of field -->
     <g v-if="options.lens && options.sensor && options.circleOfConfusion && options.depthOfField">
-      <line :x1="lens.x - depthOfField.xf" :y1="0" :x2="lens.x - depthOfField.xf" :y2="-infR" class="thick"></line>
-      <line :x1="lens.x - depthOfField.xr" :y1="0" :x2="lens.x - depthOfField.xr" :y2="-infR" class="thick"></line>
+      <line :x1="lens.x - guidelines.dofInner.x" :y1="-guidelines.dofInner.d" :x2="lens.x - guidelines.dofInner.x"
+        :y2="guidelines.dofInner.d" class="dotted-thick"></line>
+      <line :x1="lens.x - guidelines.dofOuter.x" :y1="-guidelines.dofOuter.d" :x2="lens.x - guidelines.dofOuter.x"
+        :y2="guidelines.dofOuter.d" class="dotted-thick"></line>
     </g>
 
     <!-- Lens and Sensor move dummy element-->
