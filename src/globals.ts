@@ -91,6 +91,8 @@ export const options0 = () => {
         lens: true,
         lensIdeal: true,
         lensFocalPoints: false,
+        lensDoubleFocalPoints: false,
+        hyperfocalPoint: false,
         sensor: true,
         sensorPreview: true,
         sensorMemory: false,
@@ -195,6 +197,14 @@ export const infR = computed(() => {
         distanceMax = Math.max(distanceMax, d);
     }
     return (screen + distanceMax) * 3 /* 3 for safety */;
+})
+
+export const fNumber = computed(() => {
+    if (options.value.aperture) {
+        return lens.value.f / (2 * lens.value.r * lens.value.aperture)
+    } else {
+        return lens.value.f / (2 * lens.value.r)
+    }
 })
 
 export const maxLightX = computed(() => {

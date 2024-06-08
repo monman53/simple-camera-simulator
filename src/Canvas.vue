@@ -62,7 +62,7 @@ const draw = () => {
       //--------------------------------
       // Collision to lens surface (left-side)
       //--------------------------------
-      if (!options.value.lensIdeal) {
+      if (!options.value.lensIdeal && options.value.lens) {
         // Center of lens curvature circle
         const cx = lens.value.x - lensD.value / 2 + lensR.value
         const cy = 0
