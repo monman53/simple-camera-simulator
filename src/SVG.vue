@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, field, options, style, lensR, lensD, infR } from './globals'
+import { state, lights, lens, sensor, field, options, lensR, lensD, infR, fNumber } from './globals'
 import * as h from './handlers'
 
 // Reference to the svg element
@@ -183,11 +183,20 @@ const rUI = computed(() => {
     </g>
 
     <!-- Depth of field -->
-    <g v-if="options.lens && options.sensor && options.circleOfConfusion && options.depthOfField">
+    <g
+      v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField">
       <line :x1="lens.x - guidelines.dofInner.x" :y1="-guidelines.dofInner.d" :x2="lens.x - guidelines.dofInner.x"
         :y2="guidelines.dofInner.d" class="dotted-thick"></line>
       <line :x1="lens.x - guidelines.dofOuter.x" :y1="-guidelines.dofOuter.d" :x2="lens.x - guidelines.dofOuter.x"
         :y2="guidelines.dofOuter.d" class="dotted-thick"></line>
+    </g>
+
+
+    <!-- Hyperfocal point -->
+    <g
+      v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
+      <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
+        class="white"></circle>
     </g>
 
     <!-- Lens and Sensor move dummy element-->
@@ -226,6 +235,12 @@ const rUI = computed(() => {
         </g>
         <!-- right hand -->
         <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2" class="white"></circle>
+
+        <!-- Double focal points -->
+        <g v-if="options.lensDoubleFocalPoints">
+          <circle :cx="lens.x - 2 * lens.f" cy="0" :r="rUI / 2" class="white"></circle>
+          <circle :cx="lens.x + 2 * lens.f" cy="0" :r="rUI / 2" class="white"></circle>
+        </g>
       </g>
       <!-- Lens size change UI-->
       <circle :cx="lens.x" :cy="-lens.r" :r="rUI" class="ui-hidden" @mousedown="h.lensSizeChangeStartHandler">

@@ -1,18 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lens, sensor, options, style, lensD, lensR } from './globals'
+import { state, lens, sensor, options, style, lensD, lensR, fNumber } from './globals'
 import { humanReadable } from './utils';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
-})
-const fNumber = computed(() => {
-    if (options.value.aperture) {
-        return lens.value.f / (2 * lens.value.r * lens.value.aperture)
-    } else {
-        return lens.value.f / (2 * lens.value.r)
-    }
 })
 </script>
 
@@ -59,9 +52,15 @@ const fNumber = computed(() => {
                 <tr>
                     <td><label><input type="checkbox" v-model="options.lensFocalPoints"> Focal points</label></td>
                 </tr>
-                <tr>
-                    <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
+                <tr v-if="options.lensFocalPoints">
+                    <td><label><input type="checkbox" v-model="options.lensDoubleFocalPoints"> 2x Focal points</label>
+                    </td>
                 </tr>
+            </template>
+            <tr>
+                <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
+            </tr>
+            <template v-if="options.lens">
                 <tr>
                     <td><label><input type="checkbox" v-model="options.curvature"> Curvature</label></td>
                     <td></td>
@@ -143,6 +142,9 @@ const fNumber = computed(() => {
             <tr v-if="options.lens && options.sensor && options.circleOfConfusion">
                 <td><label><input type="checkbox" v-model="options.depthOfField"> Depth of field</label></td>
             </tr>
+            <tr v-if="options.lens && options.sensor && options.circleOfConfusion && options.depthOfField">
+                <td><label><input type="checkbox" v-model="options.hyperfocalPoint"> Hyperfocal point</label></td>
+            </tr>
             <tr>
                 <td><label><input type="checkbox" v-model="options.grid"> Grid</label></td>
             </tr>
@@ -211,11 +213,5 @@ table td:nth-child(2) {
 
 table td:nth-child(3) {
     text-align: right;
-}
-
-table th {
-    /* padding-top: 1em; */
-    /* border-top: solid white; */
-    /* text-align: left; */
 }
 </style>
