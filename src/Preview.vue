@@ -75,7 +75,7 @@ const save = () => {
 
 <template>
   <canvas ref="canvas" width="100" :height="state.height"></canvas>
-  <button @click="save">Take a shot</button>
+  <button @click="save"><i class="bi bi-camera-fill"></i></button>
 </template>
 
 <style scoped>
