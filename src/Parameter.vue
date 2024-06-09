@@ -6,7 +6,7 @@ import { humanReadable } from './utils';
 
 import Document from './Document.vue'
 
-const mode = ref("info")
+const mode = ref("control")
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog

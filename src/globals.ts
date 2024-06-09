@@ -88,7 +88,7 @@ export const field = ref(field0())
 
 export const options0 = () => {
     return {
-        advanced: true,
+        advanced: false,
         lens: true,
         lensIdeal: true,
         lensFocalPoints: false,
@@ -102,9 +102,9 @@ export const options0 = () => {
         grid: false,
         opticalAxis: false,
         curvature: false,
-        depthOfField: true,
-        angleOfView: true,
-        circleOfConfusion: true,
+        depthOfField: false,
+        angleOfView: false,
+        circleOfConfusion: false,
     }
 }
 export const options = ref(options0())
