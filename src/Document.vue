@@ -2,21 +2,11 @@
 import { onMounted } from 'vue'
 
 onMounted(() => {
-    window.MathJax.typesetPromise();
+    // TODO: `as any` is workaround
+    (window as any).MathJax.typesetPromise();
 })
 
 </script>
-<!-- 
-    When \(a \ne 0\), there are two solutions to \(ax^2 + bx + c = 0\) and they are
-    $$x = {-b \pm \sqrt{b^2-4ac} \over 2a}.$$
-
-    $$
-    \begin{eqnarray}
-     = S_n = a_1 + a_2 + ....+a_n
-    \end{eqnarray}
-    $$
--->
-
 
 <template>
     <h3>Simple camera simulator</h3>
@@ -36,7 +26,7 @@ onMounted(() => {
                 \(R_2\) : Radius of curvature of the right side of surface (negative).<br>
                 \(d\) : Thickness (distance between left and right surface on the optical axis).<br>
             </p>
-            <!-- <p>
+            <p>
                 In this application, we assume \(R = R_1 = -R_2 > 0\), and
                 \(d\) is replaced by \(d = 2(R - \sqrt{R^2 - r^2})\) where \(r\) is radius of the lens.
                 Then, the equation becomes
@@ -45,7 +35,10 @@ onMounted(() => {
                 \frac{1}{f} = \frac{2(n-1)}{R} + \frac{2(R - \sqrt{R^2 - r^2})(n-1)^2}{R^2}.
                 \end{eqnarray}
                 $$
-            </p> -->
+                And, \(f\), \(n\) and \(r\) are our parameters. \(R\) is calculated by solving this equation for \(R\).
+                To solve this equation, numerical method (Newton's method) is performed because quartic equation is hard
+                to solve.
+            </p>
         </dd>
 
         <!-- <dt><a href="https://en.wikipedia.org/wiki/Focal_length">Focal length</a></dt> -->
