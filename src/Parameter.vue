@@ -4,7 +4,9 @@ import { computed, ref } from 'vue'
 import { state, lens, sensor, options, style, lensD, lensR, fNumber } from './globals'
 import { humanReadable } from './utils';
 
-const mode = ref("control")
+import Document from './Document.vue'
+
+const mode = ref("info")
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
@@ -234,8 +236,7 @@ const nRays = computed(() => {
         </template>
         <template v-if="mode === 'info'">
             <div class="info">
-                <h3>Simple camera simulator</h3>
-                <p>Info contents</p>
+                <Document></Document>
             </div>
         </template>
     </div>
@@ -246,6 +247,7 @@ const nRays = computed(() => {
     margin: 1em;
     padding: 0.5em;
     max-height: 80vh;
+    max-width: 30em;
     border-radius: 1em;
     overflow: auto;
     color: white;
