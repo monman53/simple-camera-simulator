@@ -358,15 +358,17 @@ svg {
 
 .dotted {
   stroke: white;
-  stroke-dasharray: v-bind(strokeDashArray);
-  stroke-width: v-bind('strokeWidth.normal');
+  /* dasharray is disabled for performance issue when close-up */
+  /* stroke-dasharray: v-bind(strokeDashArray); */
+  stroke-width: v-bind('strokeWidth.thick');
   fill: none;
 }
 
 .dotted-thick {
   stroke: white;
-  stroke-dasharray: v-bind(strokeDashArray);
-  stroke-width: v-bind('strokeWidth.thick');
+  /* dasharray is disabled for performance issue when close-up */
+  /* stroke-dasharray: v-bind(strokeDashArray); */
+  stroke-width: v-bind('strokeWidth.thicker');
   fill: none;
 }
 </style>
