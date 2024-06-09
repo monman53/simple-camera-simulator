@@ -196,13 +196,32 @@ const nRays = computed(() => {
                     <td>{{ humanReadable(state.scale) }}</td>
                 </tr>
             </template>
+
+            <!-- footer -->
+            <tr>
+                <th colspan="3">
+                    <hr>
+                </th>
+            </tr>
+            <tr>
+                <td><small>Created by</small></td>
+                <td><a href="https://monman53.github.io/"><small>monman53</small></a></td>
+                <td>
+                    <a href="https://github.com/monman53/simple-camera-simulator" class="github"><i
+                            class="bi bi-github"></i></a>
+                </td>
+            </tr>
         </table>
     </div>
 </template>
 
 <style scoped>
 .base {
+    margin: 1em;
     padding: 0.5em;
+    max-height: 80vh;
+    border-radius: 1em;
+    overflow: auto;
     color: white;
     background-color: #0008;
     backdrop-filter: blur(4px);
@@ -227,5 +246,10 @@ table td:nth-child(2) {
 
 table td:nth-child(3) {
     text-align: right;
+}
+
+a {
+    color: white;
+    text-decoration: none;
 }
 </style>
