@@ -88,6 +88,7 @@ export const field = ref(field0())
 
 export const options0 = () => {
     return {
+        advanced: true,
         lens: true,
         lensIdeal: true,
         lensFocalPoints: false,
