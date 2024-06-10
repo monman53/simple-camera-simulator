@@ -136,9 +136,9 @@ const nRays = computed(() => {
                         <tr>
                             <td><label><input type="checkbox" v-model="options.sensorPreview"> Preview</label></td>
                         </tr>
-                        <tr v-if="options.sensorPreview">
+                        <!-- <tr v-if="options.sensorPreview">
                             <td><label><input type="checkbox" v-model="options.sensorMemory"> Memory</label></td>
-                        </tr>
+                        </tr> -->
                         <template v-if="options.advanced">
                             <tr>
                                 <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
@@ -221,21 +221,6 @@ const nRays = computed(() => {
                             <td>{{ humanReadable(state.scale) }}</td>
                         </tr>
                     </template>
-
-                    <!-- footer -->
-                    <!-- <tr>
-                        <th colspan="3">
-                            <hr>
-                        </th>
-                    </tr> -->
-                    <!-- <tr>
-                        <td><small>Created by</small></td>
-                        <td><a href="https://monman53.github.io/"><small>monman53</small></a></td>
-                        <td>
-                            <a href="https://github.com/monman53/simple-camera-simulator" class="github"><i
-                                    class="bi bi-github"></i></a>
-                        </td>
-                    </tr> -->
                 </table>
             </template>
             <template v-if="mode === 'info'">
@@ -246,8 +231,6 @@ const nRays = computed(() => {
         </div>
         <div class="footer">
             <small>Created by <a href="https://monman53.github.io/">monman53</a></small>
-            <!-- <a href="https://github.com/monman53/simple-camera-simulator" class="github"><i
-                    class="bi bi-github"></i></a> -->
         </div>
     </div>
 </template>

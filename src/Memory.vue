@@ -25,10 +25,12 @@ watch([() => state.value.height], () => {
 
 <template>
   <canvas ref="canvas" width="100" :height="state.height"></canvas>
+  <button @click="options.sensorMemory = false"><i class="bi bi-trash3-fill"></i></button>
 </template>
 
 <style scoped>
-canvas {
+canvas,
+button {
   position: absolute;
 }
 </style>
