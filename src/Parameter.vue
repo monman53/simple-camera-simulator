@@ -229,7 +229,7 @@ const nRays = computed(() => {
                 </div>
             </template>
         </div>
-        <div class="footer">
+        <div v-if="mode !== ''" class="footer">
             <small>Created by <a href="https://monman53.github.io/">monman53</a></small>
         </div>
     </div>

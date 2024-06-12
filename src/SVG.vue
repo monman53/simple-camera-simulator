@@ -279,8 +279,8 @@ const rUI = computed(() => {
       <g class="hover-parent">
         <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
         <!-- dummy for ui -->
-        <rect :y="-sensor.r" :width="rUI * 2" :height="2 * sensor.r" @mousedown="h.sensorMoveStartHandler"
-          class='ui-transparent' :x="sensor.x - 2" />
+        <rect :x="sensor.x - rUI" :y="-sensor.r" :width="rUI * 2" :height="2 * sensor.r"
+          @mousedown="h.sensorMoveStartHandler" class='ui-transparent' />
       </g>
 
       <circle :cx="sensor.x" :cy="-sensor.r" :r="rUI" class="ui-hidden" @mousedown="h.sensorSizeChangeStartHandler">
