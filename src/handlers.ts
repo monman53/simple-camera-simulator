@@ -119,7 +119,14 @@ export const svgScaleHandler = (e: any) => {
 export const lightMoveStartHandler = (e: any, idx: number) => {
     e.preventDefault();
     e.stopPropagation();
+    // Last touched light is always front
     const light = lights.value[idx];
+    const newLights = lights.value.filter((light, i) => {
+        return i !== idx
+    })
+    newLights.push(light)
+    lights.value = newLights
+
     const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
     const [cx0, cy0] = [light.x, light.y];
     const handler = (e_: any) => {
