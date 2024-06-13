@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, field, options, lensR, lensD, infR, fNumber } from './globals'
-import { vec } from './math'
-import * as h from './handlers'
+import { state, lights, lens, sensor, field, options, lensR, lensD, infR, fNumber } from '../globals'
+import { vec } from '../math'
+import * as h from '../handlers'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts

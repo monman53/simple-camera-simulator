@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 
 import { state, options } from './globals'
 
-import SVG from './SVG.vue'
+import SVG from './SVG/SVG.vue'
 import Canvas from './Canvas.vue'
 import Parameter from './Parameter.vue'
 import Preview from './Preview.vue'
