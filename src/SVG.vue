@@ -99,13 +99,23 @@ const guidelines = computed(() => {
 
 const strokeWidth = computed(() => {
   const scale = 1 / state.value.scale
+  const scaleFd = 2
+  const scaleBg = 4
   return {
-    thicker: 0.2 * scale,
-    thick: 0.5 * scale,
-    normal: 1 * scale,
-    bold: 2 * scale,
+    // Foreground
+    thicker: 0.2 * scale * scaleFd,
+    thick: 0.5 * scale * scaleFd,
+    normal: 1 * scale * scaleFd,
+    bold: 2 * scale * scaleFd,
+    // Background
+    thickerBg: 0.2 * scale * scaleBg,
+    thickBg: 0.6 * scale * scaleBg,
+    normalBg: 1 * scale * scaleBg,
+    boldBg: 2 * scale * scaleBg,
   }
 })
+
+const lineBgColor = "#000a"
 
 const strokeDashArray = computed(() => {
   const scale = 1 / state.value.scale
@@ -155,27 +165,48 @@ const rUI = computed(() => {
     <!-- Angle of view -->
     <g v-if="options.lens && options.sensor && options.angleOfView">
       <!-- Inside camera -->
+      <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="effectiveLensRadius" class="dotted-bg"></line>
+      <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted-bg"></line>
       <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="effectiveLensRadius" class="dotted"></line>
       <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted"></line>
       <!-- Lens to focal plane (outer) -->
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
+        class="dotted-bg">
+      </line>
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius" class="dotted-bg">
+      </line>
       <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted">
       </line>
       <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius" class="dotted">
       </line>
       <!-- Lens to focal plane (inner) -->
       <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
+        class="dotted-thick-bg"></line>
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
+        class="dotted-thick-bg"></line>
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
         class="dotted-thick"></line>
       <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
         class="dotted-thick"></line>
       <!-- Focal plane -->
       <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x" :y2="guidelines.focal.d"
+        class="dotted-bg"></line>
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x" :y2="guidelines.focal.d"
         class="dotted"></line>
       <!-- Focal plane to inf (outer) -->
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.aovOuter.x" :y2="guidelines.aovOuter.y"
+        class="dotted-bg"></line>
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.aovOuter.x" :y2="-guidelines.aovOuter.y"
+        class="dotted-bg"></line>
       <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.aovOuter.x" :y2="guidelines.aovOuter.y"
         class="dotted"></line>
       <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.aovOuter.x" :y2="-guidelines.aovOuter.y"
         class="dotted"></line>
       <!-- Focal plane to inf (inner) -->
+      <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.aovInner.x" :y2="-guidelines.aovInner.y"
+        class="dotted-thick-bg"></line>
+      <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.aovInner.x" :y2="guidelines.aovInner.y"
+        class="dotted-thick-bg"></line>
       <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.aovInner.x" :y2="-guidelines.aovInner.y"
         class="dotted-thick"></line>
       <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.aovInner.x" :y2="guidelines.aovInner.y"
@@ -186,6 +217,10 @@ const rUI = computed(() => {
     <g
       v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField">
       <line :x1="lens.x - guidelines.dofInner.x" :y1="-guidelines.dofInner.d" :x2="lens.x - guidelines.dofInner.x"
+        :y2="guidelines.dofInner.d" class="dotted-thick-bg"></line>
+      <line :x1="lens.x - guidelines.dofOuter.x" :y1="-guidelines.dofOuter.d" :x2="lens.x - guidelines.dofOuter.x"
+        :y2="guidelines.dofOuter.d" class="dotted-thick-bg"></line>
+      <line :x1="lens.x - guidelines.dofInner.x" :y1="-guidelines.dofInner.d" :x2="lens.x - guidelines.dofInner.x"
         :y2="guidelines.dofInner.d" class="dotted-thick"></line>
       <line :x1="lens.x - guidelines.dofOuter.x" :y1="-guidelines.dofOuter.d" :x2="lens.x - guidelines.dofOuter.x"
         :y2="guidelines.dofOuter.d" class="dotted-thick"></line>
@@ -195,6 +230,8 @@ const rUI = computed(() => {
     <!-- Hyperfocal point -->
     <g
       v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
+      <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2 * 1.2"
+        :fill="lineBgColor"></circle>
       <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
         class="white"></circle>
     </g>
@@ -214,6 +251,12 @@ const rUI = computed(() => {
     <!-- Lens -->
     <g v-if="options.lens">
       <g class="hover-parent">
+        <!-- left half background -->
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`"
+          class="hover-child-bg fill-none" />
+        <!-- right half background -->
+        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`"
+          class="hover-child-bg fill-none" />
         <!-- left half -->
         <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`"
           class="hover-child fill-none" />
@@ -228,12 +271,14 @@ const rUI = computed(() => {
       <g v-if="options.lensFocalPoints">
         <!-- left hand -->
         <g>
+          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="lineBgColor"></circle>
           <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2" class="white"></circle>
           <!-- UI -->
           <circle :cx="lens.x - lens.f" cy="0" :r="rUI" @mousedown="h.focalPointMoveStartHandler" class="ui-hidden">
           </circle>
         </g>
         <!-- right hand -->
+        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="lineBgColor"></circle>
         <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2" class="white"></circle>
 
         <!-- Double focal points -->
@@ -252,17 +297,23 @@ const rUI = computed(() => {
       <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="rUI" @mousedown="h.apertureSizeChangeStartHandler"
         class="hover-sibling-master ui-hidden"></circle>
       <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
-        class="hover-sibling no-pointer-events thick">
+        class="hover-sibling-bg no-pointer-events">
       </line>
       <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture"
-        class="hover-sibling no-pointer-events thick">
+        class="hover-sibling-bg no-pointer-events">
+      </line>
+      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
+        class="hover-sibling no-pointer-events">
+      </line>
+      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture"
+        class="hover-sibling no-pointer-events">
       </line>
     </g>
 
     <!-- Lights -->
     <g v-for="(light, idx) of lights">
-      <circle :cx="light.x" :cy="light.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%)`">
-      </circle>
+      <circle :cx="light.x" :cy="light.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
+      <circle :cx="light.x" :cy="light.y" :r="rUI" class="ui-bg"></circle>
       <circle :cx="light.x" :cy="light.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
         @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
       </circle>
@@ -277,6 +328,7 @@ const rUI = computed(() => {
     <!-- Sensor -->
     <g v-if="options.sensor">
       <g class="hover-parent">
+        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child-bg" />
         <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
         <!-- dummy for ui -->
         <rect :x="sensor.x - rUI" :y="-sensor.r" :width="rUI * 2" :height="2 * sensor.r"
@@ -300,12 +352,27 @@ svg {
   stroke-width: v-bind('strokeWidth.normal');
 }
 
+.hover-child-bg {
+  stroke: v-bind('lineBgColor');
+  stroke-width: v-bind('strokeWidth.normalBg');
+}
+
 .fill-none {
   fill: none;
 }
 
 .no-pointer-events {
   pointer-events: none;
+}
+
+.hover-sibling {
+  stroke: white;
+  stroke-width: v-bind('strokeWidth.thick');
+}
+
+.hover-sibling-bg {
+  stroke: v-bind('lineBgColor');
+  stroke-width: v-bind('strokeWidth.thickBg');
 }
 
 .hover-sibling-master:hover~.hover-sibling,
@@ -315,9 +382,22 @@ svg {
   stroke-width: v-bind('strokeWidth.bold');
 }
 
+.hover-sibling-master:hover~.hover-sibling-bg,
+.hover-parent:hover .hover-child-bg,
+.hover-parent:hover .hidden-hover-child-bg {
+  stroke: v-bind('lineBgColor');
+  stroke-width: v-bind('strokeWidth.boldBg');
+}
+
 .ui {
   stroke: white;
   stroke-width: v-bind('strokeWidth.normal');
+  fill: transparent
+}
+
+.ui-bg {
+  stroke: v-bind('lineBgColor');
+  stroke-width: v-bind('strokeWidth.normalBg');
   fill: transparent
 }
 
@@ -369,6 +449,22 @@ svg {
   /* dasharray is disabled for performance issue when close-up */
   /* stroke-dasharray: v-bind(strokeDashArray); */
   stroke-width: v-bind('strokeWidth.thicker');
+  fill: none;
+}
+
+.dotted-bg {
+  stroke: v-bind('lineBgColor');
+  /* dasharray is disabled for performance issue when close-up */
+  /* stroke-dasharray: v-bind(strokeDashArray); */
+  stroke-width: v-bind('strokeWidth.thickBg');
+  fill: none;
+}
+
+.dotted-thick-bg {
+  stroke: v-bind('lineBgColor');
+  /* dasharray is disabled for performance issue when close-up */
+  /* stroke-dasharray: v-bind(strokeDashArray); */
+  stroke-width: v-bind('strokeWidth.thickerBg');
   fill: none;
 }
 </style>
