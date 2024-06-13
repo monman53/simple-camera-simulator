@@ -1,4 +1,84 @@
 //================================
+// Liner algebra
+//================================
+
+export const vec = (x: number, y: number) => {
+    return new Vec(x, y)
+}
+
+export class Vec {
+    x: number
+    y: number
+
+    constructor(x: number, y: number) {
+        this.x = x
+        this.y = y
+    }
+
+    copy() {
+        return vec(this.x, this.y)
+    }
+
+    add(v: Vec) {
+        this.x += v.x
+        this.y += v.y
+        return this
+    }
+
+    sub(v: Vec) {
+        this.x -= v.x
+        this.y -= v.y
+        return this
+    }
+
+    mul(a: number) {
+        this.x *= a
+        this.y *= a
+        return this
+    }
+
+    div(a: number) {
+        this.x /= a
+        this.y /= a
+        return this
+    }
+
+    minus() {
+        this.x = -this.x
+        this.y = -this.y
+        return this
+    }
+
+    length() {
+        return Math.sqrt(this.x * this.x + this.y * this.y)
+    }
+
+    normalize() {
+        return this.div(this.length())
+    }
+
+    static add(a: Vec, b: Vec) {
+        return a.copy().add(b)
+    }
+
+    static sub(a: Vec, b: Vec) {
+        return a.copy().sub(b)
+    }
+
+    static mul(v: Vec, a: number) {
+        return v.copy().mul(a)
+    }
+
+    static div(v: Vec, a: number) {
+        return v.copy().div(a)
+    }
+
+    static normalize(v: Vec) {
+        return v.copy().normalize()
+    }
+}
+
+//================================
 // Support functions
 //================================
 // export const getIntersectionX = (px: number, py: number, theta: number, minX: number, maxX: number, y: number, maxR: number) => {
