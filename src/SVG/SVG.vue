@@ -147,8 +147,7 @@ const rUI = computed(() => {
 
     <!-- Aperture -->
     <g v-if="options.aperture">
-      <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="rUI" @mousedown="h.apertureSizeChangeStartHandler"
-        class="hover-sibling-master ui-hidden"></circle>
+      <!-- Lines -->
       <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
         class="hover-sibling-bg no-pointer-events">
       </line>
@@ -160,6 +159,9 @@ const rUI = computed(() => {
       </line>
       <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events">
       </line>
+      <!-- UI -->
+      <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="rUI" @mousedown="h.apertureSizeChangeStartHandler"
+        class="hover-sibling-master ui-hidden"></circle>
     </g>
 
     <!-- Lights -->
@@ -219,12 +221,12 @@ svg {
 
 .hover-sibling {
   stroke: white;
-  stroke-width: v-bind('strokeWidth.thick');
+  stroke-width: v-bind('strokeWidth.normal');
 }
 
 .hover-sibling-bg {
   stroke: v-bind('lineBgColor');
-  stroke-width: v-bind('strokeWidth.thickBg');
+  stroke-width: v-bind('strokeWidth.normalBg');
 }
 
 .hover-sibling-master:hover~.hover-sibling,

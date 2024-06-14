@@ -5,7 +5,7 @@ import { state, options } from './globals'
 
 import SVG from './SVG/SVG.vue'
 import Canvas from './Canvas.vue'
-import Parameter from './Parameter.vue'
+import Overlay from './Overlay.vue'
 import Preview from './Preview.vue'
 import Memory from './Memory.vue'
 
@@ -44,7 +44,7 @@ onMounted(() => {
     <div id="stage" ref="main">
       <Canvas id="canvas"></Canvas>
       <SVG id="svg"></SVG>
-      <Parameter id="parameter"></Parameter>
+      <Overlay id="parameter"></Overlay>
     </div>
     <div v-show="options.sensor && options.sensorPreview">
       <Preview></Preview>
