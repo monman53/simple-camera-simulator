@@ -42,7 +42,8 @@ const aov = computed(() => {
 // Depth of field
 const dof = computed(() => {
     const f = lens.value.f
-    const r = lens.value.r
+    // const r = lens.value.r
+    const r = re.value
     const delta = lens.value.circleOfConfusion
 
     const b = sensor.value.x - lens.value.x
@@ -57,7 +58,8 @@ const dof = computed(() => {
     const aBack = 1 / (1 / f - 1 / bBack) // Lens side
 
     // Radius of planes
-    const dFront = re.value / f * (aFront - f)
+    const c = a * (re.value / (re.value + focal.value.d))
+    const dFront = re.value / c * (aFront - c)
     const dBack = focal.value.d * (aBack / a) + re.value * (1 - aBack / a) // Lens side
 
     const inner = { x: aBack, d: dBack } // Lens side

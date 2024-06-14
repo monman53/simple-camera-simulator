@@ -1,12 +1,46 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lens, sensor, options, style, lensD, lensR, fNumber } from './globals'
+import { state, lights, lens, sensor, options, style, lensD, lensR, fNumber } from './globals'
 import { humanReadable } from './utils';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
+
+const replaceApple = (cx: number, cy: number, r: number) => {
+    lights.value = []
+
+    // Main
+    {
+        const n = 24
+        for (let i = 0; i < n; i++) {
+            const theta = i / n * 2 * Math.PI
+            const x = cx + r * Math.cos(theta)
+            const y = cy + r * Math.sin(theta)
+            const color = 0 // red
+            if (x >= cx) {
+                lights.value.push({ x, y, color })
+            }
+        }
+    }
+
+    // Leaf
+    {
+        const n = 12
+        for (let i = 0; i < n; i++) {
+            const theta = i / n * 2 * Math.PI
+            const rLeaf = 0.4 * r
+            const x = cx + rLeaf * Math.cos(theta)
+            const y = cy - (r + rLeaf) + rLeaf * Math.sin(theta)
+            const color = 120 // green
+            if (x >= cx) {
+                lights.value.push({ x, y, color })
+            }
+        }
+    }
+}
+
 </script>
 
 <template>
@@ -197,6 +231,33 @@ const nRays = computed(() => {
                 <td>Scale</td>
                 <td></td>
                 <td>{{ humanReadable(state.scale) }}</td>
+            </tr>
+        </template>
+        <!-- Templates -->
+        <template v-if="options.advanced">
+            <tr>
+                <th colspan="3">
+                    <hr>Templates
+                </th>
+            </tr>
+            <tr>
+                <td>Focal length</td>
+                <td>
+                    <button @click="lens.f = 12">12</button>
+                    <button @click="lens.f = 24">24</button>
+                    <button @click="lens.f = 35">35</button>
+                    <button @click="lens.f = 50">50</button>
+                    <br>
+                    <button @click="lens.f = 85">85</button>
+                    <button @click="lens.f = 100">100</button>
+                    <button @click="lens.f = 200">200</button>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Apple</td>
+                <td><button @click="replaceApple(-200, 0, 20)">Replace add</button></td>
+                <td></td>
             </tr>
         </template>
     </table>
