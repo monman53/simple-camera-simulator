@@ -41,24 +41,27 @@ const aov = computed(() => {
 
 // Depth of field
 const dof = computed(() => {
-    const f = lens.value.f;
-    const b = sensor.value.x - lens.value.x;
-    const a = f * b / (b - f);
-
+    const f = lens.value.f
+    const r = lens.value.r
     const delta = lens.value.circleOfConfusion
-    const ls = sensor.value.x - lens.value.x
 
-    const lf = ls - delta * ls / (2 * re.value)
-    const xf = f * lf / (lf - f)
-    const lr = ls + delta * ls / (2 * re.value)
-    const xr = f * lr / (lr - f)
+    const b = sensor.value.x - lens.value.x
+    const a = f * b / (b - f)
 
-    const dr = focal.value.d * (xr / a) + (1 - xr / a) * re.value
-    const df = (focal.value.d + re.value) * (xf / a) - re.value
+    // Image space
+    const bFront = b / (1 + delta / (2 * r)) // Lens side
+    const bBack = b / (1 - delta / (2 * r))
 
-    const inner = { x: xr, d: dr }
-    const outer = { x: xf, d: df }
+    // Object space
+    const aFront = 1 / (1 / f - 1 / bFront)
+    const aBack = 1 / (1 / f - 1 / bBack) // Lens side
 
+    // Radius of planes
+    const dFront = re.value / f * (aFront - f)
+    const dBack = focal.value.d * (aBack / a) + re.value * (1 - aBack / a) // Lens side
+
+    const inner = { x: aBack, d: dBack } // Lens side
+    const outer = { x: aFront, d: dFront }
     return { inner, outer }
 })
 
