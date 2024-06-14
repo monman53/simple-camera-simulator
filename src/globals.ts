@@ -22,14 +22,6 @@ export const state = ref(createInitialParams())
 //--------------------------------
 
 export const lights0 = () => {
-    // const ret = []
-    // const n = 5;
-    // const r = 50;
-    // for (let i = 0; i < n; i++) {
-    //     const theta = Math.PI * i / (n - 1) - Math.PI / 2;
-    //     ret.push({ x: -200 + r * Math.cos(theta), y: r * Math.sin(theta), color: 120 });
-    // }
-    // return ret;
     return [
         { x: -200, y: 20, color: 0 }, // red
         { x: -160, y: 0, color: 120 }, // green
@@ -48,7 +40,7 @@ export const lens0 = () => {
         r: 20,
         n: 1.5,
         f: 50,
-        aperture: 0.5,
+        aperture: 1,
         circleOfConfusion: 1,
     }
 }
@@ -61,7 +53,7 @@ export const lens = ref(lens0())
 export const sensor0 = () => {
     return {
         x: 80,
-        r: 20,
+        r: 24 / 2, // Full frame
     }
 }
 export const sensor = ref(sensor0())
@@ -151,7 +143,7 @@ export const options0 = () => {
         sensorPreview: true,
         sensorMemory: false,
         body: false,
-        aperture: false,
+        aperture: true,
         grid: false,
         opticalAxis: false,
         curvature: false,

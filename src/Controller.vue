@@ -59,9 +59,9 @@ const nRays = computed(() => {
                 </td>
             </tr>
         </template>
-        <tr>
+        <!-- <tr>
             <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
-        </tr>
+        </tr> -->
         <template v-if="options.lens">
             <template v-if="options.advanced">
                 <tr>
