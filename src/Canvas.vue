@@ -2,7 +2,7 @@
 import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lens, sensor, sensorData, apple, options, style, lensR, lensD, infR } from './globals'
-import { Vec, vec, getIntersectionY, getIntersectionLens, crossAngle } from './math'
+import { Vec, vec, getIntersectionY, getIntersectionLens, crossAngle, fGaussian } from './math'
 
 // Reference to the canvas
 const canvas = ref()
@@ -16,13 +16,6 @@ if (!ctx) {
   throw new Error()
 }
 
-// const drawSegment = (sx: number, sy: number, tx: number, ty: number) => {
-//   ctx.beginPath();
-//   ctx.moveTo(sx, sy);
-//   ctx.lineTo(tx, ty);
-//   ctx.stroke();
-// };
-
 const drawSegment = (p: Vec, v: Vec, length: number) => {
   const q = p.copy().add(v.copy().normalize().mul(length))
   ctx.beginPath();
@@ -32,7 +25,7 @@ const drawSegment = (p: Vec, v: Vec, length: number) => {
   return q
 };
 
-const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sensorDataTmp: any[]) => {
+const drawRay = (image: Vec, light: any, s: Vec, v: Vec, sensorDataTmp: any[]) => {
   let innerLens = false
 
   //--------------------------------
@@ -42,7 +35,7 @@ const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sen
     // Center of lens curvature circle
     const c = vec(lens.value.x - lensD.value / 2 + lensR.value, 0)
 
-    const p = getIntersectionLens(s.x, s.y, v, c.x, c.y, lens.value.r, lensR.value, true)
+    const p = getIntersectionLens(s, v, c, lens.value.r, lensR.value, true)
     if (p) {
       v = p.copy().sub(s)
       s = drawSegment(s, v, v.length())
@@ -61,7 +54,7 @@ const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sen
   // Collision to aperture
   //--------------------------------
   if (options.value.aperture) {
-    const p = getIntersectionY(s.x, s.y, v, lens.value.x, -lens.value.r, lens.value.r)
+    const p = getIntersectionY(s, v, lens.value.x, -lens.value.r, lens.value.r)
     if (p) {
       const upperHit = p.y > lens.value.aperture * lens.value.r
       const lowerHit = p.y < -lens.value.aperture * lens.value.r
@@ -80,7 +73,7 @@ const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sen
     // Center of lens curvature circle
     const c = vec(lens.value.x + lensD.value / 2 - lensR.value, 0)
 
-    const p = getIntersectionLens(s.x, s.y, v, c.x, c.y, lens.value.r, lensR.value, false)
+    const p = getIntersectionLens(s, v, c, lens.value.r, lensR.value, false)
     if (p) {
       v = p.copy().sub(s)
       const nextS = drawSegment(s, v, v.length())
@@ -98,14 +91,14 @@ const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sen
   // Collision to ideal lens
   //--------------------------------
   if (options.value.lensIdeal && options.value.lens) {
-    const p = getIntersectionY(s.x, s.y, v, lens.value.x, -lens.value.r, lens.value.r)
+    const p = getIntersectionY(s, v, lens.value.x, -lens.value.r, lens.value.r)
     if (p) {
       v = p.copy().sub(s)
       s = drawSegment(s, v, v.length())
 
       // Refracted ray
-      let theta = Math.atan2(imageY - s.y, imageX);
-      if (imageX === Infinity) {
+      let theta = Math.atan2(image.y - s.y, image.x);
+      if (image.x === Infinity) {
         theta = Math.atan2(-light.y, -(light.x - lens.value.x));
       }
       if (lens.value.x - lens.value.f < light.x) {
@@ -121,7 +114,7 @@ const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sen
   if (options.value.body) {
     // Upper
     {
-      const p = getIntersectionY(s.x, s.y, v, lens.value.x, lens.value.r, infR.value);
+      const p = getIntersectionY(s, v, lens.value.x, lens.value.r, infR.value);
       if (p) {
         v = p.copy().sub(s)
         drawSegment(s, v, v.length())
@@ -130,7 +123,7 @@ const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sen
     }
     // Lower
     {
-      const p = getIntersectionY(s.x, s.y, v, lens.value.x, -infR.value, -lens.value.r);
+      const p = getIntersectionY(s, v, lens.value.x, -infR.value, -lens.value.r);
       if (p) {
         v = p.copy().sub(s)
         drawSegment(s, v, v.length())
@@ -143,7 +136,7 @@ const drawRay = (imageX: number, imageY: number, light: any, s: Vec, v: Vec, sen
   // Collision to sensor
   //--------------------------------
   if (options.value.sensor) {
-    const p = getIntersectionY(s.x, s.y, v, sensor.value.x, -sensor.value.r, sensor.value.r);
+    const p = getIntersectionY(s, v, sensor.value.x, -sensor.value.r, sensor.value.r);
     if (p) {
       v = p.copy().sub(s)
       drawSegment(s, v, v.length())
@@ -178,20 +171,16 @@ const draw = () => {
     ctx.lineWidth = style.value.rayWidth
 
     // Find image position of the light source
-    const s1 = lens.value.x - light.x;
-    const s2 = lens.value.f * s1 / (s1 - lens.value.f);
-    const imageX = s2;
-    const imageY = -light.y * (s2 / s1)
+    const image = fGaussian(lens.value.f, lens.value.x - light.x, -light.y)
 
     // Draw 2^nRaysLog rays from light center
     const nRays = (1 << params.nRaysLog);
     for (let i = 0; i < nRays; i++) {
       // Initial position and direction
-      const sx = light.x
-      const sy = light.y
+      const s = vec(light.x, light.y)
       const theta = 2 * Math.PI * i / nRays
       const v = vec(Math.cos(theta), Math.sin(theta))
-      drawRay(imageX, imageY, light, vec(sx, sy), v, sensorDataTmp)
+      drawRay(image, light, s, v, sensorDataTmp)
     }
   }
 
@@ -202,20 +191,16 @@ const draw = () => {
       ctx.lineWidth = style.value.rayWidth
 
       // Find image position of the light source
-      const s1 = lens.value.x - light.x;
-      const s2 = lens.value.f * s1 / (s1 - lens.value.f);
-      const imageX = s2;
-      const imageY = -light.y * (s2 / s1)
+      const image = fGaussian(lens.value.f, lens.value.x - light.x, -light.y)
 
       // Draw 2^nRaysLog rays from light center
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
-        const sx = light.x
-        const sy = light.y
+        const s = vec(light.x, light.y)
         const theta = 2 * Math.PI * i / nRays
         const v = vec(Math.cos(theta), Math.sin(theta))
-        drawRay(imageX, imageY, light, vec(sx, sy), v, sensorDataTmp)
+        drawRay(image, light, s, v, sensorDataTmp)
       }
     }
   }

@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { lens, sensor, options, infR } from '../globals'
 
-import { vec } from '../math'
+import { vec, fGaussian } from '../math'
 
 // Effective lens radius
 const re = computed(() => {
@@ -17,13 +17,12 @@ const re = computed(() => {
 const focal = computed(() => {
     const f = lens.value.f;
 
-    const b = sensor.value.x - lens.value.x;
-    const a = f * b / (b - f);
+    const bx = sensor.value.x - lens.value.x;
+    const by = sensor.value.r
 
-    const focalPosX = lens.value.x - a;
-    const focalPosSize = sensor.value.r * (a / b);
+    const a = fGaussian(lens.value.f, bx, by)
 
-    return { x: focalPosX, d: focalPosSize }
+    return { x: lens.value.x - a.x, d: a.y }
 })
 
 // Angle of view
@@ -56,25 +55,25 @@ const aov = computed(() => {
 // Depth of field
 const dof = computed(() => {
     const f = lens.value.f
-    // const r = lens.value.r
     const r = re.value
     const delta = lens.value.circleOfConfusion
 
-    const b = sensor.value.x - lens.value.x
-    const a = f * b / (b - f)
+    const bx = sensor.value.x - lens.value.x
+    const by = sensor.value.r // Unused
+    const a = fGaussian(f, bx, by)
 
     // Image space
-    const bFront = b / (1 + delta / (2 * r)) // Lens side
-    const bBack = b / (1 - delta / (2 * r))
+    const bFront = bx / (1 + delta / (2 * r)) // Lens side
+    const bBack = bx / (1 - delta / (2 * r))
 
     // Object space
     const aFront = 1 / (1 / f - 1 / bFront)
     const aBack = 1 / (1 / f - 1 / bBack) // Lens side
 
     // Radius of planes
-    const c = a * (re.value / (re.value + focal.value.d))
+    const c = a.x * (re.value / (re.value + focal.value.d))
     const dFront = re.value / c * (aFront - c)
-    const dBack = focal.value.d * (aBack / a) + re.value * (1 - aBack / a) // Lens side
+    const dBack = focal.value.d * (aBack / a.x) + re.value * (1 - aBack / a.x) // Lens side
 
     const inner = { x: aBack, d: dBack } // Lens side
     const outer = { x: aFront, d: dFront }
