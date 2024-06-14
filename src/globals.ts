@@ -83,6 +83,59 @@ export const field0 = () => {
 export const field = ref(field0())
 
 //--------------------------------
+// Apple
+//--------------------------------
+
+export const appleProps0 = () => {
+    return {
+        x: -200,
+        y: 0,
+        r: 20,
+        n: 24,
+        half: true,
+    }
+}
+export const appleProps = ref(appleProps0())
+
+export const apple = computed(() => {
+    const cx = appleProps.value.x
+    const cy = appleProps.value.y
+    const r = appleProps.value.r
+
+    const lights = []
+
+    // Main
+    {
+        const n = appleProps.value.n
+        for (let i = 0; i < n; i++) {
+            const theta = i / n * 2 * Math.PI
+            const x = cx + r * Math.cos(theta)
+            const y = cy + r * Math.sin(theta)
+            const color = 0 // red
+            if (x >= cx) {
+                lights.push({ x, y, color })
+            }
+        }
+    }
+
+    // Leaf
+    {
+        const n = Math.floor(appleProps.value.n * 2 / 3)
+        for (let i = 0; i < n; i++) {
+            const theta = i / n * 2 * Math.PI
+            const rLeaf = 0.4 * r
+            const x = cx + rLeaf * Math.cos(theta)
+            const y = cy - (r + rLeaf) + rLeaf * Math.sin(theta)
+            const color = 120 // green
+            if (x >= cx) {
+                lights.push({ x, y, color })
+            }
+        }
+    }
+    return lights
+})
+
+//--------------------------------
 // Options
 //--------------------------------
 
@@ -105,6 +158,7 @@ export const options0 = () => {
         depthOfField: false,
         angleOfView: false,
         circleOfConfusion: false,
+        apple: false,
     }
 }
 export const options = ref(options0())

@@ -1,45 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lights, lens, sensor, options, style, lensD, lensR, fNumber } from './globals'
+import { state, lights, lens, sensor, appleProps, options, style, lensD, lensR, fNumber } from './globals'
 import { humanReadable } from './utils';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
-
-const replaceApple = (cx: number, cy: number, r: number) => {
-    lights.value = []
-
-    // Main
-    {
-        const n = 24
-        for (let i = 0; i < n; i++) {
-            const theta = i / n * 2 * Math.PI
-            const x = cx + r * Math.cos(theta)
-            const y = cy + r * Math.sin(theta)
-            const color = 0 // red
-            if (x >= cx) {
-                lights.value.push({ x, y, color })
-            }
-        }
-    }
-
-    // Leaf
-    {
-        const n = 12
-        for (let i = 0; i < n; i++) {
-            const theta = i / n * 2 * Math.PI
-            const rLeaf = 0.4 * r
-            const x = cx + rLeaf * Math.cos(theta)
-            const y = cy - (r + rLeaf) + rLeaf * Math.sin(theta)
-            const color = 120 // green
-            if (x >= cx) {
-                lights.value.push({ x, y, color })
-            }
-        }
-    }
-}
 
 </script>
 
@@ -259,10 +226,27 @@ const replaceApple = (cx: number, cy: number, r: number) => {
                 <td></td>
             </tr>
             <tr>
-                <td>Apple</td>
-                <td><button @click="replaceApple(-200, 0, 20)">Replace add</button></td>
+                <td><label><input type="checkbox" v-model="options.apple">Apple</label></td>
+                <td></td>
                 <td></td>
             </tr>
+            <template v-if="options.apple">
+                <tr>
+                    <td><div class="indent">x</div></td>
+                    <td><label><input type="number" v-model.number="appleProps.x"></label></td>
+                </tr>
+                <tr>
+                    <td><div class="indent">r</div></td>
+                    <!-- <td><label><input type="number" v-model.number="appleProps.r"></label></td> -->
+                    <td><input type="range" min="0" max="200" step="0.01" v-model.number="appleProps.r"></td>
+                    <td>{{ humanReadable(appleProps.r) }}</td>
+                </tr>
+                <tr>
+                    <td><div class="indent">n</div></td>
+                    <td><input type="range" min="0" max="64" step="1" v-model.number="appleProps.n"></td>
+                    <td>{{ appleProps.n }}</td>
+                </tr>
+            </template>
         </template>
     </table>
 </template>
@@ -287,5 +271,9 @@ table td:nth-child(2) {
 
 table td:nth-child(3) {
     text-align: right;
+}
+
+input[type='number'] {
+    width: 5em;
 }
 </style>

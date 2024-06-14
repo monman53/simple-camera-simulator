@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, style, options, lensR, lensD, infR, fNumber } from '../globals'
+import { state, lights, lens, sensor, style, apple, options, lensR, lensD, infR, fNumber } from '../globals'
 import * as h from '../handlers'
 
 import Grid from './Grid.vue'
@@ -162,6 +162,15 @@ const rUI = computed(() => {
       <!-- UI -->
       <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="rUI" @mousedown="h.apertureSizeChangeStartHandler"
         class="hover-sibling-master ui-hidden"></circle>
+    </g>
+
+    <!-- Apple -->
+    <g v-if="options.apple">
+      <g v-for="(light, idx) of apple">
+        <circle :cx="light.x" :cy="light.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
+        <circle :cx="light.x" :cy="light.y" :r="rUI" class="ui-bg"></circle>
+        <circle :cx="light.x" :cy="light.y" :r="rUI" class="ui"></circle>
+      </g>
     </g>
 
     <!-- Lights -->
