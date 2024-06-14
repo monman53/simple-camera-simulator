@@ -175,8 +175,8 @@ export const lensMoveStartHandler = (e: any) => {
         e_.stopPropagation();
         const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
         const dx = (x - x0) / state.value.scale
-        if (cx0 + dx < maxLightX.value) {
-            lens.value.x = maxLightX.value
+        if (cx0 + dx < maxLightX.value + lensD.value / 2) {
+            lens.value.x = maxLightX.value + lensD.value / 2
         } else if (sensor.value.x < cx0 + dx) {
             lens.value.x = sensor.value.x
         } else {
@@ -234,7 +234,7 @@ export const apertureSizeChangeStartHandler = (e: any) => {
         const an = (a0 + dy) / lens.value.r;
         if (an < 0) {
             lens.value.aperture = 0;
-        }else if (an > 1) {
+        } else if (an > 1) {
             lens.value.aperture = 1;
         } else {
             lens.value.aperture = an;
