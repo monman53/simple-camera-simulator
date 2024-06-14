@@ -2,8 +2,10 @@
 import { computed, ref, onMounted } from 'vue'
 
 import { state, lights, lens, sensor, field, options, lensR, lensD, infR, fNumber } from '../globals'
-import { vec } from '../math'
 import * as h from '../handlers'
+
+import Grid from './Grid.vue'
+import Guideline from './Guideline.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -19,93 +21,6 @@ const svgViewBox = computed(() => {
   const w = state.value.width / state.value.scale
   const h = state.value.height / state.value.scale
   return `${x} ${y} ${w} ${h}`
-})
-
-const grid = computed(() => {
-  const xs: number[] = []
-  const ys: number[] = []
-  const bxs: number[] = []
-  const bys: number[] = []
-  const xMin = state.value.cx - state.value.width / 2 / state.value.scale;
-  const xMax = state.value.cx + state.value.width / 2 / state.value.scale
-  const yMin = state.value.cy - state.value.height / 2 / state.value.scale;
-  const yMax = state.value.cy + state.value.height / 2 / state.value.scale;
-  const size = Math.max(xMax - xMin, yMax - yMin);
-  const interval = Math.pow(10, Math.floor(Math.log10(size * 0.3)));
-  const boldInterval = interval * 10;
-  for (let x = Math.floor(xMin / interval) * interval; x < xMax; x += interval) {
-    xs.push(x)
-  }
-  for (let y = Math.floor(yMin / interval) * interval; y < yMax; y += interval) {
-    ys.push(y)
-  }
-  for (let x = Math.floor(xMin / boldInterval) * boldInterval; x < xMax; x += boldInterval) {
-    bxs.push(x)
-  }
-  for (let y = Math.floor(yMin / boldInterval) * boldInterval; y < yMax; y += boldInterval) {
-    bys.push(y)
-  }
-  return { xs, ys, bxs, bys }
-})
-
-const effectiveLensRadius = computed(() => {
-  if (options.value.aperture) {
-    return lens.value.r * lens.value.aperture;
-  } else {
-    return lens.value.r;
-  }
-})
-
-const extendSegment = (sx: number, sy: number, tx: number, ty: number) => {
-  const theta = Math.atan2(ty - sy, tx - sx);
-  const ntx = sx + infR.value * Math.cos(theta);
-  const nty = sy + infR.value * Math.sin(theta);
-  return [ntx, nty];
-}
-
-const guidelines = computed(() => {
-  const f = lens.value.f;
-
-  // Angle of view (AOV)
-  const b = sensor.value.x - lens.value.x;
-  const a = f * b / (b - f);
-
-  const focalPosX = lens.value.x - a;
-  const focalPosSize = sensor.value.r * (a / b);
-
-  const lensTop = vec(lens.value.x, -effectiveLensRadius.value)
-
-  const focalPlaneTop = vec(focalPosX, -focalPosSize)
-  const focalPlaneBottom = vec(focalPosX, focalPosSize)
-
-  const innerVec = focalPlaneTop.sub(lensTop).normalize().mul(infR.value)
-  const outerVec = focalPlaneBottom.sub(lensTop).normalize().mul(infR.value)
-  // const innerVec = focalPlaneTop.sub(lensTop)
-  // const outerVec = focalPlaneBottom.sub(lensTop)
-
-  // const [innerX, innerY] = extendSegment(lens.value.x, -effectiveLensRadius.value, focalPosX, -focalPosSize);
-  // const [outerX, outerY] = extendSegment(lens.value.x, -effectiveLensRadius.value, focalPosX, focalPosSize);
-
-  // Depth of field (DOF)
-  const delta = lens.value.circleOfConfusion
-  const ls = sensor.value.x - lens.value.x
-  const re = effectiveLensRadius.value
-
-  const lf = ls - delta * ls / (2 * re)
-  const xf = f * lf / (lf - f)
-  const lr = ls + delta * ls / (2 * re)
-  const xr = f * lr / (lr - f)
-
-  const dr = focalPosSize * (xr / a) + (1 - xr / a) * effectiveLensRadius.value
-  const df = (focalPosSize + effectiveLensRadius.value) * (xf / a) - effectiveLensRadius.value
-
-  return {
-    focal: { x: focalPosX, d: focalPosSize },
-    aovInner: innerVec,
-    aovOuter: outerVec,
-    dofInner: { x: xr, d: dr },
-    dofOuter: { x: xf, d: df },
-  }
 })
 
 const strokeWidth = computed(() => {
@@ -151,16 +66,7 @@ const rUI = computed(() => {
     </g>
 
     <!-- Grid -->
-    <g v-if="options.grid">
-      <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="thicker">
-      </line>
-      <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="thicker">
-      </line>
-      <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="thick">
-      </line>
-      <line v-for="y of grid.bys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="thick">
-      </line>
-    </g>
+    <Grid v-if="options.grid"></Grid>
 
     <!-- Curvature -->
     <g v-if="options.lens && options.curvature">
@@ -173,77 +79,8 @@ const rUI = computed(() => {
       <circle :cx="lens.x - lensD / 2 + lensR" cy="0" :r="rUI / 2" class="white"></circle>
     </g>
 
-    <!-- Angle of view -->
-    <g v-if="options.lens && options.sensor && options.angleOfView">
-      <!-- Inside camera -->
-      <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="effectiveLensRadius" class="dotted-bg"></line>
-      <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted-bg"></line>
-      <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="effectiveLensRadius" class="dotted"></line>
-      <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted"></line>
-      <!-- Non over infinity -->
-      <g v-if="lens.x + lens.f < sensor.x">
-        <!-- Lens to focal plane (outer) -->
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
-          class="dotted-bg">
-        </line>
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
-          class="dotted-bg">
-        </line>
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius" class="dotted">
-        </line>
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius" class="dotted">
-        </line>
-        <!-- Lens to focal plane (inner) -->
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
-          class="dotted-thick-bg"></line>
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
-          class="dotted-thick-bg"></line>
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="lens.x" :y2="effectiveLensRadius"
-          class="dotted-thick"></line>
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="lens.x" :y2="-effectiveLensRadius"
-          class="dotted-thick"></line>
-        <!-- Focal plane -->
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x" :y2="guidelines.focal.d"
-          class="dotted-bg"></line>
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x" :y2="guidelines.focal.d"
-          class="dotted"></line>
-        <!-- Focal plane to inf (outer) -->
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovOuter.x"
-          :y2="guidelines.focal.d + guidelines.aovOuter.y" class="dotted-bg"></line>
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovOuter.x"
-          :y2="-guidelines.focal.d - guidelines.aovOuter.y" class="dotted-bg"></line>
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovOuter.x"
-          :y2="guidelines.focal.d + guidelines.aovOuter.y" class="dotted"></line>
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovOuter.x"
-          :y2="-guidelines.focal.d - guidelines.aovOuter.y" class="dotted"></line>
-        <!-- Focal plane to inf (inner) -->
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovInner.x"
-          :y2="guidelines.focal.d - guidelines.aovInner.y" class="dotted-thick-bg"></line>
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovInner.x"
-          :y2="-guidelines.focal.d + guidelines.aovInner.y" class="dotted-thick-bg"></line>
-        <line :x1="guidelines.focal.x" :y1="guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovInner.x"
-          :y2="guidelines.focal.d - guidelines.aovInner.y" class="dotted-thick"></line>
-        <line :x1="guidelines.focal.x" :y1="-guidelines.focal.d" :x2="guidelines.focal.x + guidelines.aovInner.x"
-          :y2="-guidelines.focal.d + guidelines.aovInner.y" class="dotted-thick"></line>
-
-        <!-- Depth of field -->
-        <g
-          v-if="options.circleOfConfusion && options.depthOfField">
-          <line :x1="lens.x - guidelines.dofInner.x" :y1="-guidelines.dofInner.d" :x2="lens.x - guidelines.dofInner.x"
-            :y2="guidelines.dofInner.d" class="dotted-thick-bg"></line>
-          <line :x1="lens.x - guidelines.dofOuter.x" :y1="-guidelines.dofOuter.d" :x2="lens.x - guidelines.dofOuter.x"
-            :y2="guidelines.dofOuter.d" class="dotted-thick-bg"></line>
-          <line :x1="lens.x - guidelines.dofInner.x" :y1="-guidelines.dofInner.d" :x2="lens.x - guidelines.dofInner.x"
-            :y2="guidelines.dofInner.d" class="dotted-thick"></line>
-          <line :x1="lens.x - guidelines.dofOuter.x" :y1="-guidelines.dofOuter.d" :x2="lens.x - guidelines.dofOuter.x"
-            :y2="guidelines.dofOuter.d" class="dotted-thick"></line>
-        </g>
-
-      </g>
-      <!-- Over infinity -->
-      <g v-else>
-      </g>
-    </g>
+    <!-- Guidelines -->
+    <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
 
     <!-- Hyperfocal point -->
     <g
@@ -358,7 +195,7 @@ const rUI = computed(() => {
   </svg>
 </template>
 
-<style scoped>
+<style>
 svg {
   overflow: hidden;
   display: block;
