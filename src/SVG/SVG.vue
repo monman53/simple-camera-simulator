@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, field, options, lensR, lensD, infR, fNumber } from '../globals'
+import { state, lights, lens, sensor, style, options, lensR, lensD, infR, fNumber } from '../globals'
 import * as h from '../handlers'
 
 import Grid from './Grid.vue'
@@ -24,7 +24,7 @@ const svgViewBox = computed(() => {
 })
 
 const strokeWidth = computed(() => {
-  const scale = 1 / state.value.scale
+  const scale = style.value.widthUI / state.value.scale
   const scaleFd = 2
   const scaleBg = 4
   return {

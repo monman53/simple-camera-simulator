@@ -199,6 +199,10 @@ const replaceApple = (cx: number, cy: number, r: number) => {
             <tr>
                 <td><label><input type="checkbox" v-model="options.opticalAxis"> Optical axis</label></td>
             </tr>
+            <tr>
+                <td>UI stroke width</td>
+                <td><input type="range" min="0" max="3" step="0.01" v-model.number="style.widthUI"></td>
+            </tr>
         </template>
         <!-- Field -->
         <template v-if="options.advanced">

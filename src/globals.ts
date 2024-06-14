@@ -118,6 +118,8 @@ export const style0 = () => {
         // Rays
         rayWidth: 0.2,
         rayIntensity: 0.5,
+        // UI
+        widthUI: 1.0,
     }
 }
 export const style = ref(style0())
