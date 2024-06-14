@@ -33,17 +33,22 @@ const aov = computed(() => {
     const focalPlaneTop = vec(focal.value.x, -focal.value.d)
     const focalPlaneBottom = vec(focal.value.x, focal.value.d)
 
-    const middleOuter = focalPlaneTop.sub(lensTop)
-    const middleInner = focalPlaneBottom.sub(lensTop)
-
-    const inner = middleOuter.copy().normalize().mul(infR.value)
-    const outer = middleInner.copy().normalize().mul(infR.value)
-
-    // Over infinity
+    // Lens to focal plane
+    let middleOuter = focalPlaneTop.sub(lensTop)
+    let middleInner = focalPlaneBottom.sub(lensTop)
+    // For over infinity modification
     if (lens.value.x + lens.value.f > sensor.value.x) {
         middleOuter.minus().normalize().mul(infR.value)
         middleInner.minus().normalize().mul(infR.value)
     }
+    if (lens.value.x + lens.value.f === sensor.value.x) {
+        middleOuter = vec(lens.value.x - sensor.value.x, -sensor.value.r).normalize().mul(infR.value)
+        middleInner = vec(lens.value.x - sensor.value.x, sensor.value.r).normalize().mul(infR.value)
+    }
+
+    // Focal plane to infinity
+    const inner = middleOuter.copy().normalize().mul(infR.value)
+    const outer = middleInner.copy().normalize().mul(infR.value)
 
     return { middleInner, middleOuter, inner, outer }
 })
@@ -84,21 +89,28 @@ const dof = computed(() => {
     <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-re" class="dotted-bg"></line>
     <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="re" class="dotted"></line>
     <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-re" class="dotted"></line>
-    <!-- Lens to focal plane (outer) -->
-    <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted-bg">
-    </line>
-    <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted-bg"></line>
-    <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted"></line>
-    <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted"></line>
-    <!-- Lens to focal plane (inner) -->
-    <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleInner.x" :y2="-re + aov.middleInner.y" class="dotted-thick-bg">
-    </line>
-    <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleInner.x" :y2="re - aov.middleInner.y" class="dotted-thick-bg">
-    </line>
-    <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleInner.x" :y2="-re + aov.middleInner.y" class="dotted-thick">
-    </line>
-    <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleInner.x" :y2="re - aov.middleInner.y" class="dotted-thick">
-    </line>
+    <g v-if="lens.x !== sensor.x">
+        <!-- Lens to focal plane (outer) -->
+        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted-bg">
+        </line>
+        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted-bg">
+        </line>
+        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted">
+        </line>
+        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted"></line>
+        <!-- Lens to focal plane (inner) -->
+        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleInner.x" :y2="-re + aov.middleInner.y"
+            class="dotted-thick-bg">
+        </line>
+        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleInner.x" :y2="re - aov.middleInner.y"
+            class="dotted-thick-bg">
+        </line>
+        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleInner.x" :y2="-re + aov.middleInner.y"
+            class="dotted-thick">
+        </line>
+        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleInner.x" :y2="re - aov.middleInner.y" class="dotted-thick">
+        </line>
+    </g>
     <!-- Non over infinity -->
     <g v-if="lens.x + lens.f < sensor.x">
         <!-- Focal plane -->
