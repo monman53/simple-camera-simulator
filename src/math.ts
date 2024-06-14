@@ -93,21 +93,22 @@ export class Vec {
 //     }
 // }
 
-export const getIntersectionY = (px: number, py: number, theta: number, x: number, minY: number, maxY: number) => {
-    const sin = Math.sin(theta);
-    const cos = Math.cos(theta);
-    const r = (x - px) / cos;
-    const y = py + r * sin;
+export const getIntersectionY = (px: number, py: number, v: Vec, x: number, minY: number, maxY: number) => {
+    const n = v.copy().normalize()
+    const r = (x - px) / n.x;
+    const y = py + r * n.y;
     if (r >= 0 && minY <= y && y <= maxY) {
-        return { x, y, r }
+        return vec(x, y)
     } else {
         return null
     }
-};
+}
 
-export const getIntersectionLens = (x: number, y: number, theta: number, cx: number, cy: number, r: number /* lens diameter */, R: number /* lens curvature radius */, select: boolean) => {
+export const getIntersectionLens = (x: number, y: number, v: Vec, cx: number, cy: number, r: number /* lens diameter */, R: number /* lens curvature radius */, select: boolean) => {
+    const n = v.copy().normalize()
+
     const a = 1;
-    const b = 2 * ((x - cx) * Math.cos(theta) + (y - cy) * Math.sin(theta));
+    const b = 2 * ((x - cx) * n.x + (y - cy) * n.y);
     const c = Math.pow(x - cx, 2) + Math.pow(y - cy, 2) - R * R;
     const cond = b * b - 4 * a * c;
     if (cond < 0) {
@@ -117,14 +118,14 @@ export const getIntersectionLens = (x: number, y: number, theta: number, cx: num
     const d1 = (-b - Math.sqrt(cond)) / (2 * a);
     const d2 = (-b + Math.sqrt(cond)) / (2 * a);
     const d = select ? d1 : d2;
-    const tx = x + d * Math.cos(theta);
-    const ty = y + d * Math.sin(theta);
+    const tx = x + d * n.x;
+    const ty = y + d * n.y;
     if (Math.abs(ty) > r || d < 0) {
         return null
     } else {
-        return { x: tx, y: ty, r: d }
+        return vec(tx, ty)
     }
-};
+}
 
 // export const dotAngle = (x1: number, y1: number, x2: number, y2: number) => {
 //     const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
@@ -132,10 +133,8 @@ export const getIntersectionLens = (x: number, y: number, theta: number, cx: num
 //     return Math.acos((x1 * x2 + y1 * y2) / (norm1 * norm2));
 // };
 
-export const crossAngle = (x1: number, y1: number, x2: number, y2: number) => {
-    const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
-    const norm2 = Math.sqrt(x2 * x2 + y2 * y2);
-    return Math.asin((x1 * y2 - x2 * y1) / (norm1 * norm2));
+export const crossAngle = (p: Vec, q: Vec) => {
+    return Math.asin((p.x * q.y - q.x * p.y) / (p.length() * q.length()));
 };
 
 // const getIntersectionBody = (cx, cy, theta, maxR, isInner) => {
