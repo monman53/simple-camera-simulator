@@ -70,10 +70,8 @@ const rUI = computed(() => {
 
     <!-- Curvature -->
     <g v-if="options.lens && options.curvature">
-      <circle :cx="lens.x + lensD / 2 - lensR" :cy="0" :r="lensR" class="dotted">
-      </circle>
-      <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" class="dotted">
-      </circle>
+      <circle :cx="lens.x + lensD / 2 - lensR" :cy="0" :r="lensR" class="dotted"></circle>
+      <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" class="dotted"></circle>
       <!-- center point -->
       <circle :cx="lens.x + lensD / 2 - lensR" cy="0" :r="rUI / 2" class="white"></circle>
       <circle :cx="lens.x - lensD / 2 + lensR" cy="0" :r="rUI / 2" class="white"></circle>
