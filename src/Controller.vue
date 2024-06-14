@@ -226,6 +226,21 @@ const nRays = computed(() => {
                 <td></td>
             </tr>
             <tr>
+                <td>Sensor height</td>
+                <td>
+                    <button @click="sensor.r = 24 / 2">Full frame</button>
+                    <br>
+                    <button @click="sensor.r = 15.6 / 2">APS-C</button>
+                    <br>
+                    <button @click="sensor.r = 14.9 / 2">APS-C (Canon)</button>
+                    <br>
+                    <button @click="sensor.r = 13 / 2">Four thirds</button>
+                    <br>
+                    <button @click="sensor.r = 8.8 / 2">1"</button>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
                 <td><label><input type="checkbox" v-model="options.apple">Apple</label></td>
                 <td></td>
                 <td></td>
@@ -266,7 +281,7 @@ table td:nth-child(1) {
 }
 
 table td:nth-child(2) {
-    text-align: right;
+    text-align: left;
 }
 
 table td:nth-child(3) {
