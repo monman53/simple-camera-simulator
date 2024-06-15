@@ -41,7 +41,7 @@ const drawRay = (image: Vec, light: any, s: Vec, v: Vec, sensorDataTmp: any[]) =
       s = drawSegment(s, v, v.length())
 
       // Refraction (inner lens rays)
-      const phi1 = crossAngle(Vec.sub(v, c), Vec.sub(vec(light.x, light.y), p));
+      const phi1 = crossAngle(Vec.sub(p, c), Vec.sub(vec(light.x, light.y), p));
       const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
       const theta = Math.atan2(p.y - c.y, p.x - c.x) + Math.PI + phi2;
       v = vec(Math.cos(theta), Math.sin(theta))
