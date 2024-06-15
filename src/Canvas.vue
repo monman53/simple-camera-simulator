@@ -165,22 +165,29 @@ const draw = () => {
   // Light path drawing like ray-tracing
   //================================
 
-  // Point sources
+  // Light sources
   for (const light of lights.value) {
     ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
     ctx.lineWidth = style.value.rayWidth
 
-    // Find image position of the light source
-    const image = fGaussian(lens.value.f, lens.value.x - light.x, -light.y)
+    // Point light source
+    if (light.type === "point") {
+      // Find image position of the light source
+      const image = fGaussian(lens.value.f, lens.value.x - light.x, -light.y)
 
-    // Draw 2^nRaysLog rays from light center
-    const nRays = (1 << params.nRaysLog);
-    for (let i = 0; i < nRays; i++) {
-      // Initial position and direction
-      const s = vec(light.x, light.y)
-      const theta = 2 * Math.PI * i / nRays
-      const v = vec(Math.cos(theta), Math.sin(theta))
-      drawRay(image, light, s, v, sensorDataTmp)
+      // Draw 2^nRaysLog rays from light center
+      const nRays = (1 << params.nRaysLog);
+      for (let i = 0; i < nRays; i++) {
+        // Initial position and direction
+        const s = vec(light.x, light.y)
+        const theta = 2 * Math.PI * i / nRays
+        const v = vec(Math.cos(theta), Math.sin(theta))
+        drawRay(image, light, s, v, sensorDataTmp)
+      }
+    }
+
+    // Parallel light source
+    if (light.type === "parallel") {
     }
   }
 

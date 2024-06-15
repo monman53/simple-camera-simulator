@@ -24,9 +24,10 @@ export const state = ref(createInitialParams())
 
 export const lights0 = () => {
     return [
-        { x: -200, y: 20, color: 0 }, // red
-        { x: -160, y: 0, color: 120 }, // green
-        { x: -120, y: -20, color: 240 }, // blue
+        { type: 'point', x: -200, y: 20, color: 0 }, // red
+        { type: 'point', x: -160, y: 0, color: 120 }, // green
+        { type: 'point', x: -120, y: -20, color: 240 }, // blue
+        { type: 'parallel', x: -120, y: -20, r: 10, color: 240 }, // blue
     ]
 }
 export const lights = ref(lights0())
