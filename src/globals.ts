@@ -1,5 +1,6 @@
 import { ref, computed } from "vue"
 import { calcLensR } from "./math"
+import { Light } from "./type"
 
 //================================
 // States
@@ -22,12 +23,16 @@ export const state = ref(createInitialParams())
 // Lights
 //--------------------------------
 
-export const lights0 = () => {
+export const lights0 = ():
+    (
+        { type: Light.Point, x: number, y: number, color: number } |
+        { type: Light.Parallel, x: number, y: number, r: number, color: number }
+    )[] => {
     return [
-        { type: 'point', x: -200, y: 20, color: 0 }, // red
-        { type: 'point', x: -160, y: 0, color: 120 }, // green
-        { type: 'point', x: -120, y: -20, color: 240 }, // blue
-        { type: 'parallel', x: -120, y: -20, r: 10, color: 240 }, // blue
+        { type: Light.Point, x: -200, y: 20, color: 0 }, // red
+        { type: Light.Point, x: -160, y: 0, color: 120 }, // green
+        { type: Light.Point, x: -120, y: -20, color: 240 }, // blue
+        { type: Light.Parallel, x: -120, y: -20, r: 10, color: 240 }, // blue
     ]
 }
 export const lights = ref(lights0())

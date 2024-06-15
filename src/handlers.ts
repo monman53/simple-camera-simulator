@@ -1,5 +1,6 @@
 import type { Ref } from "vue";
 import { state, lights, lens, sensor, maxLightX, lensD } from "./globals";
+import { Light } from './type'
 
 //================================
 // SVG handlers
@@ -282,7 +283,7 @@ export const addLight = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
     const [x, y] = getPositionOnSvgApp(e.clientX, e.clientY);
-    lights.value.push({ type: "point", x: x, y: y, color: state.value.newLightColor })
+    lights.value.push({ type: Light.Point, x: x, y: y, color: state.value.newLightColor })
 }
 export const deleteLight = (e: any, idx: number) => {
     e.preventDefault();

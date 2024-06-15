@@ -3,6 +3,7 @@ import { computed, ref, onMounted } from 'vue'
 
 import { state, lights, lens, sensor, style, apple, options, lensR, lensD, infR, fNumber } from '../globals'
 import * as h from '../handlers'
+import { Light } from '../type'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
@@ -175,11 +176,16 @@ const rUI = computed(() => {
 
     <!-- Lights -->
     <g v-for="(light, idx) of lights">
-      <circle :cx="light.x" :cy="light.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
-      <circle :cx="light.x" :cy="light.y" :r="rUI" class="ui-bg"></circle>
-      <circle :cx="light.x" :cy="light.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
-        @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
-      </circle>
+      <g v-if="light.type === Light.Point">
+        <circle :cx="light.x" :cy="light.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
+        <circle :cx="light.x" :cy="light.y" :r="rUI" class="ui-bg"></circle>
+        <circle :cx="light.x" :cy="light.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
+          @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
+        </circle>
+      </g>
+      <g v-if="light.type === Light.Parallel">
+        <rect :x="light.x - rUI / 2" :y="light.r" :width="rUI / 2" :height="2 * light.r" fill="white"></rect>
+      </g>
     </g>
 
     <!-- Body -->

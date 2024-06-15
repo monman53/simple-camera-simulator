@@ -4,6 +4,8 @@ import { watch, onMounted, ref } from 'vue'
 import { state, lights, lens, sensor, sensorData, apple, options, style, lensR, lensD, infR } from './globals'
 import { Vec, vec, getIntersectionY, getIntersectionLens, crossAngle, fGaussian } from './math'
 
+import { Light } from './type'
+
 // Reference to the canvas
 const canvas = ref()
 
@@ -171,7 +173,7 @@ const draw = () => {
     ctx.lineWidth = style.value.rayWidth
 
     // Point light source
-    if (light.type === "point") {
+    if (light.type === Light.Point) {
       // Find image position of the light source
       const image = fGaussian(lens.value.f, lens.value.x - light.x, -light.y)
 
@@ -187,7 +189,7 @@ const draw = () => {
     }
 
     // Parallel light source
-    if (light.type === "parallel") {
+    if (light.type === Light.Parallel) {
     }
   }
 
