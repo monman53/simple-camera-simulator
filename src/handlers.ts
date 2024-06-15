@@ -282,7 +282,7 @@ export const addLight = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
     const [x, y] = getPositionOnSvgApp(e.clientX, e.clientY);
-    lights.value.push({ x: x, y: y, color: state.value.newLightColor })
+    lights.value.push({ type: "point", x: x, y: y, color: state.value.newLightColor })
 }
 export const deleteLight = (e: any, idx: number) => {
     e.preventDefault();
