@@ -190,6 +190,17 @@ const draw = () => {
 
     // Parallel light source
     if (light.type === Light.Parallel) {
+      const l = Vec.sub(light.t, light.s)
+      const ln = l.copy().normalize()
+      const length = l.length()
+      const nRays = Math.floor((length / (2 * Math.PI)) * (1 << params.nRaysLog) * 0.01)
+      for (let i = 0; i < nRays; i++) {
+        const s = light.s.copy().add(ln.copy().mul(i / nRays * length))
+        // Find image position of the light source
+        const image = fGaussian(lens.value.f, lens.value.x - s.x, -s.y)
+        const v = vec(l.y, -l.x)
+        drawRay(image, light, s, v, sensorDataTmp)
+      }
     }
   }
 
