@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import { state, lights, lens, sensor, appleProps, options, style, lensD, lensR, fNumber } from './globals'
 import { humanReadable } from './utils';
+import { Light } from "./type"
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
@@ -41,6 +42,21 @@ const nRays = computed(() => {
                 <button @click="state.newLightColor = 240">Blue</button>
             </td>
             <td :style="`background-color: hsl(${state.newLightColor}, 100%, 50%)`"></td>
+        </tr>
+        <tr>
+            <td>New light type</td>
+            <td>
+                <label>
+                    <input type="radio" :value="Light.Point" v-model="state.newLightType">
+                    Point
+                </label>
+                <br>
+                <label>
+                    <input type="radio" :value="Light.Parallel" v-model="state.newLightType">
+                    Parallel
+                </label>
+            </td>
+            <td></td>
         </tr>
         <!-- Lens -->
         <tr>
@@ -247,17 +263,23 @@ const nRays = computed(() => {
             </tr>
             <template v-if="options.apple">
                 <tr>
-                    <td><div class="indent">x</div></td>
+                    <td>
+                        <div class="indent">x</div>
+                    </td>
                     <td><label><input type="number" v-model.number="appleProps.x"></label></td>
                 </tr>
                 <tr>
-                    <td><div class="indent">r</div></td>
+                    <td>
+                        <div class="indent">r</div>
+                    </td>
                     <!-- <td><label><input type="number" v-model.number="appleProps.r"></label></td> -->
                     <td><input type="range" min="0" max="200" step="0.01" v-model.number="appleProps.r"></td>
                     <td>{{ humanReadable(appleProps.r) }}</td>
                 </tr>
                 <tr>
-                    <td><div class="indent">n</div></td>
+                    <td>
+                        <div class="indent">n</div>
+                    </td>
                     <td><input type="range" min="0" max="64" step="1" v-model.number="appleProps.n"></td>
                     <td>{{ appleProps.n }}</td>
                 </tr>

@@ -14,6 +14,7 @@ export const createInitialParams = () => {
         scale: 4,
         nRaysLog: 10,
         newLightColor: 120,
+        newLightType: Light.Point,
     }
 }
 export const state = ref(createInitialParams())

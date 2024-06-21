@@ -329,7 +329,12 @@ export const addLight = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
     const m = getPositionOnSvgApp(e);
-    lights.value.push({ type: Light.Point, c: m, color: state.value.newLightColor })
+    if (state.value.newLightType === Light.Point) {
+        lights.value.push({ type: Light.Point, c: m, color: state.value.newLightColor })
+    }
+    if (state.value.newLightType === Light.Parallel) {
+        lights.value.push({ type: Light.Parallel, s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), color: state.value.newLightColor })
+    }
 }
 export const deleteLight = (e: any, idx: number) => {
     e.preventDefault();
