@@ -8,7 +8,6 @@ import { vec, Vec } from './math'
 //================================
 
 // Reference to the svg element
-// let svg: Ref<any>;
 let svg: Ref<any>;
 export const setSvg = (svg_: Ref<any>) => {
     svg = svg_;
@@ -39,29 +38,11 @@ const preventDefaultAndStopPropagation = (e: any) => {
 
 // Event handlers
 let moveHandler: any = null;
-// let tpCache = [];
-// let cx0, cy0;
-// let x0_, y0_;
-// let scale0;
 export const svgMoveStartHandler = (e: any) => {
     e.preventDefault();
-    // if (e.touches.length === 1) {
-    //   tpCache = [e.touches[0]];
-    //   cx0 = svg.cx;
-    //   cy0 = svg.cy;
-    //   scale0 = svg.scale;
-    // }
-    // if (e.touches.length === 2) {
-    //   tpCache = [e.touches[0], e.touches[1]];
-    //   cx0 = svg.cx;
-    //   cy0 = svg.cy;
-    //   [x0_, y0_] = getPositionOnSvgApp((e.touches[0].clientX + e.touches[1].clientX) / 2, (e.touches[0].clientY + e.touches[1].clientY) / 2)
-    //   scale0 = svg.scale;
-    // }
     const m0 = getPositionOnSvg(e);
     const c0 = state.value.c.copy()
     const handler = (e_: any) => {
-        e_.preventDefault();
         let clientX = e_.clientX
         let clientY = e_.clientY
         if (e_.type == 'touchmove') {
@@ -75,35 +56,6 @@ export const svgMoveStartHandler = (e: any) => {
 }
 export const svgMoveHandler = (e: any) => {
     e.preventDefault();
-
-    // if (e.targetTouches.length === 1) {
-    //   const cogX0 = tpCache[0].clientX;
-    //   const cogY0 = tpCache[0].clientY;
-    //   const [x0, y0] = getPositionOnSvg(cogX0, cogY0);
-
-    //   const cogX = e.touches[0].clientX;
-    //   const cogY = e.touches[0].clientY;
-
-    //   const [x, y] = getPositionOnSvg(cogX, cogY);
-    //   const dx = (x - x0) / svg.scale
-    //   const dy = (y - y0) / svg.scale
-    //   svg.cx = cx0 - dx
-    //   svg.cy = cy0 - dy
-    // }
-    // if (e.touches.length === 2) {
-
-    //   const cogX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-    //   const cogY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-    //   const [x, y] = getPositionOnSvg(cogX, cogY);
-
-    //   const l0 = Math.sqrt(Math.pow(tpCache[0].clientX - tpCache[1].clientX, 2) + Math.pow(tpCache[0].clientY - tpCache[1].clientY, 2));
-    //   const l = Math.sqrt(Math.pow(e.touches[0].clientX - e.touches[1].clientX, 2) + Math.pow(e.touches[0].clientY - e.touches[1].clientY, 2));
-
-    //   svg.scale = scale0 * (l / l0)
-    //   svg.cx = x0_ - (x - svg.width / 2) / svg.scale;
-    //   svg.cy = y0_ - (y - svg.height / 2) / svg.scale;
-    // }
-
     if (moveHandler !== null) {
         preventDefaultAndStopPropagation(e)
         moveHandler(e)
