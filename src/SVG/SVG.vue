@@ -18,8 +18,8 @@ onMounted(() => {
 })
 
 const svgViewBox = computed(() => {
-  const x = state.value.cx - state.value.width * 0.5 / state.value.scale
-  const y = state.value.cy - state.value.height * 0.5 / state.value.scale
+  const x = state.value.c.x - state.value.width * 0.5 / state.value.scale
+  const y = state.value.c.y - state.value.height * 0.5 / state.value.scale
   const w = state.value.width / state.value.scale
   const h = state.value.height / state.value.scale
   return `${x} ${y} ${w} ${h}`

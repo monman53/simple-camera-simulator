@@ -191,12 +191,12 @@ const nRays = computed(() => {
             <tr>
                 <td>Center x</td>
                 <td></td>
-                <td>{{ humanReadable(state.cx) }}</td>
+                <td>{{ humanReadable(state.c.x) }}</td>
             </tr>
             <tr>
                 <td>Center y</td>
                 <td></td>
-                <td>{{ humanReadable(state.cy) }}</td>
+                <td>{{ humanReadable(state.c.y) }}</td>
             </tr>
             <tr>
                 <td>Scale</td>

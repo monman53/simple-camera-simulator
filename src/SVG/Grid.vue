@@ -3,10 +3,10 @@ import { computed } from 'vue'
 import { state, infR } from '../globals'
 
 const grid = computed(() => {
-    const xMin = state.value.cx - state.value.width / 2 / state.value.scale;
-    const xMax = state.value.cx + state.value.width / 2 / state.value.scale
-    const yMin = state.value.cy - state.value.height / 2 / state.value.scale;
-    const yMax = state.value.cy + state.value.height / 2 / state.value.scale;
+    const xMin = state.value.c.x - state.value.width / 2 / state.value.scale;
+    const xMax = state.value.c.x + state.value.width / 2 / state.value.scale
+    const yMin = state.value.c.y - state.value.height / 2 / state.value.scale;
+    const yMax = state.value.c.y + state.value.height / 2 / state.value.scale;
     const size = Math.max(xMax - xMin, yMax - yMin);
 
     // Normal grid

@@ -10,8 +10,7 @@ export const createInitialParams = () => {
     return {
         width: window.innerWidth,
         height: window.innerHeight,
-        cx: -100,
-        cy: 0,
+        c: vec(-100, 0),
         scale: 4,
         nRaysLog: 10,
         newLightColor: 120,
@@ -199,22 +198,21 @@ export const infR = computed(() => {
     let screen = Math.sqrt(w * w + h * h);
 
     // light to center max distance
-    const cx = state.value.cx;
-    const cy = state.value.cy;
+    const c = state.value.c;
     let distanceMax = 0;
     for (const light of lights.value) {
         if (light.type === Light.Point) {
-            const dx = cx - light.x;
-            const dy = cy - light.y
+            const dx = c.x - light.x;
+            const dy = c.y - light.y
             const d = Math.sqrt(dx * dx + dy * dy)
             distanceMax = Math.max(distanceMax, d);
         }
         if (light.type === Light.Parallel) {
-            const d1x = cx - light.s.x;
-            const d1y = cy - light.s.y
+            const d1x = c.x - light.s.x;
+            const d1y = c.y - light.s.y
             const d1 = Math.sqrt(d1x * d1x + d1y * d1y)
-            const d2x = cx - light.s.x;
-            const d2y = cy - light.s.y
+            const d2x = c.x - light.s.x;
+            const d2y = c.y - light.s.y
             const d2 = Math.sqrt(d2x * d2x + d2y * d2y)
             const d = Math.max(d1, d2)
             distanceMax = Math.max(distanceMax, d);
