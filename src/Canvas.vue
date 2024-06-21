@@ -175,13 +175,13 @@ const draw = () => {
     // Point light source
     if (light.type === Light.Point) {
       // Find image position of the light source
-      const image = fGaussian(lens.value.f, lens.value.x - light.x, -light.y)
+      const image = fGaussian(lens.value.f, lens.value.x - light.c.x, -light.c.y)
 
       // Draw 2^nRaysLog rays from light center
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
-        const s = vec(light.x, light.y)
+        const s = light.c
         const theta = 2 * Math.PI * i / nRays
         const v = vec(Math.cos(theta), Math.sin(theta))
         drawRay(image, light, s, v, sensorDataTmp)

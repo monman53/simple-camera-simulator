@@ -173,9 +173,9 @@ const strokeDashArray = computed(() => {
     <!-- Lights -->
     <g v-for="(light, idx) of lights">
       <g v-if="light.type === Light.Point">
-        <circle :cx="light.x" :cy="light.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
-        <circle :cx="light.x" :cy="light.y" :r="rUI" class="ui-bg"></circle>
-        <circle :cx="light.x" :cy="light.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
+        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
+        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui-bg"></circle>
+        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
           @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
         </circle>
       </g>

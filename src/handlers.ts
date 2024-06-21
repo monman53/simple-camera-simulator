@@ -132,17 +132,17 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
 
     if (light.type === Light.Point) {
         const m0 = getPositionOnSvg(e);
-        const [cx0, cy0] = [light.x, light.y];
+        const c0 = light.c.copy()
         const handler = (e_: any) => {
             e_.preventDefault();
             e_.stopPropagation();
             const d = getPositionDiffOnSvgApp(e_, m0)
-            if (cx0 + d.x > lens.value.x - lensD.value / 2) {
-                light.x = lens.value.x - lensD.value / 2
+            if (c0.x + d.x > lens.value.x - lensD.value / 2) {
+                light.c.x = lens.value.x - lensD.value / 2
             } else {
-                light.x = cx0 + d.x
+                light.c.x = c0.x + d.x
             }
-            light.y = cy0 + d.y
+            light.c.y = c0.y + d.y
         }
         moveHandler = handler;
     }
@@ -329,7 +329,7 @@ export const addLight = (e: any) => {
     e.preventDefault();
     e.stopPropagation();
     const m = getPositionOnSvgApp(e);
-    lights.value.push({ type: Light.Point, x: m.x, y: m.y, color: state.value.newLightColor })
+    lights.value.push({ type: Light.Point, c: m, color: state.value.newLightColor })
 }
 export const deleteLight = (e: any, idx: number) => {
     e.preventDefault();

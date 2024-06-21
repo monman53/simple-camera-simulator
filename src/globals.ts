@@ -24,13 +24,13 @@ export const state = ref(createInitialParams())
 
 export const lights0 = ():
     (
-        { type: Light.Point, x: number, y: number, color: number } |
+        { type: Light.Point, c: Vec, color: number } |
         { type: Light.Parallel, s: Vec, t: Vec, color: number }
     )[] => {
     return [
-        { type: Light.Point, x: -200, y: 20, color: 0 }, // red
-        { type: Light.Point, x: -160, y: 0, color: 120 }, // green
-        { type: Light.Point, x: -120, y: -20, color: 240 }, // blue
+        { type: Light.Point, c: vec(-200, 20), color: 0 }, // red
+        { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
+        { type: Light.Point, c: vec(-120, -20), color: 240 }, // blue
         { type: Light.Parallel, s: vec(-180, -30), t: vec(-180, 30), color: 120 }, // green
     ]
 }
@@ -202,19 +202,13 @@ export const infR = computed(() => {
     let distanceMax = 0;
     for (const light of lights.value) {
         if (light.type === Light.Point) {
-            const dx = c.x - light.x;
-            const dy = c.y - light.y
-            const d = Math.sqrt(dx * dx + dy * dy)
-            distanceMax = Math.max(distanceMax, d);
+            const d = c.copy().sub(light.c)
+            distanceMax = Math.max(distanceMax, d.length());
         }
         if (light.type === Light.Parallel) {
-            const d1x = c.x - light.s.x;
-            const d1y = c.y - light.s.y
-            const d1 = Math.sqrt(d1x * d1x + d1y * d1y)
-            const d2x = c.x - light.s.x;
-            const d2y = c.y - light.s.y
-            const d2 = Math.sqrt(d2x * d2x + d2y * d2y)
-            const d = Math.max(d1, d2)
+            const ds = c.copy().sub(light.s)
+            const dt = c.copy().sub(light.s)
+            const d = Math.max(ds.length(), dt.length())
             distanceMax = Math.max(distanceMax, d);
         }
     }
@@ -233,7 +227,7 @@ export const maxLightX = computed(() => {
     let max = -infR.value
     for (const light of lights.value) {
         if (light.type === Light.Point) {
-            max = Math.max(max, light.x)
+            max = Math.max(max, light.c.x)
         }
         if (light.type === Light.Parallel) {
             max = Math.max(max, light.s.x)
