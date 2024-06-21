@@ -220,9 +220,10 @@ const draw = () => {
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
         const s = vec(light.x, light.y)
+        const s0 = s.copy()
         const theta = 2 * Math.PI * i / nRays
         const v = vec(Math.cos(theta), Math.sin(theta))
-        drawRay(image, light, s, v, sensorDataTmp)
+        drawRay(image, s0, s, v, light.color, sensorDataTmp)
       }
     }
   }
