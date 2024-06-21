@@ -27,7 +27,7 @@ const drawSegment = (p: Vec, v: Vec, length: number) => {
   return q
 };
 
-const drawRay = (image: Vec, light: any, s: Vec, v: Vec, sensorDataTmp: any[]) => {
+const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
   let innerLens = false
 
   //--------------------------------
@@ -43,7 +43,7 @@ const drawRay = (image: Vec, light: any, s: Vec, v: Vec, sensorDataTmp: any[]) =
       s = drawSegment(s, v, v.length())
 
       // Refraction (inner lens rays)
-      const phi1 = crossAngle(Vec.sub(p, c), Vec.sub(vec(light.x, light.y), p));
+      const phi1 = crossAngle(Vec.sub(p, c), Vec.sub(s0, p));
       const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
       const theta = Math.atan2(p.y - c.y, p.x - c.x) + Math.PI + phi2;
       v = vec(Math.cos(theta), Math.sin(theta))
@@ -101,9 +101,9 @@ const drawRay = (image: Vec, light: any, s: Vec, v: Vec, sensorDataTmp: any[]) =
       // Refracted ray
       let theta = Math.atan2(image.y - s.y, image.x);
       if (image.x === Infinity) {
-        theta = Math.atan2(-light.y, -(light.x - lens.value.x));
+        theta = Math.atan2(-s0.y, -(s0.x - lens.value.x));
       }
-      if (lens.value.x - lens.value.f < light.x) {
+      if (lens.value.x - lens.value.f < s0.x) {
         theta += Math.PI;
       }
       v = vec(Math.cos(theta), Math.sin(theta))
@@ -142,7 +142,7 @@ const drawRay = (image: Vec, light: any, s: Vec, v: Vec, sensorDataTmp: any[]) =
     if (p) {
       v = p.copy().sub(s)
       drawSegment(s, v, v.length())
-      sensorDataTmp.push({ y: p.y, color: light.color })
+      sensorDataTmp.push({ y: p.y, color})
       return
     }
   }
@@ -181,10 +181,11 @@ const draw = () => {
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
-        const s = light.c
+        const s0 = light.c.copy()
+        const s = light.c.copy()
         const theta = 2 * Math.PI * i / nRays
         const v = vec(Math.cos(theta), Math.sin(theta))
-        drawRay(image, light, s, v, sensorDataTmp)
+        drawRay(image, s0, s, v, light.color, sensorDataTmp)
       }
     }
 
@@ -196,10 +197,11 @@ const draw = () => {
       const nRays = Math.floor((length / (2 * Math.PI)) * (1 << params.nRaysLog) * 0.01)
       for (let i = 0; i < nRays; i++) {
         const s = light.s.copy().add(ln.copy().mul(i / nRays * length))
+        const s0 = s.copy()
         // Find image position of the light source
         const image = fGaussian(lens.value.f, lens.value.x - s.x, -s.y)
         const v = vec(l.y, -l.x)
-        drawRay(image, light, s, v, sensorDataTmp)
+        drawRay(image, s0, s, v, light.color, sensorDataTmp)
       }
     }
   }
