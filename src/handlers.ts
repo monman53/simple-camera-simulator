@@ -1,6 +1,7 @@
 import type { Ref } from "vue";
 import { state, lights, lens, sensor, maxLightX, lensD } from "./globals";
 import { Light } from './type'
+import { vec } from './math'
 
 //================================
 // SVG handlers
@@ -128,22 +129,38 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     newLights.push(light)
     lights.value = newLights
 
-    const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
-    const [cx0, cy0] = [light.x, light.y];
-    const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
-        const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
-        const dx = (x - x0) / state.value.scale
-        const dy = (y - y0) / state.value.scale
-        if (cx0 + dx > lens.value.x - lensD.value / 2) {
-            light.x = lens.value.x - lensD.value / 2
-        } else {
-            light.x = cx0 + dx
+    if (light.type === Light.Point) {
+        const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+        const [cx0, cy0] = [light.x, light.y];
+        const handler = (e_: any) => {
+            e_.preventDefault();
+            e_.stopPropagation();
+            const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+            const dx = (x - x0) / state.value.scale
+            const dy = (y - y0) / state.value.scale
+            if (cx0 + dx > lens.value.x - lensD.value / 2) {
+                light.x = lens.value.x - lensD.value / 2
+            } else {
+                light.x = cx0 + dx
+            }
+            light.y = cy0 + dy
         }
-        light.y = cy0 + dy
+        moveHandler = handler;
     }
-    moveHandler = handler;
+    if (light.type === Light.Parallel) {
+        const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+        const [s0, t0] = [light.s, light.t];
+        const handler = (e_: any) => {
+            e_.preventDefault();
+            e_.stopPropagation();
+            const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+            const dx = (x - x0) / state.value.scale
+            const dy = (y - y0) / state.value.scale
+            light.s = s0.copy().add(vec(dx, dy))
+            light.t = t0.copy().add(vec(dx, dy))
+        }
+        moveHandler = handler;
+    }
 }
 export const cameraMoveStartHandler = (e: any) => {
     e.preventDefault();

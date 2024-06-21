@@ -76,6 +76,8 @@ export class Vec {
     static normalize(v: Vec) {
         return v.copy().normalize()
     }
+
+    // TODO: toString
 }
 
 //================================

@@ -1,5 +1,5 @@
 import { ref, computed } from "vue"
-import { calcLensR } from "./math"
+import { Vec, vec, calcLensR } from "./math"
 import { Light } from "./type"
 
 //================================
@@ -26,13 +26,13 @@ export const state = ref(createInitialParams())
 export const lights0 = ():
     (
         { type: Light.Point, x: number, y: number, color: number } |
-        { type: Light.Parallel, x: number, y: number, r: number, color: number }
+        { type: Light.Parallel, s: Vec, t: Vec, color: number }
     )[] => {
     return [
         { type: Light.Point, x: -200, y: 20, color: 0 }, // red
         { type: Light.Point, x: -160, y: 0, color: 120 }, // green
         { type: Light.Point, x: -120, y: -20, color: 240 }, // blue
-        { type: Light.Parallel, x: -120, y: -20, r: 10, color: 240 }, // blue
+        { type: Light.Parallel, s: vec(-180, -30), t: vec(-180, 30), color: 120 }, // green
     ]
 }
 export const lights = ref(lights0())
@@ -203,10 +203,22 @@ export const infR = computed(() => {
     const cy = state.value.cy;
     let distanceMax = 0;
     for (const light of lights.value) {
-        const dx = cx - light.x;
-        const dy = cy - light.y
-        const d = Math.sqrt(dx * dx + dy * dy)
-        distanceMax = Math.max(distanceMax, d);
+        if (light.type === Light.Point) {
+            const dx = cx - light.x;
+            const dy = cy - light.y
+            const d = Math.sqrt(dx * dx + dy * dy)
+            distanceMax = Math.max(distanceMax, d);
+        }
+        if (light.type === Light.Parallel) {
+            const d1x = cx - light.s.x;
+            const d1y = cy - light.s.y
+            const d1 = Math.sqrt(d1x * d1x + d1y * d1y)
+            const d2x = cx - light.s.x;
+            const d2y = cy - light.s.y
+            const d2 = Math.sqrt(d2x * d2x + d2y * d2y)
+            const d = Math.max(d1, d2)
+            distanceMax = Math.max(distanceMax, d);
+        }
     }
     return (screen + distanceMax) * 3 /* 3 for safety */;
 })
@@ -222,7 +234,18 @@ export const fNumber = computed(() => {
 export const maxLightX = computed(() => {
     let max = -infR.value
     for (const light of lights.value) {
-        max = Math.max(max, light.x)
+        if (light.type === Light.Point) {
+            max = Math.max(max, light.x)
+        }
+        if (light.type === Light.Parallel) {
+            max = Math.max(max, light.s.x)
+            max = Math.max(max, light.t.x)
+        }
     }
     return max
+})
+
+export const rUI = computed(() => {
+  const scale = 1 / state.value.scale
+  return 8 * scale;
 })

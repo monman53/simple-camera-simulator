@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, style, apple, options, lensR, lensD, infR, fNumber } from '../globals'
+import { state, lights, lens, sensor, style, apple, options, lensR, lensD, infR, fNumber, rUI } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
+import LightParallel from './LightParallel.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -47,11 +48,6 @@ const lineBgColor = "#000a"
 const strokeDashArray = computed(() => {
   const scale = 1 / state.value.scale
   return 4 * scale;
-})
-
-const rUI = computed(() => {
-  const scale = 1 / state.value.scale
-  return 8 * scale;
 })
 
 </script>
@@ -184,7 +180,7 @@ const rUI = computed(() => {
         </circle>
       </g>
       <g v-if="light.type === Light.Parallel">
-        <rect :x="light.x - rUI / 2" :y="light.r" :width="rUI / 2" :height="2 * light.r" fill="white"></rect>
+        <LightParallel :light :idx></LightParallel>
       </g>
     </g>
 
