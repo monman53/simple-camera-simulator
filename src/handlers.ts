@@ -32,6 +32,10 @@ const getPositionDiffOnSvgApp = (e: any, m0: Vec) => {
     const d = m.sub(m0).div(state.value.scale)
     return d
 }
+const preventDefaultAndStopPropagation = (e: any) => {
+    e.stopPropagation()
+    e.preventDefault()
+}
 
 // Event handlers
 let moveHandler: any = null;
@@ -101,6 +105,7 @@ export const svgMoveHandler = (e: any) => {
     // }
 
     if (moveHandler !== null) {
+        preventDefaultAndStopPropagation(e)
         moveHandler(e)
     }
 }
@@ -109,9 +114,7 @@ export const svgMoveEndHandler = () => {
     // tpCache = [];
 }
 export const svgScaleHandler = (e: any) => {
-    e.stopPropagation();
-    e.preventDefault();
-
+    preventDefaultAndStopPropagation(e)
     // Zoom in/out
     const p = getPositionOnSvgApp(e);
     const scaleFactor = 1.2;
@@ -120,8 +123,7 @@ export const svgScaleHandler = (e: any) => {
     state.value.scale /= r;
 }
 export const lightMoveStartHandler = (e: any, idx: number) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     // Last touched light is always front
     const light = lights.value[idx];
     const newLights = lights.value.filter((light, i) => {
@@ -134,8 +136,6 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const m0 = getPositionOnSvg(e);
         const c0 = light.c.copy()
         const handler = (e_: any) => {
-            e_.preventDefault();
-            e_.stopPropagation();
             const d = getPositionDiffOnSvgApp(e_, m0)
             if (c0.x + d.x > lens.value.x - lensD.value / 2) {
                 light.c.x = lens.value.x - lensD.value / 2
@@ -150,8 +150,6 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const m0 = getPositionOnSvg(e);
         const [s0, t0] = [light.s.copy(), light.t.copy()];
         const handler = (e_: any) => {
-            e_.preventDefault();
-            e_.stopPropagation();
             const d = getPositionDiffOnSvgApp(e_, m0)
             if (s0.x > t0.x && s0.x + d.x > lens.value.x - lensD.value / 2) {
                 light.s.x = lens.value.x - lensD.value / 2
@@ -170,8 +168,7 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     }
 }
 export const parallelLightNodeMoveStartHandler = (e: any, idx: number, which: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     // Last touched light is always front
     const light = lights.value[idx];
     const newLights = lights.value.filter((light, i) => {
@@ -185,8 +182,6 @@ export const parallelLightNodeMoveStartHandler = (e: any, idx: number, which: st
         const p0 = which === "s" ? light.s.copy() : light.t.copy()
         const p = which === "s" ? light.s : light.t
         const handler = (e_: any) => {
-            e_.preventDefault();
-            e_.stopPropagation();
             const d = getPositionDiffOnSvgApp(e_, m0)
             if (p0.x + d.x > lens.value.x - lensD.value / 2) {
                 p.x = lens.value.x - lensD.value / 2
@@ -199,14 +194,11 @@ export const parallelLightNodeMoveStartHandler = (e: any, idx: number, which: st
     }
 }
 export const cameraMoveStartHandler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const lensX0 = lens.value.x;
     const sensorX0 = sensor.value.x;
     const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (lensX0 + d.x < maxLightX.value) {
             lens.value.x = maxLightX.value
@@ -219,13 +211,10 @@ export const cameraMoveStartHandler = (e: any) => {
     moveHandler = handler;
 }
 export const lensMoveStartHandler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const cx0 = lens.value.x;
     const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (cx0 + d.x < maxLightX.value + lensD.value / 2) {
             lens.value.x = maxLightX.value + lensD.value / 2
@@ -238,13 +227,10 @@ export const lensMoveStartHandler = (e: any) => {
     moveHandler = handler;
 }
 export const lensSizeChangeStartHandler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const r0 = lens.value.r;
     const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (r0 - d.y < 0.1) {
             lens.value.r = 0.1;
@@ -255,13 +241,10 @@ export const lensSizeChangeStartHandler = (e: any) => {
     moveHandler = handler;
 }
 export const focalPointMoveStartHandler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const f0 = lens.value.f;
     const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (f0 - d.x < lensD.value / 2) {
             lens.value.f = lensD.value / 2
@@ -272,13 +255,10 @@ export const focalPointMoveStartHandler = (e: any) => {
     moveHandler = handler;
 }
 export const apertureSizeChangeStartHandler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const a0 = lens.value.aperture * lens.value.r;
     const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
         const d = getPositionDiffOnSvgApp(e_, m0)
         const an = (a0 + d.y) / lens.value.r;
         if (an < 0) {
@@ -292,13 +272,10 @@ export const apertureSizeChangeStartHandler = (e: any) => {
     moveHandler = handler;
 }
 export const sensorMoveStartHandler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const cx0 = sensor.value.x;
     const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (cx0 + d.x < lens.value.x) {
             sensor.value.x = lens.value.x
@@ -309,13 +286,10 @@ export const sensorMoveStartHandler = (e: any) => {
     moveHandler = handler;
 }
 export const sensorSizeChangeStartHandler = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const r0 = sensor.value.r;
     const handler = (e_: any) => {
-        e_.preventDefault();
-        e_.stopPropagation();
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (r0 - d.y < 0.1) {
             sensor.value.r = 0.1;
@@ -326,8 +300,7 @@ export const sensorSizeChangeStartHandler = (e: any) => {
     moveHandler = handler;
 }
 export const addLight = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     const m = getPositionOnSvgApp(e);
     if (state.value.newLightType === Light.Point) {
         lights.value.push({ type: Light.Point, c: m, color: state.value.newLightColor })
@@ -337,7 +310,6 @@ export const addLight = (e: any) => {
     }
 }
 export const deleteLight = (e: any, idx: number) => {
-    e.preventDefault();
-    e.stopPropagation();
+    preventDefaultAndStopPropagation(e)
     lights.value.splice(idx, 1)
 }
