@@ -2,7 +2,7 @@
 import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lens, sensor, sensorData, apple, options, style, lensR, lensD, infR } from './globals'
-import { Vec, vec, getIntersectionY, getIntersectionLens, crossAngle, fGaussian } from './math'
+import { Vec, vec, vecRad, getIntersectionY, getIntersectionLens, crossAngle, fGaussian } from './math'
 
 import { Light } from './type'
 
@@ -46,7 +46,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
       const phi1 = crossAngle(Vec.sub(p, c), Vec.sub(s0, p));
       const phi2 = Math.asin(Math.sin(phi1) / lens.value.n);
       const theta = Math.atan2(p.y - c.y, p.x - c.x) + Math.PI + phi2;
-      v = vec(Math.cos(theta), Math.sin(theta))
+      v = vecRad(theta)
 
       innerLens = true
     }
@@ -84,7 +84,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
       const phi1 = crossAngle(Vec.sub(p, c), Vec.sub(p, s));
       const phi2 = Math.asin(Math.sin(phi1) * lens.value.n);
       const theta = Math.atan2(p.y - c.y, p.x - c.x) + phi2;
-      v = vec(Math.cos(theta), Math.sin(theta))
+      v = vecRad(theta)
       s = nextS
     }
   }
@@ -106,7 +106,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
       if (lens.value.x - lens.value.f < s0.x) {
         theta += Math.PI;
       }
-      v = vec(Math.cos(theta), Math.sin(theta))
+      v = vecRad(theta)
     }
   }
 
@@ -142,7 +142,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
     if (p) {
       v = p.sub(s)
       drawSegment(s, v, v.length())
-      sensorDataTmp.push({ y: p.y, color})
+      sensorDataTmp.push({ y: p.y, color })
       return
     }
   }
@@ -181,10 +181,10 @@ const draw = () => {
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
-        const s0 = light.c.copy()
         const s = light.c.copy()
+        const s0 = s.copy()
         const theta = 2 * Math.PI * i / nRays
-        const v = vec(Math.cos(theta), Math.sin(theta))
+        const v = vecRad(theta)
         drawRay(image, s0, s, v, light.color, sensorDataTmp)
       }
     }
@@ -194,13 +194,14 @@ const draw = () => {
       const l = Vec.sub(light.t, light.s)
       const ln = l.normalize()
       const length = l.length()
+      // TODO:
       const nRays = Math.floor((length / (2 * Math.PI)) * (1 << params.nRaysLog) * 0.01)
       for (let i = 0; i < nRays; i++) {
         const s = light.s.add(ln.mul(i / nRays * length))
         const s0 = s.copy()
         // Find image position of the light source
         const image = fGaussian(lens.value.f, lens.value.x - s.x, -s.y)
-        const v = vec(l.y, -l.x)
+        const v = l.rotate(-Math.PI / 2)
         drawRay(image, s0, s, v, light.color, sensorDataTmp)
       }
     }
@@ -213,16 +214,16 @@ const draw = () => {
       ctx.lineWidth = style.value.rayWidth
 
       // Find image position of the light source
-      const image = fGaussian(lens.value.f, lens.value.x - light.x, -light.y)
+      const image = fGaussian(lens.value.f, lens.value.x - light.c.x, -light.c.y)
 
       // Draw 2^nRaysLog rays from light center
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
-        const s = vec(light.x, light.y)
+        const s = vec(light.c.x, light.c.y)
         const s0 = s.copy()
         const theta = 2 * Math.PI * i / nRays
-        const v = vec(Math.cos(theta), Math.sin(theta))
+        const v = vecRad(theta)
         drawRay(image, s0, s, v, light.color, sensorDataTmp)
       }
     }

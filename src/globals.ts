@@ -87,8 +87,7 @@ export const field = ref(field0())
 
 export const appleProps0 = () => {
     return {
-        x: -200,
-        y: 0,
+        c: vec(-200, 0),
         r: 20,
         n: 24,
         half: true,
@@ -97,8 +96,8 @@ export const appleProps0 = () => {
 export const appleProps = ref(appleProps0())
 
 export const apple = computed(() => {
-    const cx = appleProps.value.x
-    const cy = appleProps.value.y
+    const cx = appleProps.value.c.x
+    const cy = appleProps.value.c.y
     const r = appleProps.value.r
 
     const lights = []
@@ -110,9 +109,10 @@ export const apple = computed(() => {
             const theta = i / n * 2 * Math.PI
             const x = cx + r * Math.cos(theta)
             const y = cy + r * Math.sin(theta)
+            const c = vec(x, y)
             const color = 0 // red
             if (x >= cx) {
-                lights.push({ x, y, color })
+                lights.push({ type: Light.Point, c, color })
             }
         }
     }
@@ -125,9 +125,10 @@ export const apple = computed(() => {
             const rLeaf = 0.4 * r
             const x = cx + rLeaf * Math.cos(theta)
             const y = cy - (r + rLeaf) + rLeaf * Math.sin(theta)
+            const c = vec(x, y)
             const color = 120 // green
             if (x >= cx) {
-                lights.push({ x, y, color })
+                lights.push({ type: Light.Point, c, color })
             }
         }
     }
@@ -239,6 +240,6 @@ export const maxLightX = computed(() => {
 })
 
 export const rUI = computed(() => {
-  const scale = 1 / state.value.scale
-  return 8 * scale;
+    const scale = 1 / state.value.scale
+    return 8 * scale;
 })

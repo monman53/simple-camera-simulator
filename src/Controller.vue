@@ -266,7 +266,7 @@ const nRays = computed(() => {
                     <td>
                         <div class="indent">x</div>
                     </td>
-                    <td><label><input type="number" v-model.number="appleProps.x"></label></td>
+                    <td><label><input type="number" v-model.number="appleProps.c.x"></label></td>
                 </tr>
                 <tr>
                     <td>

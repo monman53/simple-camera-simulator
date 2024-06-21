@@ -6,6 +6,10 @@ export const vec = (x: number, y: number) => {
     return new Vec(x, y)
 }
 
+export const vecRad = (theta: number) => {
+    return vec(Math.cos(theta), Math.sin(theta))
+}
+
 export class Vec {
     x: number
     y: number
@@ -49,6 +53,16 @@ export class Vec {
         return this
     }
 
+    inplaceRotate(theta: number) {
+        const x = this.x
+        const y = this.y
+        const cos = Math.cos(theta)
+        const sin = Math.sin(theta)
+        this.x = cos * x - sin * y
+        this.y = sin * x + cos * y
+        return this
+    }
+
     length() {
         return Math.sqrt(this.x * this.x + this.y * this.y)
     }
@@ -81,6 +95,10 @@ export class Vec {
         return this.copy().inplaceNormalize()
     }
 
+    rotate(theta: number) {
+        return this.copy().inplaceRotate(theta)
+    }
+
     static add(a: Vec, b: Vec) {
         return a.add(b)
     }
@@ -99,6 +117,10 @@ export class Vec {
 
     static normalize(v: Vec) {
         return v.normalize()
+    }
+
+    static rotate(v: Vec, theta: number) {
+        return v.rotate(theta)
     }
 
     // TODO: toString
