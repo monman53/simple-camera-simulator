@@ -46,8 +46,8 @@ const aov = computed(() => {
     }
 
     // Focal plane to infinity
-    const inner = middleOuter.copy().normalize().mul(infR.value)
-    const outer = middleInner.copy().normalize().mul(infR.value)
+    const inner = middleOuter.normalize().mul(infR.value)
+    const outer = middleInner.normalize().mul(infR.value)
 
     return { middleInner, middleOuter, inner, outer }
 })

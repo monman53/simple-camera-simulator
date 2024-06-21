@@ -19,7 +19,7 @@ if (!ctx) {
 }
 
 const drawSegment = (p: Vec, v: Vec, length: number) => {
-  const q = p.copy().add(v.copy().normalize().mul(length))
+  const q = p.add(v.normalize().mul(length))
   ctx.beginPath();
   ctx.moveTo(p.x, p.y);
   ctx.lineTo(q.x, q.y);
@@ -39,7 +39,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
 
     const p = getIntersectionLens(s, v, c, lens.value.r, lensR.value, true)
     if (p) {
-      v = p.copy().sub(s)
+      v = p.sub(s)
       s = drawSegment(s, v, v.length())
 
       // Refraction (inner lens rays)
@@ -61,7 +61,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
       const upperHit = p.y > lens.value.aperture * lens.value.r
       const lowerHit = p.y < -lens.value.aperture * lens.value.r
       if (lowerHit || upperHit) {
-        v = p.copy().sub(s)
+        v = p.sub(s)
         drawSegment(s, v, v.length())
         return
       }
@@ -77,7 +77,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
 
     const p = getIntersectionLens(s, v, c, lens.value.r, lensR.value, false)
     if (p) {
-      v = p.copy().sub(s)
+      v = p.sub(s)
       const nextS = drawSegment(s, v, v.length())
 
       // Refraction (inner lens rays)
@@ -95,7 +95,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   if (options.value.lensIdeal && options.value.lens) {
     const p = getIntersectionY(s, v, lens.value.x, -lens.value.r, lens.value.r)
     if (p) {
-      v = p.copy().sub(s)
+      v = p.sub(s)
       s = drawSegment(s, v, v.length())
 
       // Refracted ray
@@ -118,7 +118,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
     {
       const p = getIntersectionY(s, v, lens.value.x, lens.value.r, infR.value);
       if (p) {
-        v = p.copy().sub(s)
+        v = p.sub(s)
         drawSegment(s, v, v.length())
         return
       }
@@ -127,7 +127,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
     {
       const p = getIntersectionY(s, v, lens.value.x, -infR.value, -lens.value.r);
       if (p) {
-        v = p.copy().sub(s)
+        v = p.sub(s)
         drawSegment(s, v, v.length())
         return
       }
@@ -140,7 +140,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   if (options.value.sensor) {
     const p = getIntersectionY(s, v, sensor.value.x, -sensor.value.r, sensor.value.r);
     if (p) {
-      v = p.copy().sub(s)
+      v = p.sub(s)
       drawSegment(s, v, v.length())
       sensorDataTmp.push({ y: p.y, color})
       return
@@ -192,11 +192,11 @@ const draw = () => {
     // Parallel light source
     if (light.type === Light.Parallel) {
       const l = Vec.sub(light.t, light.s)
-      const ln = l.copy().normalize()
+      const ln = l.normalize()
       const length = l.length()
       const nRays = Math.floor((length / (2 * Math.PI)) * (1 << params.nRaysLog) * 0.01)
       for (let i = 0; i < nRays; i++) {
-        const s = light.s.copy().add(ln.copy().mul(i / nRays * length))
+        const s = light.s.add(ln.mul(i / nRays * length))
         const s0 = s.copy()
         // Find image position of the light source
         const image = fGaussian(lens.value.f, lens.value.x - s.x, -s.y)

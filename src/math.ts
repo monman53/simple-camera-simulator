@@ -19,31 +19,31 @@ export class Vec {
         return vec(this.x, this.y)
     }
 
-    add(v: Vec) {
+    inplaceAdd(v: Vec) {
         this.x += v.x
         this.y += v.y
         return this
     }
 
-    sub(v: Vec) {
+    inplaceSub(v: Vec) {
         this.x -= v.x
         this.y -= v.y
         return this
     }
 
-    mul(a: number) {
+    inplaceMul(a: number) {
         this.x *= a
         this.y *= a
         return this
     }
 
-    div(a: number) {
+    inplaceDiv(a: number) {
         this.x /= a
         this.y /= a
         return this
     }
 
-    minus() {
+    inplaceMinus() {
         this.x = -this.x
         this.y = -this.y
         return this
@@ -53,28 +53,52 @@ export class Vec {
         return Math.sqrt(this.x * this.x + this.y * this.y)
     }
 
-    normalize() {
+    inplaceNormalize() {
         return this.div(this.length())
     }
 
+    add(v: Vec) {
+        return this.copy().inplaceAdd(v)
+    }
+
+    sub(v: Vec) {
+        return this.copy().inplaceSub(v)
+    }
+
+    mul(a: number) {
+        return this.copy().inplaceMul(a)
+    }
+
+    div(a: number) {
+        return this.copy().inplaceDiv(a)
+    }
+
+    minus() {
+        return this.copy().inplaceMinus()
+    }
+
+    normalize() {
+        return this.copy().inplaceNormalize()
+    }
+
     static add(a: Vec, b: Vec) {
-        return a.copy().add(b)
+        return a.add(b)
     }
 
     static sub(a: Vec, b: Vec) {
-        return a.copy().sub(b)
+        return a.sub(b)
     }
 
     static mul(v: Vec, a: number) {
-        return v.copy().mul(a)
+        return v.mul(a)
     }
 
     static div(v: Vec, a: number) {
-        return v.copy().div(a)
+        return v.div(a)
     }
 
     static normalize(v: Vec) {
-        return v.copy().normalize()
+        return v.normalize()
     }
 
     // TODO: toString
@@ -96,7 +120,7 @@ export class Vec {
 // }
 
 export const getIntersectionY = (s: Vec, v: Vec, x: number, minY: number, maxY: number) => {
-    const n = v.copy().normalize()
+    const n = v.normalize()
     const r = (x - s.x) / n.x;
     const y = s.y + r * n.y;
     if (r >= 0 && minY <= y && y <= maxY) {
@@ -107,7 +131,7 @@ export const getIntersectionY = (s: Vec, v: Vec, x: number, minY: number, maxY: 
 }
 
 export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */, select: boolean) => {
-    const n = v.copy().normalize()
+    const n = v.normalize()
 
     const a = 1;
     const b = 2 * ((s.x - cl.x) * n.x + (s.y - cl.y) * n.y);

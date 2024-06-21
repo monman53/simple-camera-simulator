@@ -50,7 +50,7 @@ export const svgMoveStartHandler = (e: any) => {
             clientY = e_.touches[0].clientY
         }
         const d = getPositionDiffOnSvgApp(e_, m0)
-        state.value.c = c0.copy().sub(d)
+        state.value.c = c0.sub(d)
     }
     moveHandler = handler;
 }

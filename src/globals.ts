@@ -203,12 +203,12 @@ export const infR = computed(() => {
     let distanceMax = 0;
     for (const light of lights.value) {
         if (light.type === Light.Point) {
-            const d = c.copy().sub(light.c)
+            const d = c.sub(light.c)
             distanceMax = Math.max(distanceMax, d.length());
         }
         if (light.type === Light.Parallel) {
-            const ds = c.copy().sub(light.s)
-            const dt = c.copy().sub(light.s)
+            const ds = c.sub(light.s)
+            const dt = c.sub(light.s)
             const d = Math.max(ds.length(), dt.length())
             distanceMax = Math.max(distanceMax, d);
         }

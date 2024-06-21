@@ -16,8 +16,8 @@ const points = computed(() => {
 
     const p1 = Vec.add(t, vv.copy())
     const p2 = Vec.add(s, vv.copy())
-    const p3 = Vec.add(s, vv.copy().minus())
-    const p4 = Vec.add(t, vv.copy().minus())
+    const p3 = Vec.add(s, vv.minus())
+    const p4 = Vec.add(t, vv.minus())
 
     return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
 })
