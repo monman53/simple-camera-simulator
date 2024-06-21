@@ -83,14 +83,15 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     })
     newLights.push(light)
     lights.value = newLights
+    const minLensX = lens.value.x - lensD.value / 2
 
     if (light.type === Light.Point) {
         const m0 = getPositionOnSvg(e);
         const c0 = light.c.copy()
         const handler = (e_: any) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
-            if (c0.x + d.x > lens.value.x - lensD.value / 2) {
-                light.c.x = lens.value.x - lensD.value / 2
+            if (c0.x + d.x > minLensX) {
+                light.c.x = minLensX
             } else {
                 light.c.x = c0.x + d.x
             }
@@ -103,18 +104,17 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const [s0, t0] = [light.s.copy(), light.t.copy()];
         const handler = (e_: any) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
-            if (s0.x >= t0.x && s0.x + d.x > lens.value.x - lensD.value / 2) {
-                light.s.x = lens.value.x - lensD.value / 2
-                light.t.x = lens.value.x - lensD.value / 2 + (t0.x - s0.x)
-            } else if (t0.x > s0.x && t0.x + d.x > lens.value.x - lensD.value / 2) {
-                light.s.x = lens.value.x - lensD.value / 2 + (s0.x - t0.x)
-                light.t.x = lens.value.x - lensD.value / 2
-            } else {
-                light.s.x = s0.x + d.x
-                light.t.x = t0.x + d.x
+            const sn = s0.add(d)
+            const tn = t0.add(d)
+            if (s0.x >= t0.x && sn.x > minLensX) {
+                sn.x = minLensX
+                tn.x = minLensX + (t0.x - s0.x)
+            } else if (t0.x > s0.x && tn.x > minLensX) {
+                sn.x = minLensX + (s0.x - t0.x)
+                tn.x = minLensX
             }
-            light.s.y = s0.y + d.y
-            light.t.y = t0.y + d.y
+            light.s = sn
+            light.t = tn
         }
         moveHandler = handler;
     }
