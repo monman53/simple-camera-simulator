@@ -149,15 +149,56 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     }
     if (light.type === Light.Parallel) {
         const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
-        const [s0, t0] = [light.s, light.t];
+        const [s0, t0] = [light.s.copy(), light.t.copy()];
         const handler = (e_: any) => {
             e_.preventDefault();
             e_.stopPropagation();
             const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
             const dx = (x - x0) / state.value.scale
             const dy = (y - y0) / state.value.scale
-            light.s = s0.copy().add(vec(dx, dy))
-            light.t = t0.copy().add(vec(dx, dy))
+            if (s0.x > t0.x && s0.x + dx > lens.value.x - lensD.value / 2) {
+                light.s.x = lens.value.x - lensD.value / 2
+                light.t.x = lens.value.x - lensD.value / 2 + (t0.x - s0.x)
+            } else if (t0.x > s0.x && t0.x + dx > lens.value.x - lensD.value / 2) {
+                light.s.x = lens.value.x - lensD.value / 2 + (s0.x - t0.x)
+                light.t.x = lens.value.x - lensD.value / 2
+            } else {
+                light.s.x = s0.x + dx
+                light.t.x = t0.x + dx
+            }
+            light.s.y = s0.y + dy
+            light.t.y = t0.y + dy
+        }
+        moveHandler = handler;
+    }
+}
+export const parallelLightNodeMoveStartHandler = (e: any, idx: number, which: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Last touched light is always front
+    const light = lights.value[idx];
+    const newLights = lights.value.filter((light, i) => {
+        return i !== idx
+    })
+    newLights.push(light)
+    lights.value = newLights
+
+    if (light.type === Light.Parallel) {
+        const [x0, y0] = getPositionOnSvg(e.clientX, e.clientY);
+        const p0 = which === "s" ? light.s.copy() : light.t.copy()
+        const p = which === "s" ? light.s : light.t
+        const handler = (e_: any) => {
+            e_.preventDefault();
+            e_.stopPropagation();
+            const [x, y] = getPositionOnSvg(e_.clientX, e_.clientY);
+            const dx = (x - x0) / state.value.scale
+            const dy = (y - y0) / state.value.scale
+            if (p0.x + dx > lens.value.x - lensD.value / 2) {
+                p.x = lens.value.x - lensD.value / 2
+            } else {
+                p.x = p0.x + dx
+            }
+            p.y = p0.y + dy
         }
         moveHandler = handler;
     }

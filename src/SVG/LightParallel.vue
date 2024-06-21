@@ -29,5 +29,10 @@ const points = computed(() => {
         <polygon :points :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></polygon>
         <polygon :points class="ui-bg"></polygon>
         <polygon :points class="ui" @mousedown="h.lightMoveStartHandler($event, idx)"></polygon>
+
+        <circle :cx="light.s.x" :cy="light.s.y" :r="rUI"
+            @mousedown="h.parallelLightNodeMoveStartHandler($event, idx, 's')" class="ui-hidden"></circle>
+        <circle :cx="light.t.x" :cy="light.t.y" :r="rUI"
+            @mousedown="h.parallelLightNodeMoveStartHandler($event, idx, 't')" class="ui-hidden"></circle>
     </g>
 </template>
