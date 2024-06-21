@@ -9,15 +9,15 @@ const props = defineProps(['light', 'idx'])
 const points = computed(() => {
     const s = props.light.s
     const t = props.light.t
-    const c = Vec.add(s, t).div(2)
-    const v = Vec.sub(t, s)
-    const vv = vec(-v.y, v.x) // 90 deg rotation
+    // const c = s.add(t).div(2)
+    const v = t.sub(s)
+    const vv = v.rotate(Math.PI / 2) // 90 deg rotation
         .normalize().mul(rUI.value / 2)
 
-    const p1 = Vec.add(t, vv.copy())
-    const p2 = Vec.add(s, vv.copy())
-    const p3 = Vec.add(s, vv.minus())
-    const p4 = Vec.add(t, vv.minus())
+    const p1 = t.add(vv)
+    const p2 = s.add(vv)
+    const p3 = s.add(vv.minus())
+    const p4 = t.add(vv.minus())
 
     return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
 })
