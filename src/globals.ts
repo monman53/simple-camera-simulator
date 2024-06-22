@@ -43,7 +43,8 @@ export const lights = ref(lights0())
 
 export const items0 = () => {
     return [
-        { x: 0, r: 20, f: 50, n: 1.5, d: 5, aperture: 1 },
+        { x: -50, r: 10, f: 50, n: 1.5, d: 5, aperture: 1 },
+        { x: 0, r: 10, f: 50, n: 1.5, d: 5, aperture: 1 },
     ]
 }
 export const items = ref(items0())

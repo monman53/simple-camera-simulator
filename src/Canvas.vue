@@ -28,7 +28,11 @@ const drawSegment = (p: Vec, v: Vec, length: number) => {
 };
 
 const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
-  for (const lens of items.value) {
+
+  // Multiple lens
+  const lenses = items.value.filter(() => true)
+  lenses.sort((a, b) => { return a.x - b.x })
+  for (const lens of lenses) {
     const s0 = s.copy()
     const lensR = calcLensR(lens.f, lens.n, lens.d)
     let innerLens = false
