@@ -55,6 +55,23 @@ const focalPointMoveStartHandler = (e: any) => {
     })
 }
 
+const apertureSizeChangeStartHandler = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    const m0 = getPositionOnSvg(e);
+    const a0 = props.lens.aperture * r.value;
+    setMoveHandler((e_: any) => {
+        const d = getPositionDiffOnSvgApp(e_, m0)
+        const an = (a0 + d.y) / r.value;
+        if (an < 0) {
+            items.value[props.idx].aperture = 0;
+        } else if (an > 1) {
+            items.value[props.idx].aperture = 1;
+        } else {
+            items.value[props.idx].aperture = an;
+        }
+    })
+}
+
 const rMax = computed(() => {
     const d = props.lens.d
     return Math.sqrt(R.value * R.value - (R.value - d / 2) * (R.value - d / 2))
@@ -128,7 +145,24 @@ const rightX = computed(() => {
             </g>
         </g>
         <!-- Lens size change UI-->
-        <circle :cx="lens.x" :cy="-r" :r="rUI" class="ui-hidden" @mousedown="lensSizeChangeStartHandler">
-        </circle>
+        <circle :cx="lens.x" :cy="-r" :r="rUI" class="ui-hidden" @mousedown="lensSizeChangeStartHandler"> </circle>
+
+        <!-- Aperture -->
+        <g v-if="options.aperture">
+            <!-- Lines -->
+            <!-- Background -->
+            <g class="hover-sibling-bg no-pointer-events">
+                <line :x1="lens.x" :y1="-r" :x2="lens.x" :y2="-r * lens.aperture"></line>
+                <line :x1="lens.x" :y1="r" :x2="lens.x" :y2="r * lens.aperture"></line>
+            </g>
+            <!-- Foreground -->
+            <g class="hover-sibling no-pointer-events">
+                <line :x1="lens.x" :y1="-r" :x2="lens.x" :y2="-r * lens.aperture"></line>
+                <line :x1="lens.x" :y1="r" :x2="lens.x" :y2="r * lens.aperture"></line>
+            </g>
+            <!-- UI -->
+            <circle :cx="lens.x" :cy="r * lens.aperture" :r="rUI" @mousedown="apertureSizeChangeStartHandler"
+                class="hover-sibling-master ui-hidden"></circle>
+        </g>
     </g>
 </template>
