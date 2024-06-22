@@ -36,7 +36,7 @@ const draw = () => {
     ctx.beginPath();
     ctx.fillStyle = 'white'
     const width = 0.01 * sensor.value.r
-    ctx.rect(-width / 2, -lens.value.circleOfConfusion / 2, width, lens.value.circleOfConfusion);
+    ctx.rect(-width / 2, -sensor.value.circleOfConfusion / 2, width, sensor.value.circleOfConfusion);
     ctx.fill()
     ctx.stroke();
   }

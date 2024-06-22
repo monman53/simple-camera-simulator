@@ -79,9 +79,9 @@ const strokeDashArray = computed(() => {
     <!-- Hyperfocal point -->
     <g
       v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
-      <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2 * 1.2"
+      <circle :cx="lens.x - lens.f - lens.f * lens.f / (sensor.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2 * 1.2"
         :fill="style.lineBgColor"></circle>
-      <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
+      <circle :cx="lens.x - lens.f - lens.f * lens.f / (sensor.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
         class="white"></circle>
     </g>
 

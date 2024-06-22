@@ -56,7 +56,7 @@ const aov = computed(() => {
 const dof = computed(() => {
     const f = lens.value.f
     const r = re.value
-    const delta = lens.value.circleOfConfusion
+    const delta = sensor.value.circleOfConfusion
 
     const bx = sensor.value.x - lens.value.x
     const by = sensor.value.r // Unused

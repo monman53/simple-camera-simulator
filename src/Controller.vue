@@ -139,9 +139,9 @@ const nRays = computed(() => {
                 <tr>
                     <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
                     <template v-if="options.circleOfConfusion">
-                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="lens.circleOfConfusion">
+                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="sensor.circleOfConfusion">
                         </td>
-                        <td>{{ humanReadable(lens.circleOfConfusion) }}</td>
+                        <td>{{ humanReadable(sensor.circleOfConfusion) }}</td>
                     </template>
                 </tr>
                 <tr>
