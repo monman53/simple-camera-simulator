@@ -37,8 +37,8 @@ const aov = computed(() => {
     let middleInner = focalPlaneBottom.sub(lensTop)
     // For over infinity modification
     if (lens.value.x + lens.value.f > sensor.value.x) {
-        middleOuter.minus().normalize().mul(infR.value)
-        middleInner.minus().normalize().mul(infR.value)
+        middleOuter = middleOuter.minus().normalize().mul(infR.value)
+        middleInner = middleInner.minus().normalize().mul(infR.value)
     }
     if (lens.value.x + lens.value.f === sensor.value.x) {
         middleOuter = vec(lens.value.x - sensor.value.x, -sensor.value.r).normalize().mul(infR.value)
