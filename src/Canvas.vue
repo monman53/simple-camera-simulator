@@ -2,7 +2,7 @@
 import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lens, sensor, sensorData, apple, options, style, lensR, lensD, infR } from './globals'
-import { Vec, vec, vecRad, getIntersectionY, getIntersectionLens, crossAngle, fGaussian } from './math'
+import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, intersectionSS } from './math'
 
 import { Light } from './type'
 
@@ -56,7 +56,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   // Collision to aperture
   //--------------------------------
   if (options.value.aperture) {
-    const p = getIntersectionY(s, v, lens.value.x, -lens.value.r, lens.value.r)
+    const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(lens.value.x, -lens.value.r), vec(lens.value.x, lens.value.r))
     if (p) {
       const upperHit = p.y > lens.value.aperture * lens.value.r
       const lowerHit = p.y < -lens.value.aperture * lens.value.r
@@ -93,7 +93,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   // Collision to ideal lens
   //--------------------------------
   if (options.value.lensIdeal && options.value.lens) {
-    const p = getIntersectionY(s, v, lens.value.x, -lens.value.r, lens.value.r)
+    const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(lens.value.x, -lens.value.r), vec(lens.value.x, lens.value.r))
     if (p) {
       v = p.sub(s)
       s = drawSegment(s, v, v.length())
@@ -116,7 +116,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   if (options.value.body) {
     // Upper
     {
-      const p = getIntersectionY(s, v, lens.value.x, lens.value.r, infR.value);
+      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(lens.value.x, -infR.value), vec(lens.value.x, -lens.value.r))
       if (p) {
         v = p.sub(s)
         drawSegment(s, v, v.length())
@@ -125,7 +125,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
     }
     // Lower
     {
-      const p = getIntersectionY(s, v, lens.value.x, -infR.value, -lens.value.r);
+      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(lens.value.x, infR.value), vec(lens.value.x, lens.value.r))
       if (p) {
         v = p.sub(s)
         drawSegment(s, v, v.length())
@@ -138,7 +138,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   // Collision to sensor
   //--------------------------------
   if (options.value.sensor) {
-    const p = getIntersectionY(s, v, sensor.value.x, -sensor.value.r, sensor.value.r);
+    const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(sensor.value.x, -sensor.value.r), vec(sensor.value.x, sensor.value.r))
     if (p) {
       v = p.sub(s)
       drawSegment(s, v, v.length())

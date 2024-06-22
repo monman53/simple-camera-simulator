@@ -126,31 +126,63 @@ export class Vec {
     // TODO: toString
 }
 
-//================================
-// Support functions
-//================================
-// export const getIntersectionX = (px: number, py: number, theta: number, minX: number, maxX: number, y: number, maxR: number) => {
-//     const sin = Math.sin(theta);
-//     const cos = Math.cos(theta);
-//     const r = (y - py) / sin;
-//     const x = px + r * cos;
-//     if (r >= 0 && minX <= x && x <= maxX) {
-//         return [true, x, y, r];
-//     } else {
-//         return [false, px + maxR * cos, py + maxR * sin, maxR];
-//     }
-// }
+const dot = (p: Vec, q: Vec) => {
+    return p.x * q.x + p.y * q.y
+}
 
-export const getIntersectionY = (s: Vec, v: Vec, x: number, minY: number, maxY: number) => {
-    const n = v.normalize()
-    const r = (x - s.x) / n.x;
-    const y = s.y + r * n.y;
-    if (r >= 0 && minY <= y && y <= maxY) {
-        return vec(x, y)
+// export const dotAngle = (x1: number, y1: number, x2: number, y2: number) => {
+//     const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
+//     const norm2 = Math.sqrt(x2 * x2 + y2 * y2);
+//     return Math.acos((x1 * x2 + y1 * y2) / (norm1 * norm2));
+// };
+
+const cross = (p: Vec, q: Vec) => {
+    return p.x * q.y - q.x * p.y
+}
+
+export const crossAngle = (p: Vec, q: Vec) => {
+    return Math.asin(cross(p, q) / (p.length() * q.length()));
+};
+
+//================================
+// Geometry
+//================================
+
+const eps = 1e-9
+
+// ccw
+const ccw = (a: Vec, b: Vec, c: Vec) => {
+    b = b.sub(a)
+    c = c.sub(a)
+    if (cross(b, c) > eps) return +1 // counter clockwise
+    if (cross(b, c) < -eps) return -1 // clockwise
+    if (dot(b, c) < 0) return +2 // cab (back)
+    if (b.length() < c.length()) return -2 // abc (front)
+    return 0                        // acb (on segment)
+}
+
+const isIntersectedSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
+    return ccw(a1, a2, b1) * ccw(a1, a2, b2) <= 0 &&
+        ccw(b1, b2, a1) * ccw(b1, b2, a2) <= 0
+}
+
+const intersectionLL = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
+    const a = a2.sub(a1)
+    const b = b2.sub(b1)
+    return a1.add(a.mul(cross(b, b1.sub(a1))).div(cross(b, a)))
+}
+
+export const intersectionSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
+    if (isIntersectedSS(a1, a2, b1, b2)) {
+        return intersectionLL(a1, a2, b1, b2)
     } else {
         return null
     }
 }
+
+//================================
+// Support functions
+//================================
 
 export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */, select: boolean) => {
     const n = v.normalize()
@@ -174,16 +206,6 @@ export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens d
         return vec(tx, ty)
     }
 }
-
-// export const dotAngle = (x1: number, y1: number, x2: number, y2: number) => {
-//     const norm1 = Math.sqrt(x1 * x1 + y1 * y1);
-//     const norm2 = Math.sqrt(x2 * x2 + y2 * y2);
-//     return Math.acos((x1 * x2 + y1 * y2) / (norm1 * norm2));
-// };
-
-export const crossAngle = (p: Vec, q: Vec) => {
-    return Math.asin((p.x * q.y - q.x * p.y) / (p.length() * q.length()));
-};
 
 // const getIntersectionBody = (cx, cy, theta, maxR, isInner) => {
 //     // Front
