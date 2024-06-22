@@ -218,8 +218,8 @@ export const fGaussian = (f: number, px: number, py: number) => {
 }
 
 export const calcLensR = (f: number, n: number, d: number) => {
-    const a = 1
-    const b = -2 * f * (n - 1)
-    const c = d * (n - 1) * (n - 1)
+    const a = n
+    const b = -2 * f * n * (n - 1)
+    const c = d * f * (n - 1) * (n - 1)
     return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a)
 }
