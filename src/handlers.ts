@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, lens, sensor, maxLightX, lensD } from "./globals";
+import { state, lights, lens, sensor, maxLightX } from "./globals";
 import { Light } from './type'
 import { vec, Vec } from './math'
 
@@ -85,7 +85,7 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     })
     newLights.push(light)
     lights.value = newLights
-    const minLensX = lens.value.x - lensD.value / 2
+    const minLensX = lens.value.x - lens.value.d / 2
 
     if (light.type === Light.Point) {
         const m0 = getPositionOnSvg(e);
@@ -135,8 +135,8 @@ export const parallelLightNodeMoveStartHandler = (e: any, idx: number, which: st
         const p = which === "s" ? light.s : light.t
         moveHandler = (e_: any) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
-            if (p0.x + d.x > lens.value.x - lensD.value / 2) {
-                p.x = lens.value.x - lensD.value / 2
+            if (p0.x + d.x > lens.value.x - lens.value.d / 2) {
+                p.x = lens.value.x - lens.value.d / 2
             } else {
                 p.x = p0.x + d.x
             }
@@ -166,8 +166,8 @@ export const lensMoveStartHandler = (e: any) => {
     const cx0 = lens.value.x;
     moveHandler = (e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (cx0 + d.x < maxLightX.value + lensD.value / 2) {
-            lens.value.x = maxLightX.value + lensD.value / 2
+        if (cx0 + d.x < maxLightX.value + lens.value.d / 2) {
+            lens.value.x = maxLightX.value + lens.value.d / 2
         } else if (sensor.value.x < cx0 + d.x) {
             lens.value.x = sensor.value.x
         } else {
@@ -194,8 +194,8 @@ export const focalPointMoveStartHandler = (e: any) => {
     const f0 = lens.value.f;
     moveHandler = (e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (f0 - d.x < lensD.value / 2) {
-            lens.value.f = lensD.value / 2
+        if (f0 - d.x < lens.value.d / 2) {
+            lens.value.f = lens.value.d / 2
         } else {
             lens.value.f = f0 - d.x
         }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, onMounted, ref } from 'vue'
 
-import { state, lights, lens, sensor, sensorData, apple, options, style, lensR, lensD, infR } from './globals'
+import { state, lights, lens, sensor, sensorData, apple, options, style, lensR, infR } from './globals'
 import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, intersectionSS } from './math'
 
 import { Light } from './type'
@@ -35,7 +35,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   //--------------------------------
   if (!options.value.lensIdeal && options.value.lens) {
     // Center of lens curvature circle
-    const c = vec(lens.value.x - lensD.value / 2 + lensR.value, 0)
+    const c = vec(lens.value.x - lens.value.d / 2 + lensR.value, 0)
 
     const p = getIntersectionLens(s, v, c, lens.value.r, lensR.value, true)
     if (p) {
@@ -73,7 +73,7 @@ const drawRay = (image: Vec, s0: Vec, s: Vec, v: Vec, color: number, sensorDataT
   //--------------------------------
   if (!options.value.lensIdeal && innerLens) {
     // Center of lens curvature circle
-    const c = vec(lens.value.x + lensD.value / 2 - lensR.value, 0)
+    const c = vec(lens.value.x + lens.value.d / 2 - lensR.value, 0)
 
     const p = getIntersectionLens(s, v, c, lens.value.r, lensR.value, false)
     if (p) {

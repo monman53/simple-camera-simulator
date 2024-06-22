@@ -47,6 +47,7 @@ export const lens0 = () => {
         r: 20,
         n: 1.5,
         f: 50,
+        d: 5,
         aperture: 1,
     }
 }
@@ -58,8 +59,8 @@ export const lens = ref(lens0())
 
 export const items0 = () => {
     return [
-        { x: -50, r: 20, f: 50, n: 1.5, aperture: 1 },
-        { x: -100, r: 12, f: 100, n: 1.5, aperture: 1 },
+        { x: -50, r: 20, f: 50, n: 1.5, d: 5, aperture: 1 },
+        { x: -100, r: 12, f: 100, n: 1.5, d: 5, aperture: 1 },
     ]
 }
 export const items = ref(items0())
@@ -196,14 +197,7 @@ export const style = ref(style0())
 //================================
 
 export const lensR = computed(() => {
-    return calcLensR(lens.value.n, lens.value.f, lens.value.r)
-    // return 2 * (lens.value.n - 1) * (2 * lens.value.f)
-})
-
-export const lensD = computed(() => {
-    const R = lensR.value
-    const r = lens.value.r
-    return 2 * (R - Math.sqrt(R * R - r * r))
+    return calcLensR(lens.value.f, lens.value.n, lens.value.d)
 })
 
 export const infR = computed(() => {

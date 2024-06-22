@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, items, sensor, style, apple, options, lensR, lensD, infR, fNumber, rUI } from '../globals'
+import { state, lights, lens, items, sensor, style, apple, options, lensR, infR, fNumber, rUI } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 
@@ -66,11 +66,11 @@ const strokeDashArray = computed(() => {
 
     <!-- Curvature -->
     <g v-if="options.lens && options.curvature">
-      <circle :cx="lens.x + lensD / 2 - lensR" :cy="0" :r="lensR" class="dotted"></circle>
-      <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" class="dotted"></circle>
+      <circle :cx="lens.x + lens.d / 2 - lensR" :cy="0" :r="lensR" class="dotted"></circle>
+      <circle :cx="lens.x - lens.d / 2 + lensR" :cy="0" :r="lensR" class="dotted"></circle>
       <!-- center point -->
-      <circle :cx="lens.x + lensD / 2 - lensR" cy="0" :r="rUI / 2" class="white"></circle>
-      <circle :cx="lens.x - lensD / 2 + lensR" cy="0" :r="rUI / 2" class="white"></circle>
+      <circle :cx="lens.x + lens.d / 2 - lensR" cy="0" :r="rUI / 2" class="white"></circle>
+      <circle :cx="lens.x - lens.d / 2 + lensR" cy="0" :r="rUI / 2" class="white"></circle>
     </g>
 
     <!-- Guidelines -->
@@ -88,8 +88,8 @@ const strokeDashArray = computed(() => {
     <!-- Lens and Sensor move dummy element-->
     <g v-if="options.lens && options.sensor" class="hover-parent">
       <!-- lens -->
-      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
-      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
+      <!-- <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
+      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" class="hover-child fill-none" /> -->
       <!-- sensor -->
       <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
       <!-- dummy for ui -->
@@ -101,19 +101,23 @@ const strokeDashArray = computed(() => {
     <g v-if="options.lens">
       <g class="hover-parent">
         <!-- left half background -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`"
+        <path
+          :d="`M ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
           class="hover-child-bg fill-none" />
         <!-- right half background -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`"
+        <path
+          :d="`M ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
           class="hover-child-bg fill-none" />
         <!-- left half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`"
+        <path
+          :d="`M ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
           class="hover-child fill-none" />
         <!-- right half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`"
+        <path
+          :d="`M ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
           class="hover-child fill-none" />
         <!-- dummy for ui -->
-        <rect class='ui-transparent' :x="lens.x - lensD / 2" :y="-lens.r" :width="lensD" :height="2 * lens.r"
+        <rect class='ui-transparent' :x="lens.x - lens.d / 2" :y="-lens.r" :width="lens.d" :height="2 * lens.r"
           @mousedown="h.lensMoveStartHandler" />
       </g>
       <!-- Focal points -->

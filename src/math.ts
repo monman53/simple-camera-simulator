@@ -217,46 +217,9 @@ export const fGaussian = (f: number, px: number, py: number) => {
     return vec(qx, qy)
 }
 
-export const calcLensR = (n: number, f: number, r: number) => {
-    // This formula is made from lens-maker's formula and d = 2(R-sqrt(R^2-r^2))
-    const func = (R: number) => {
-        let res = 0;
-        res += n * n * Math.pow(R, 4);
-        res += - 4 * n * (n - 1) * f * Math.pow(R, 3);
-        res += 4 * (n - 1) * (n - 1) * f * f * (1 - (n - 1) * (n - 1)) * R * R;
-        res += 4 * Math.pow(n - 1, 4) * f * f * r * r;
-
-        return res;
-    };
-
-    // Derivative of func
-    const funcc = (R: number) => {
-        let res = 0;
-        res += 4 * n * n * Math.pow(R, 3);
-        res += - 12 * n * (n - 1) * f * Math.pow(R, 2);
-        res += 8 * (n - 1) * (n - 1) * f * f * (1 - (n - 1) * (n - 1)) * R;
-        return res;
-    };
-
-    // Solve func(R) = 0 by Newton' method
-    let R = 100 * n; // NOTICE: Very heuristic
-    for (let i = 0; i < 100; i++) {
-        // console.log(R, func(R), funcc(R))
-        R = R - func(R) / funcc(R);
-
-        // Validation R with desired focal length
-        // Calculate focal length by lens maker's formula
-        const d = 2 * (R - Math.sqrt(R * R - r * r));
-        const desiredLensF = f;
-        const actualLensF = 1.0 / (2 * (n - 1) / R - (n - 1) * (n - 1) * d / (n * R * R));
-
-        const absError = Math.abs(desiredLensF - actualLensF);
-        const relError = absError / desiredLensF;
-        if (relError < 1e-8) {
-            return R;
-        }
-    }
-
-    // Failed
-    return -1.0;
+export const calcLensR = (f: number, n: number, d: number) => {
+    const a = 1
+    const b = -2 * f * (n - 1)
+    const c = d * (n - 1) * (n - 1)
+    return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a)
 }

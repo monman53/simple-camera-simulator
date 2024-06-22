@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lights, lens, sensor, appleProps, options, style, lensD, lensR, fNumber } from './globals'
+import { state, lights, lens, sensor, appleProps, options, style, lensR, fNumber } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
 
@@ -118,7 +118,7 @@ const nRays = computed(() => {
                 <tr>
                     <td>Thickness</td>
                     <td></td>
-                    <td>{{ humanReadable(lensD) }}</td>
+                    <td>{{ humanReadable(lens.d) }}</td>
                 </tr>
             </template>
         </template>
