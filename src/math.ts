@@ -207,51 +207,6 @@ export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens d
     }
 }
 
-// const getIntersectionBody = (cx, cy, theta, maxR, isInner) => {
-//     // Front
-//     if (!isInner) {
-//         const [hit0, x0, y0, r0] = getIntersectionY(cx, cy, theta, this.lens.x, -this.bodyHeight / 2, this.bodyHeight / 2, maxR);
-//         if (hit0 && r0 > 0) {
-//             // NOTICE: Assume all rays passes left to right
-//             // r0 > 0 condition is for inner rays.
-//             return [hit0, x0, y0, r0];
-//         }
-//     }
-//     // Top
-//     const [hit1, x1, y1, r1] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.bodyWidth, -this.bodyHeight / 2, maxR);
-//     if (hit1 && isInner) {
-//         return [hit1, x1, y1, r1];
-//     }
-//     // Bottom
-//     const [hit2, x2, y2, r2] = getIntersectionX(cx, cy, theta, this.lens.x, this.lens.x + this.bodyWidth, this.bodyHeight / 2, maxR);
-//     if (hit2 && isInner) {
-//         return [hit2, x2, y2, r2];
-//     }
-
-//     if (!isInner) {
-//         if (r1 < r2) {
-//             return [hit1, x1, y1, r1];
-//         } else {
-//             return [hit2, x2, y2, r2];
-//         }
-//     }
-
-//     // Behind the sensor
-//     const [hit3, x3, y3, r3] = getIntersectionY(cx, cy, theta, this.lens.x + this.bodyWidth, -this.bodyHeight / 2, this.bodyHeight / 2, maxR);
-//     if (hit3) {
-//         return [hit3, x3, y3, r3];
-//     }
-
-//     // Return closest intersection
-//     if (r1 <= r2 && r1 <= r3) {
-//         return [hit1, x1, y1, r1];
-//     } else if ((r2 <= r1 && r2 <= r3)) {
-//         return [hit2, x2, y2, r2];
-//     } else {
-//         return [hit3, x3, y3, r3];
-//     }
-// };
-
 //================================
 // Lens
 //================================
