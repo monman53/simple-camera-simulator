@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, style, apple, options, lensR, lensD, infR, fNumber, rUI } from '../globals'
+import { state, lights, lens, items, sensor, style, apple, options, lensR, lensD, infR, fNumber, rUI } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
 import LightParallel from './LightParallel.vue'
+import Lens from './Lens.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -42,8 +43,6 @@ const strokeWidth = computed(() => {
     boldBg: 2 * scale * scaleBg,
   }
 })
-
-const lineBgColor = "#000a"
 
 const strokeDashArray = computed(() => {
   const scale = 1 / state.value.scale
@@ -81,7 +80,7 @@ const strokeDashArray = computed(() => {
     <g
       v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
       <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2 * 1.2"
-        :fill="lineBgColor"></circle>
+        :fill="style.lineBgColor"></circle>
       <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
         class="white"></circle>
     </g>
@@ -121,14 +120,14 @@ const strokeDashArray = computed(() => {
       <g v-if="options.lensFocalPoints">
         <!-- left hand -->
         <g>
-          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="lineBgColor"></circle>
+          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
           <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2" class="white"></circle>
           <!-- UI -->
           <circle :cx="lens.x - lens.f" cy="0" :r="rUI" @mousedown="h.focalPointMoveStartHandler" class="ui-hidden">
           </circle>
         </g>
         <!-- right hand -->
-        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="lineBgColor"></circle>
+        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
         <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2" class="white"></circle>
 
         <!-- Double focal points -->
@@ -140,6 +139,13 @@ const strokeDashArray = computed(() => {
       <!-- Lens size change UI-->
       <circle :cx="lens.x" :cy="-lens.r" :r="rUI" class="ui-hidden" @mousedown="h.lensSizeChangeStartHandler">
       </circle>
+    </g>
+
+    <!-- Items -->
+    <g v-if="options.lens">
+      <g v-for="(item, idx) in items">
+        <Lens :lens="item" :idx></Lens>
+      </g>
     </g>
 
     <!-- Aperture -->
@@ -218,7 +224,7 @@ svg {
 }
 
 .hover-child-bg {
-  stroke: v-bind('lineBgColor');
+  stroke: v-bind('style.lineBgColor');
   stroke-width: v-bind('strokeWidth.normalBg');
 }
 
@@ -236,7 +242,7 @@ svg {
 }
 
 .hover-sibling-bg {
-  stroke: v-bind('lineBgColor');
+  stroke: v-bind('style.lineBgColor');
   stroke-width: v-bind('strokeWidth.normalBg');
 }
 
@@ -250,7 +256,7 @@ svg {
 .hover-sibling-master:hover~.hover-sibling-bg,
 .hover-parent:hover .hover-child-bg,
 .hover-parent:hover .hidden-hover-child-bg {
-  stroke: v-bind('lineBgColor');
+  stroke: v-bind('style.lineBgColor');
   stroke-width: v-bind('strokeWidth.boldBg');
 }
 
@@ -261,7 +267,7 @@ svg {
 }
 
 .ui-bg {
-  stroke: v-bind('lineBgColor');
+  stroke: v-bind('style.lineBgColor');
   stroke-width: v-bind('strokeWidth.normalBg');
   fill: transparent
 }
@@ -318,7 +324,7 @@ svg {
 }
 
 .dotted-bg {
-  stroke: v-bind('lineBgColor');
+  stroke: v-bind('style.lineBgColor');
   /* dasharray is disabled for performance issue when close-up */
   /* stroke-dasharray: v-bind(strokeDashArray); */
   stroke-width: v-bind('strokeWidth.thickBg');
@@ -326,7 +332,7 @@ svg {
 }
 
 .dotted-thick-bg {
-  stroke: v-bind('lineBgColor');
+  stroke: v-bind('style.lineBgColor');
   /* dasharray is disabled for performance issue when close-up */
   /* stroke-dasharray: v-bind(strokeDashArray); */
   stroke-width: v-bind('strokeWidth.thickerBg');

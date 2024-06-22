@@ -14,30 +14,33 @@ export const setSvg = (svg_: Ref<any>) => {
 }
 
 // Methods
-const getPositionOnSvg = (e: any) => {
+export const getPositionOnSvg = (e: any) => {
     const rect = svg.value.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
     return vec(x, y)
 }
-const getPositionOnSvgApp = (e: any) => {
+export const getPositionOnSvgApp = (e: any) => {
     const m = getPositionOnSvg(e);
     const x = (m.x - state.value.width / 2) / state.value.scale + state.value.c.x;
     const y = (m.y - state.value.height / 2) / state.value.scale + state.value.c.y;
     return vec(x, y)
 }
-const getPositionDiffOnSvgApp = (e: any, m0: Vec) => {
+export const getPositionDiffOnSvgApp = (e: any, m0: Vec) => {
     const m = getPositionOnSvg(e);
     const d = m.sub(m0).div(state.value.scale)
     return d
 }
-const preventDefaultAndStopPropagation = (e: any) => {
+export const preventDefaultAndStopPropagation = (e: any) => {
     e.stopPropagation()
     e.preventDefault()
 }
 
 // Event handlers
 let moveHandler: any = null;
+export const setMoveHandler = (h: any) => {
+    moveHandler = h
+}
 export const svgMoveStartHandler = (e: any) => {
     e.preventDefault();
     const m0 = getPositionOnSvg(e);

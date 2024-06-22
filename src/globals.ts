@@ -54,6 +54,18 @@ export const lens0 = () => {
 export const lens = ref(lens0())
 
 //--------------------------------
+// Items
+//--------------------------------
+
+export const items0 = () => {
+    return [
+        { x: -100, r: 20, f: 50, n: 1.5, aperture: 1},
+        { x: -200, r: 12, f: 100, n: 1.5, aperture: 1},
+    ]
+}
+export const items = ref(items0())
+
+//--------------------------------
 // Sensor
 //--------------------------------
 
@@ -174,6 +186,7 @@ export const style0 = () => {
         rayIntensity: 0.5,
         // UI
         widthUI: 1.0,
+        lineBgColor: "#000a",
     }
 }
 export const style = ref(style0())
