@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lights, lens, sensor, appleProps, options, style, lensR, fNumber } from './globals'
+import { state, sensor, appleProps, options, style } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
 
@@ -80,21 +80,21 @@ const nRays = computed(() => {
         </tr> -->
         <template v-if="options.lens">
             <template v-if="options.advanced">
-                <tr>
+                <!-- <tr>
                     <td><label><input type="checkbox" v-model="options.curvature"> Curvature</label></td>
                     <td></td>
                     <td>{{ humanReadable(lensR) }}</td>
-                </tr>
+                </tr> -->
                 <tr>
                     <td><label><input type="checkbox" v-model="options.lensIdeal"> Ideal lens</label></td>
                 </tr>
-                <tr>
+                <!-- <tr>
                     <td>Refractive index</td>
                     <td><input type="range" min="1.01" max="3" step="0.001" v-model.number="lens.n"></td>
                     <td>{{ humanReadable(lens.n) }}</td>
-                </tr>
+                </tr> -->
             </template>
-            <tr>
+            <!-- <tr>
                 <td>Focal Length</td>
                 <td></td>
                 <td>{{ humanReadable(lens.f) }}</td>
@@ -103,8 +103,8 @@ const nRays = computed(() => {
                 <td>F-number</td>
                 <td></td>
                 <td>{{ humanReadable(fNumber) }}</td>
-            </tr>
-            <template v-if="options.advanced">
+            </tr> -->
+            <!-- <template v-if="options.advanced">
                 <tr>
                     <td>Position</td>
                     <td></td>
@@ -120,7 +120,7 @@ const nRays = computed(() => {
                     <td></td>
                     <td>{{ humanReadable(lens.d) }}</td>
                 </tr>
-            </template>
+            </template> -->
         </template>
         <!-- Screen -->
         <tr>
@@ -227,7 +227,7 @@ const nRays = computed(() => {
                     <hr>Templates
                 </th>
             </tr>
-            <tr>
+            <!-- <tr>
                 <td>Focal length</td>
                 <td>
                     <button @click="lens.f = 12">12</button>
@@ -240,7 +240,7 @@ const nRays = computed(() => {
                     <button @click="lens.f = 200">200</button>
                 </td>
                 <td></td>
-            </tr>
+            </tr> -->
             <tr>
                 <td>Sensor height</td>
                 <td>

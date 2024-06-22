@@ -38,29 +38,12 @@ export const lights0 = ():
 export const lights = ref(lights0())
 
 //--------------------------------
-// Lens
-//--------------------------------
-
-export const lens0 = () => {
-    return {
-        x: 0,
-        r: 20,
-        n: 1.5,
-        f: 50,
-        d: 5,
-        aperture: 1,
-    }
-}
-export const lens = ref(lens0())
-
-//--------------------------------
 // Items
 //--------------------------------
 
 export const items0 = () => {
     return [
-        { x: -50, r: 20, f: 50, n: 1.5, d: 5, aperture: 1 },
-        { x: -100, r: 12, f: 100, n: 1.5, d: 5, aperture: 1 },
+        { x: 0, r: 20, f: 50, n: 1.5, d: 5, aperture: 1 },
     ]
 }
 export const items = ref(items0())
@@ -196,10 +179,6 @@ export const style = ref(style0())
 // Computed
 //================================
 
-export const lensR = computed(() => {
-    return calcLensR(lens.value.f, lens.value.n, lens.value.d)
-})
-
 export const infR = computed(() => {
     // Screen diagonal length
     const w = state.value.width / state.value.scale;
@@ -224,12 +203,20 @@ export const infR = computed(() => {
     return (screen + distanceMax) * 3 /* 3 for safety */;
 })
 
-export const fNumber = computed(() => {
-    if (options.value.aperture) {
-        return lens.value.f / (2 * lens.value.r * lens.value.aperture)
-    } else {
-        return lens.value.f / (2 * lens.value.r)
+export const minLensX = computed(() => {
+    let minX = infR.value
+    for (const lens of items.value) {
+        minX = Math.min(minX, lens.x - lens.d / 2)
     }
+    return minX
+})
+
+export const maxLensX = computed(() => {
+    let maxX = -infR.value
+    for (const lens of items.value) {
+        maxX = Math.min(maxX, lens.x)
+    }
+    return maxX
 })
 
 export const maxLightX = computed(() => {

@@ -72,6 +72,14 @@ const apertureSizeChangeStartHandler = (e: any) => {
     })
 }
 
+const fNumber = computed(() => {
+    if (options.value.aperture) {
+        return props.lens.f / (2 * props.lens.r * props.lens.aperture)
+    } else {
+        return props.lens.f / (2 * props.lens.r)
+    }
+})
+
 const rMax = computed(() => {
     const d = props.lens.d
     return Math.sqrt(R.value * R.value - (R.value - d / 2) * (R.value - d / 2))
@@ -97,6 +105,25 @@ const rightX = computed(() => {
 
 <template>
     <g>
+        <!-- Curvature circle -->
+        <g v-if="options.lens && options.curvature">
+            <circle :cx="lens.x + lens.d / 2 - R" :cy="0" :r="R" class="dotted"></circle>
+            <circle :cx="lens.x - lens.d / 2 + R" :cy="0" :r="R" class="dotted"></circle>
+            <!-- center point -->
+            <circle :cx="lens.x + lens.d / 2 - R" cy="0" :r="rUI / 2" class="white"></circle>
+            <circle :cx="lens.x - lens.d / 2 + R" cy="0" :r="rUI / 2" class="white"></circle>
+        </g>
+
+        <!-- Hyperfocal point -->
+        <g
+            v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
+            <circle :cx="lens.x - lens.f - lens.f * lens.f / (sensor.circleOfConfusion * fNumber)" cy="0"
+                :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
+            <circle :cx="lens.x - lens.f - lens.f * lens.f / (sensor.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
+                class="white"></circle>
+        </g>
+
+        <!-- Lens -->
         <g class="hover-parent">
             <!-- Background -->
             <g class="hover-child-bg fill-none">

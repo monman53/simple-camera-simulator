@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, onMounted, ref } from 'vue'
 
-import { state, sensor, sensorData, options, style, memoryCanvasCtx, lens } from './globals'
+import { state, sensor, sensorData, options, style, memoryCanvasCtx } from './globals'
 
 // Reference to the canvas
 const canvas = ref()

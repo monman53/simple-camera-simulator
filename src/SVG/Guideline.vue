@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { lens, sensor, options, infR } from '../globals'
+import { items, sensor, options, infR } from '../globals'
 
 import { vec, fGaussian } from '../math'
+
+const lens = computed(() => {
+    return items.value[0]
+})
 
 // Effective lens radius
 const re = computed(() => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, items, sensor, style, apple, options, lensR, infR, fNumber, rUI } from '../globals'
+import { state, lights, items, sensor, style, apple, options, infR, rUI } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 
@@ -64,111 +64,14 @@ const strokeDashArray = computed(() => {
     <!-- Grid -->
     <Grid v-if="options.grid"></Grid>
 
-    <!-- Curvature -->
-    <g v-if="options.lens && options.curvature">
-      <circle :cx="lens.x + lens.d / 2 - lensR" :cy="0" :r="lensR" class="dotted"></circle>
-      <circle :cx="lens.x - lens.d / 2 + lensR" :cy="0" :r="lensR" class="dotted"></circle>
-      <!-- center point -->
-      <circle :cx="lens.x + lens.d / 2 - lensR" cy="0" :r="rUI / 2" class="white"></circle>
-      <circle :cx="lens.x - lens.d / 2 + lensR" cy="0" :r="rUI / 2" class="white"></circle>
-    </g>
-
     <!-- Guidelines -->
     <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
-
-    <!-- Hyperfocal point -->
-    <g
-      v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
-      <circle :cx="lens.x - lens.f - lens.f * lens.f / (sensor.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2 * 1.2"
-        :fill="style.lineBgColor"></circle>
-      <circle :cx="lens.x - lens.f - lens.f * lens.f / (sensor.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
-        class="white"></circle>
-    </g>
-
-    <!-- Lens and Sensor move dummy element-->
-    <g v-if="options.lens && options.sensor" class="hover-parent">
-      <!-- lens -->
-      <!-- <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
-      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" class="hover-child fill-none" /> -->
-      <!-- sensor -->
-      <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
-      <!-- dummy for ui -->
-      <rect class="ui-transparent" :x="lens.x" :y="-Math.max(lens.r, sensor.r)" :width="sensor.x - lens.x"
-        :height="2 * Math.max(lens.r, sensor.r)" @mousedown="h.cameraMoveStartHandler" />
-    </g>
-
-    <!-- Lens -->
-    <g v-if="options.lens">
-      <g class="hover-parent">
-        <!-- left half background -->
-        <path
-          :d="`M ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
-          class="hover-child-bg fill-none" />
-        <!-- right half background -->
-        <path
-          :d="`M ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
-          class="hover-child-bg fill-none" />
-        <!-- left half -->
-        <path
-          :d="`M ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x - lens.d / 2 + (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
-          class="hover-child fill-none" />
-        <!-- right half -->
-        <path
-          :d="`M ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x + lens.d / 2 - (lensR - Math.sqrt(lensR * lensR - lens.r * lens.r))} ${lens.r}`"
-          class="hover-child fill-none" />
-        <!-- dummy for ui -->
-        <rect class='ui-transparent' :x="lens.x - lens.d / 2" :y="-lens.r" :width="lens.d" :height="2 * lens.r"
-          @mousedown="h.lensMoveStartHandler" />
-      </g>
-      <!-- Focal points -->
-      <g v-if="options.lensFocalPoints">
-        <!-- left hand -->
-        <g>
-          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
-          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-          <!-- UI -->
-          <circle :cx="lens.x - lens.f" cy="0" :r="rUI" @mousedown="h.focalPointMoveStartHandler" class="ui-hidden">
-          </circle>
-        </g>
-        <!-- right hand -->
-        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
-        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-
-        <!-- Double focal points -->
-        <g v-if="options.lensDoubleFocalPoints">
-          <circle :cx="lens.x - 2 * lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-          <circle :cx="lens.x + 2 * lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-        </g>
-      </g>
-      <!-- Lens size change UI-->
-      <circle :cx="lens.x" :cy="-lens.r" :r="rUI" class="ui-hidden" @mousedown="h.lensSizeChangeStartHandler">
-      </circle>
-    </g>
 
     <!-- Items -->
     <g v-if="options.lens">
       <g v-for="(item, idx) in items">
         <Lens :lens="item" :idx></Lens>
       </g>
-    </g>
-
-    <!-- Aperture -->
-    <g v-if="options.aperture">
-      <!-- Lines -->
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
-        class="hover-sibling-bg no-pointer-events">
-      </line>
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture"
-        class="hover-sibling-bg no-pointer-events">
-      </line>
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
-        class="hover-sibling no-pointer-events">
-      </line>
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events">
-      </line>
-      <!-- UI -->
-      <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="rUI" @mousedown="h.apertureSizeChangeStartHandler"
-        class="hover-sibling-master ui-hidden"></circle>
     </g>
 
     <!-- Apple -->
@@ -192,12 +95,6 @@ const strokeDashArray = computed(() => {
       <g v-if="light.type === Light.Parallel">
         <LightParallel :light :idx></LightParallel>
       </g>
-    </g>
-
-    <!-- Body -->
-    <g v-if="options.body">
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="infR" class="white thick" />
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-infR" class="white thick" />
     </g>
 
     <!-- Sensor -->

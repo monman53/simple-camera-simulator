@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, lens, sensor, maxLightX } from "./globals";
+import { state, lights, sensor, minLensX, maxLensX } from "./globals";
 import { Light } from './type'
 import { vec, Vec } from './math'
 
@@ -85,15 +85,14 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     })
     newLights.push(light)
     lights.value = newLights
-    const minLensX = lens.value.x - lens.value.d / 2
 
     if (light.type === Light.Point) {
         const m0 = getPositionOnSvg(e);
         const c0 = light.c.copy()
         moveHandler = (e_: any) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
-            if (c0.x + d.x > minLensX) {
-                light.c.x = minLensX
+            if (c0.x + d.x > minLensX.value) {
+                light.c.x = minLensX.value
             } else {
                 light.c.x = c0.x + d.x
             }
@@ -107,12 +106,12 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
             const sn = s0.add(d)
             const tn = t0.add(d)
-            if (s0.x >= t0.x && sn.x > minLensX) {
-                sn.x = minLensX
-                tn.x = minLensX + (t0.x - s0.x)
-            } else if (t0.x > s0.x && tn.x > minLensX) {
-                sn.x = minLensX + (s0.x - t0.x)
-                tn.x = minLensX
+            if (s0.x >= t0.x && sn.x > minLensX.value) {
+                sn.x = minLensX.value
+                tn.x = minLensX.value + (t0.x - s0.x)
+            } else if (t0.x > s0.x && tn.x > minLensX.value) {
+                sn.x = minLensX.value + (s0.x - t0.x)
+                tn.x = minLensX.value
             }
             light.s = sn
             light.t = tn
@@ -135,85 +134,12 @@ export const parallelLightNodeMoveStartHandler = (e: any, idx: number, which: st
         const p = which === "s" ? light.s : light.t
         moveHandler = (e_: any) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
-            if (p0.x + d.x > lens.value.x - lens.value.d / 2) {
-                p.x = lens.value.x - lens.value.d / 2
+            if (p0.x + d.x > minLensX.value) {
+                p.x = minLensX.value
             } else {
                 p.x = p0.x + d.x
             }
             p.y = p0.y + d.y
-        }
-    }
-}
-export const cameraMoveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const lensX0 = lens.value.x;
-    const sensorX0 = sensor.value.x;
-    moveHandler = (e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        if (lensX0 + d.x < maxLightX.value) {
-            lens.value.x = maxLightX.value
-            sensor.value.x = maxLightX.value + (sensorX0 - lensX0)
-        } else {
-            lens.value.x = lensX0 + d.x
-            sensor.value.x = sensorX0 + d.x
-        }
-    }
-}
-export const lensMoveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const cx0 = lens.value.x;
-    moveHandler = (e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        if (cx0 + d.x < maxLightX.value + lens.value.d / 2) {
-            lens.value.x = maxLightX.value + lens.value.d / 2
-        } else if (sensor.value.x < cx0 + d.x) {
-            lens.value.x = sensor.value.x
-        } else {
-            lens.value.x = cx0 + d.x
-        }
-    }
-}
-export const lensSizeChangeStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const r0 = lens.value.r;
-    moveHandler = (e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        if (r0 - d.y < 0.1) {
-            lens.value.r = 0.1;
-        } else {
-            lens.value.r = r0 - d.y;
-        }
-    }
-}
-export const focalPointMoveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const f0 = lens.value.f;
-    moveHandler = (e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        if (f0 - d.x < lens.value.d / 2) {
-            lens.value.f = lens.value.d / 2
-        } else {
-            lens.value.f = f0 - d.x
-        }
-    }
-}
-export const apertureSizeChangeStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const a0 = lens.value.aperture * lens.value.r;
-    moveHandler = (e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        const an = (a0 + d.y) / lens.value.r;
-        if (an < 0) {
-            lens.value.aperture = 0;
-        } else if (an > 1) {
-            lens.value.aperture = 1;
-        } else {
-            lens.value.aperture = an;
         }
     }
 }
@@ -223,8 +149,8 @@ export const sensorMoveStartHandler = (e: any) => {
     const cx0 = sensor.value.x;
     moveHandler = (e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (cx0 + d.x < lens.value.x) {
-            sensor.value.x = lens.value.x
+        if (cx0 + d.x < maxLensX.value) {
+            sensor.value.x = maxLensX.value
         } else {
             sensor.value.x = cx0 + d.x
         }
