@@ -57,6 +57,19 @@ const rightX = computed(() => {
     }
 })
 
+const path = computed(() => {
+    let d = ""
+    d += `M ${leftX.value} ${-r.value} `
+    const absR1 = Math.abs(props.lens.R1)
+    const sweep1 = props.lens.R1 > 0 ? 0 : 1
+    d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${leftX.value} ${r.value} `
+    d += `L ${rightX.value} ${r.value}`
+    const absR2 = Math.abs(props.lens.R2)
+    const sweep2 = props.lens.R2 > 0 ? 1 : 0
+    d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${rightX.value} ${-r.value} `
+    return d
+})
+
 const path1 = computed(() => {
     const absR1 = Math.abs(props.lens.R1)
     const sweep = props.lens.R1 > 0 ? 0 : 1
@@ -238,8 +251,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
         <!-- Lens -->
         <g class="hover-parent">
             <!-- dummy for ui -->
-            <rect class='ui-transparent' :x="lens.x1" :y="-r" :width="lens.x2 - lens.x1" :height="2 * r"
-                @mousedown="moveStartHandler" />
+            <path :d="path" class='ui-transparent' @mousedown="moveStartHandler"/>
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->
