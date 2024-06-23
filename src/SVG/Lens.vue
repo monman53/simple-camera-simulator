@@ -38,6 +38,8 @@ const rMax = computed(() => {
     const c2 = vec(props.lens.x2 + R2, 0)
     if (intersectCC(c1, Math.abs(R1), c2, Math.abs(R2))) {
         const [p1, p2] = intersectionCC(c1, Math.abs(R1), c2, Math.abs(R2))
+        // TODO:
+        // const minR = Math.min(Math.abs(R1), Math.abs(R2))
         return Math.abs(p1.y)
     } else {
         return Math.min(Math.abs(R1), Math.abs(R2))
@@ -67,8 +69,8 @@ const moveStartHandler = (e: any) => {
     const m0 = getPositionOnSvg(e);
     const x10 = props.lens.x1;
     const x20 = props.lens.x2;
-    const leftX0 = leftX.value
-    const rightX0 = rightX.value
+    // const leftX0 = leftX.value
+    // const rightX0 = rightX.value
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (x10 + d.x < maxLightX.value) {
@@ -79,6 +81,41 @@ const moveStartHandler = (e: any) => {
             items.value[props.idx].x2 = sensor.value.x
         } else {
             items.value[props.idx].x1 = x10 + d.x
+            items.value[props.idx].x2 = x20 + d.x
+        }
+    })
+}
+
+const x1MoveStartHandler = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    const m0 = getPositionOnSvg(e);
+    const x10 = props.lens.x1;
+    const leftX0 = leftX.value
+    setMoveHandler((e_: any) => {
+        const d = getPositionDiffOnSvgApp(e_, m0)
+        if (x10 + d.x < maxLightX.value) {
+            items.value[props.idx].x1 = maxLightX.value
+        }else if(leftX0 + d.x > rightX.value) {
+            items.value[props.idx].x1 = rightX.value - (leftX0 - x10)
+        } else {
+            items.value[props.idx].x1 = x10 + d.x
+        }
+    })
+}
+
+const x2MoveStartHandler = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    const m0 = getPositionOnSvg(e);
+    const x20 = props.lens.x2
+    // const leftX0 = leftX.value
+    const rightX0 = rightX.value
+    setMoveHandler((e_: any) => {
+        const d = getPositionDiffOnSvgApp(e_, m0)
+        if (rightX0 + d.x < leftX.value) {
+            items.value[props.idx].x2 = leftX.value + (x20 - rightX0)
+        }else if(x20 + d.x > sensor.value.x) {
+            items.value[props.idx].x2 = sensor.value.x
+        } else {
             items.value[props.idx].x2 = x20 + d.x
         }
     })
@@ -154,6 +191,9 @@ const apertureSizeChangeStartHandler = (e: any) => {
 
         <!-- Lens -->
         <g class="hover-parent">
+            <!-- dummy for ui -->
+            <rect class='ui-transparent' :x="lens.x1" :y="-r" :width="lens.x2 - lens.x1" :height="2 * r"
+                @mousedown="moveStartHandler" />
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->
@@ -176,10 +216,18 @@ const apertureSizeChangeStartHandler = (e: any) => {
                 <!-- Bottom -->
                 <line :x1="leftX" :y1="r" :x2="rightX" :y2="r"></line>
             </g>
-            <!-- dummy for ui -->
-            <rect class='ui-transparent' :x="lens.x1" :y="-r" :width="lens.x2 - lens.x1" :height="2 * r"
-                @mousedown="moveStartHandler" />
         </g>
+
+        <!-- Thickness change UI -->
+        <g class="fill-none" pointer-events="stroke">
+            <!-- left -->
+            <path :d="`M ${leftX} ${-r} A ${Math.abs(lens.R1)} ${Math.abs(lens.R1)} 0 0 0 ${leftX} ${r}`"
+                class="ui-hidden" @mousedown="x1MoveStartHandler" />
+            <!-- right -->
+            <path :d="`M ${rightX} ${-r} A ${Math.abs(lens.R2)} ${Math.abs(lens.R2)} 0 0 1 ${rightX} ${r}`"
+                class="ui-hidden" @mousedown="x2MoveStartHandler" />
+        </g>
+
         <!-- Focal points -->
         <g v-if="options.lensFocalPoints">
             <!-- left hand -->
