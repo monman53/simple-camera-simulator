@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { items, sensor, options, style, rUI, maxLightX } from '../globals'
-import { calcLensF } from '../math'
+import { vec, calcLensF, intersectCC, intersectionCC } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
 
@@ -31,14 +31,21 @@ const fNumber = computed(() => {
     }
 })
 
-// const rMax = computed(() => {
-//     const d = props.lens.d
-//     return Math.sqrt(R.value * R.value - (R.value - d / 2) * (R.value - d / 2))
-// })
+const rMax = computed(() => {
+    const R1 = props.lens.R1
+    const R2 = props.lens.R2
+    const c1 = vec(props.lens.x1 + R1, 0)
+    const c2 = vec(props.lens.x2 + R2, 0)
+    if (intersectCC(c1, Math.abs(R1), c2, Math.abs(R2))) {
+        const [p1, p2] = intersectionCC(c1, Math.abs(R1), c2, Math.abs(R2))
+        return Math.abs(p1.y)
+    } else {
+        return Math.min(Math.abs(R1), Math.abs(R2))
+    }
+})
 
 const r = computed(() => {
-    // return Math.min(rMax.value, props.lens.r)
-    return props.lens.r
+    return Math.min(rMax.value, props.lens.r)
 })
 
 const leftX = computed(() => {
@@ -74,29 +81,24 @@ const moveStartHandler = (e: any) => {
             items.value[props.idx].x1 = x10 + d.x
             items.value[props.idx].x2 = x20 + d.x
         }
-        // if (x10 + d.x < maxLightX.value + props.lens.d / 2) {
-        //     items.value[props.idx].x = maxLightX.value + props.lens.d / 2
-        // } else if (sensor.value.x < cx0 + d.x) {
-        //     items.value[props.idx].x = sensor.value.x
-        // }
     })
 }
 
-// const lensSizeChangeStartHandler = (e: any) => {
-//     preventDefaultAndStopPropagation(e)
-//     const m0 = getPositionOnSvg(e);
-//     const r0 = props.lens.r;
-//     setMoveHandler((e_: any) => {
-//         const d = getPositionDiffOnSvgApp(e_, m0)
-//         if (r0 - d.y < 0.1) {
-//             items.value[props.idx].r = 0.1
-//         } else if (r0 - d.y > rMax.value) {
-//             items.value[props.idx].r = rMax.value
-//         } else {
-//             items.value[props.idx].r = r0 - d.y
-//         }
-//     })
-// }
+const lensSizeChangeStartHandler = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    const m0 = getPositionOnSvg(e);
+    const r0 = props.lens.r;
+    setMoveHandler((e_: any) => {
+        const d = getPositionDiffOnSvgApp(e_, m0)
+        if (r0 - d.y < 0.1) {
+            items.value[props.idx].r = 0.1
+        } else if (r0 - d.y > rMax.value) {
+            items.value[props.idx].r = rMax.value
+        } else {
+            items.value[props.idx].r = r0 - d.y
+        }
+    })
+}
 // const focalPointMoveStartHandler = (e: any) => {
 //     preventDefaultAndStopPropagation(e)
 //     const m0 = getPositionOnSvg(e);
@@ -199,7 +201,8 @@ const apertureSizeChangeStartHandler = (e: any) => {
             </g>
         </g>
         <!-- Lens size change UI-->
-        <!-- <circle :cx="lens.x" :cy="-r" :r="rUI" class="ui-hidden" @mousedown="lensSizeChangeStartHandler"> </circle> -->
+        <circle :cx="(leftX + rightX) / 2" :cy="-r" :r="rUI" class="ui-hidden" @mousedown="lensSizeChangeStartHandler">
+        </circle>
 
         <!-- Aperture -->
         <g v-if="options.aperture">

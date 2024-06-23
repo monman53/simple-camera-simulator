@@ -180,6 +180,44 @@ export const intersectionSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
     }
 }
 
+export const intersectCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
+    // Swap
+    if (r1 < r2) {
+        const cTmp = c1.copy()
+        c1 = c2
+        c2 = cTmp
+        const rTmp = r1
+        r1 = r2
+        r2 = rTmp
+    }
+    const dc = c2.sub(c1).length();
+    // Separated
+    if (dc > r1 +r2) {
+        return false
+    }
+    // Connotation
+    if (dc + r2 < r1) {
+        return false
+    }
+    return true
+}
+
+export const intersectionCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
+    // Swap
+    if (r1 < r2) {
+        const cTmp = c1.copy()
+        c1 = c2
+        c2 = cTmp
+        const rTmp = r1
+        r1 = r2
+        r2 = rTmp
+    }
+    const d = c2.sub(c1).length()
+    const n = c2.sub(c1).normalize()
+    const theta = Math.acos((d * d + r1 * r1 - r2 * r2) / (2.0 * d * r1));
+    return [c1.add(n.rotate(theta).mul(r1)), c1.add(n.rotate(-theta).mul(r1))]
+}
+
 //================================
 // Support functions
 //================================
