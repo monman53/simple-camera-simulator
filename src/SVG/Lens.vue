@@ -15,10 +15,6 @@ const f = computed(() => {
     return calcLensF(props.lens)
 })
 
-const d = computed(() => {
-    return props.lens.x2 - props.lens.x1
-})
-
 const xm = computed(() => {
     return (props.lens.x1 + props.lens.x2) / 2
 })
@@ -41,16 +37,36 @@ const r = computed(() => {
 
 const leftX = computed(() => {
     const x = props.lens.x1
-    const R1 = Math.abs(props.lens.R1)
-    const d = R1 - Math.sqrt(R1 * R1 - r.value * r.value)
-    return x + d
+    const R1 = props.lens.R1
+    const d = Math.abs(R1) - Math.sqrt(R1 * R1 - r.value * r.value)
+    if (R1 > 0) {
+        return x + d
+    } else {
+        return x - d
+    }
 })
 
 const rightX = computed(() => {
     const x = props.lens.x2
-    const R2 = Math.abs(props.lens.R2)
-    const d = R2 - Math.sqrt(R2 * R2 - r.value * r.value)
-    return x - d
+    const R2 = props.lens.R2
+    const d = Math.abs(R2) - Math.sqrt(R2 * R2 - r.value * r.value)
+    if (R2 > 0) {
+        return x + d
+    } else {
+        return x - d
+    }
+})
+
+const path1 = computed(() => {
+    const absR1 = Math.abs(props.lens.R1)
+    const sweep = props.lens.R1 > 0 ? 0 : 1
+    return `M ${leftX.value} ${-r.value} A ${absR1} ${absR1} 0 0 ${sweep} ${leftX.value} ${r.value}`
+})
+
+const path2 = computed(() => {
+    const absR2 = Math.abs(props.lens.R2)
+    const sweep = props.lens.R2 > 0 ? 0 : 1
+    return `M ${rightX.value} ${-r.value} A ${absR2} ${absR2} 0 0 ${sweep} ${rightX.value} ${r.value}`
 })
 
 const moveStartHandler = (e: any) => {
@@ -102,6 +118,40 @@ const x2MoveStartHandler = (e: any) => {
         } else if (x20 + d.x > sensor.value.x) {
             items.value[props.idx].x2 = sensor.value.x
         } else {
+            items.value[props.idx].x2 = x20 + d.x
+        }
+    })
+}
+
+const r1MoveStartHandler = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    const m0 = getPositionOnSvg(e);
+    const r0 = r.value
+    const x10 = props.lens.x1
+    const leftX0 = leftX.value
+    setMoveHandler((e_: any) => {
+        const d = getPositionDiffOnSvgApp(e_, m0)
+        if (Math.abs(leftX0 - (x10 + d.x)) <= r0) {
+            const a = x10 + d.x - leftX0
+            const R1n = (-r0 * r0 - a * a) / (2 * a)
+            items.value[props.idx].R1 = R1n
+            items.value[props.idx].x1 = x10 + d.x
+        }
+    })
+}
+
+const r2MoveStartHandler = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    const m0 = getPositionOnSvg(e);
+    const r0 = r.value
+    const x20 = props.lens.x2
+    const rightX0 = rightX.value
+    setMoveHandler((e_: any) => {
+        const d = getPositionDiffOnSvgApp(e_, m0)
+        if (Math.abs((x20 + d.x) - rightX0) <= r0) {
+            const a = x20 + d.x - rightX0
+            const R1n = (-r0 * r0 - a * a) / (2 * a)
+            items.value[props.idx].R2 = R1n
             items.value[props.idx].x2 = x20 + d.x
         }
     })
@@ -183,9 +233,9 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->
-                <path :d="`M ${leftX} ${-r} A ${Math.abs(lens.R1)} ${Math.abs(lens.R1)} 0 0 0 ${leftX} ${r}`" />
+                <path :d="path1" />
                 <!-- right -->
-                <path :d="`M ${rightX} ${-r} A ${Math.abs(lens.R2)} ${Math.abs(lens.R2)} 0 0 1 ${rightX} ${r}`" />
+                <path :d="path2" />
                 <!-- Top -->
                 <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r"></line>
                 <!-- Bottom -->
@@ -194,9 +244,9 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <!-- Foreground -->
             <g class="hover-child fill-none">
                 <!-- left -->
-                <path :d="`M ${leftX} ${-r} A ${Math.abs(lens.R1)} ${Math.abs(lens.R1)} 0 0 0 ${leftX} ${r}`" />
+                <path :d="path1" />
                 <!-- right -->
-                <path :d="`M ${rightX} ${-r} A ${Math.abs(lens.R2)} ${Math.abs(lens.R2)} 0 0 1 ${rightX} ${r}`" />
+                <path :d="path2" />
                 <!-- Top -->
                 <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r"></line>
                 <!-- Bottom -->
@@ -207,12 +257,14 @@ const apertureSizeChangeStartHandler = (e: any) => {
         <!-- Thickness change UI -->
         <g class="fill-none" pointer-events="stroke">
             <!-- left -->
-            <path :d="`M ${leftX} ${-r} A ${Math.abs(lens.R1)} ${Math.abs(lens.R1)} 0 0 0 ${leftX} ${r}`"
-                class="ui-hidden" @mousedown="x1MoveStartHandler" />
+            <path :d="path1" class="ui-hidden" @mousedown="x1MoveStartHandler" />
             <!-- right -->
-            <path :d="`M ${rightX} ${-r} A ${Math.abs(lens.R2)} ${Math.abs(lens.R2)} 0 0 1 ${rightX} ${r}`"
-                class="ui-hidden" @mousedown="x2MoveStartHandler" />
+            <path :d="path2" class="ui-hidden" @mousedown="x2MoveStartHandler" />
         </g>
+
+        <!-- Curvature change UI -->
+        <circle :cx="lens.x1" :cy="0" :r="rUI" class="ui-hidden" @mousedown="r1MoveStartHandler"></circle>
+        <circle :cx="lens.x2" :cy="0" :r="rUI" class="ui-hidden" @mousedown="r2MoveStartHandler"></circle>
 
         <!-- Focal points -->
         <g v-if="options.lensFocalPoints">
@@ -234,6 +286,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
                 <circle :cx="xm + 2 * f" cy="0" :r="rUI / 2" class="white"></circle>
             </g>
         </g>
+
         <!-- Lens size change UI-->
         <circle :cx="(leftX + rightX) / 2" :cy="-r" :r="rUI" class="ui-hidden" @mousedown="lensSizeChangeStartHandler">
         </circle>

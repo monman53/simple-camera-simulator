@@ -50,16 +50,20 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
       // Center of lens curvature circle
       const c = vec(lens.x1 + lens.R1, 0)
 
-      const p = getIntersectionLens(s, v, c, r, Math.abs(lens.R1), true)
+      const p = getIntersectionLens(s, v, c, r, lens.R1)
       if (p) {
         v = p.sub(s)
         s = drawSegment(s, v, v.length())
 
         // Refraction (inner lens rays)
-        const phi1 = crossAngle(Vec.sub(p, c), Vec.sub(s0, p));
+        const phi1 = crossAngle(Vec.sub(p, c).mul(lens.R1 > 0 ? 1 : -1), Vec.sub(s0, p));
         const phi2 = Math.asin(Math.sin(phi1) / lens.n);
         const theta = Math.atan2(p.y - c.y, p.x - c.x) + Math.PI + phi2;
-        v = vecRad(theta)
+        if (lens.R1 > 0) {
+          v = vecRad(theta)
+        } else {
+          v = vecRad(theta + Math.PI)
+        }
 
         innerLens = true
       }
@@ -88,16 +92,20 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
       // Center of lens curvature circle
       const c = vec(lens.x2 + lens.R2, 0)
 
-      const p = getIntersectionLens(s, v, c, r, Math.abs(lens.R2), false)
+      const p = getIntersectionLens(s, v, c, r, lens.R2)
       if (p) {
         v = p.sub(s)
         const nextS = drawSegment(s, v, v.length())
 
         // Refraction (inner lens rays)
-        const phi1 = crossAngle(Vec.sub(p, c), Vec.sub(p, s));
+        const phi1 = crossAngle(Vec.sub(p, c).mul(lens.R2 < 0 ? 1 : -1), Vec.sub(p, s));
         const phi2 = Math.asin(Math.sin(phi1) * lens.n);
         const theta = Math.atan2(p.y - c.y, p.x - c.x) + phi2;
-        v = vecRad(theta)
+        if (lens.R2 > 0) {
+          v = vecRad(theta + Math.PI)
+        } else {
+          v = vecRad(theta)
+        }
         s = nextS
       }
     }
@@ -116,8 +124,11 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
         if (image.x === Infinity) {
           theta = Math.atan2(-s0.y, -(s0.x - xm));
         }
+        if (f < 0) {
+          theta += Math.PI
+        }
         if (xm - f < s0.x) {
-          theta += Math.PI;
+          theta += Math.PI
         }
         v = vecRad(theta)
       }

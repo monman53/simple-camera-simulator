@@ -192,7 +192,7 @@ export const intersectCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
     }
     const dc = c2.sub(c1).length();
     // Separated
-    if (dc > r1 +r2) {
+    if (dc > r1 + r2) {
         return false
     }
     // Connotation
@@ -219,35 +219,36 @@ export const intersectionCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
 }
 
 //================================
-// Support functions
+// Lens
 //================================
 
-export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */, select: boolean) => {
+export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */) => {
+    const absR = Math.abs(R)
     const n = v.normalize()
-
     const a = 1;
     const b = 2 * ((s.x - cl.x) * n.x + (s.y - cl.y) * n.y);
-    const c = Math.pow(s.x - cl.x, 2) + Math.pow(s.y - cl.y, 2) - R * R;
+    const c = Math.pow(s.x - cl.x, 2) + Math.pow(s.y - cl.y, 2) - absR * absR;
     const cond = b * b - 4 * a * c;
     if (cond < 0) {
         return null
     }
-    // NOTICE: Use smaller r
     const d1 = (-b - Math.sqrt(cond)) / (2 * a);
     const d2 = (-b + Math.sqrt(cond)) / (2 * a);
-    const d = select ? d1 : d2;
+    const d = R > 0 ? d1 : d2;
     const tx = s.x + d * n.x;
     const ty = s.y + d * n.y;
+    // TODO: Workarounds
     if (Math.abs(ty) > r || d < 0) {
         return null
-    } else {
-        return vec(tx, ty)
     }
+    if (R >= 0 && tx >= cl.x) {
+        return null
+    }
+    if (R < 0 && tx < cl.x) {
+        return null
+    }
+    return vec(tx, ty)
 }
-
-//================================
-// Lens
-//================================
 
 export const fGaussian = (f: number, px: number, py: number) => {
     const qx = f * px / (px - f)
@@ -271,12 +272,15 @@ export const calcRMax = (lens: any) => {
     const c2 = vec(lens.x2 + R2, 0)
     if (intersectCC(c1, Math.abs(R1), c2, Math.abs(R2))) {
         const [p1, p2] = intersectionCC(c1, Math.abs(R1), c2, Math.abs(R2))
-        // TODO:
-        // const minR = Math.min(Math.abs(R1), Math.abs(R2))
-        // items.value[props.idx].r = Math.abs(p1.y) // DANGER!!
-        return Math.abs(p1.y)
+        const dc1 = c1.x - p1.x
+        const dc2 = c2.x - p2.x
+        const minR = Math.min(Math.abs(R1), Math.abs(R2))
+        if (dc1 * dc2 < 0) {
+            return Math.min(minR, Math.abs(p1.y))
+        } else {
+            return minR
+        }
     } else {
-        // items.value[props.idx].r = Math.min(Math.abs(R1), Math.abs(R2)) // DANGER!!
         return Math.min(Math.abs(R1), Math.abs(R2))
     }
 }
