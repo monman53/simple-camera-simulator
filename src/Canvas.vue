@@ -2,7 +2,7 @@
 import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, items, sensor, sensorData, apple, options, style, infR } from './globals'
-import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensF, intersectionSS } from './math'
+import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensF, intersectionSS, calcRMax } from './math'
 
 import { Light } from './type'
 
@@ -36,6 +36,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     const s0 = s.copy()
     const xm = (lens.x1 + lens.x2) / 2
     const f = calcLensF(lens)
+    const r = Math.min(calcRMax(lens), lens.r)
     let innerLens = false
 
     // Find image position of the light source
@@ -49,7 +50,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
       // Center of lens curvature circle
       const c = vec(lens.x1 + lens.R1, 0)
 
-      const p = getIntersectionLens(s, v, c, lens.r, Math.abs(lens.R1), true)
+      const p = getIntersectionLens(s, v, c, r, Math.abs(lens.R1), true)
       if (p) {
         v = p.sub(s)
         s = drawSegment(s, v, v.length())
@@ -68,10 +69,10 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     // Collision to aperture
     //--------------------------------
     if (options.value.aperture) {
-      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(xm, -lens.r), vec(xm, lens.r))
+      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(xm, -r), vec(xm, r))
       if (p) {
-        const upperHit = p.y > lens.aperture * lens.r
-        const lowerHit = p.y < -lens.aperture * lens.r
+        const upperHit = p.y > lens.aperture * r
+        const lowerHit = p.y < -lens.aperture * r
         if (lowerHit || upperHit) {
           v = p.sub(s)
           drawSegment(s, v, v.length())
@@ -87,7 +88,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
       // Center of lens curvature circle
       const c = vec(lens.x2 + lens.R2, 0)
 
-      const p = getIntersectionLens(s, v, c, lens.r, Math.abs(lens.R2), false)
+      const p = getIntersectionLens(s, v, c, r, Math.abs(lens.R2), false)
       if (p) {
         v = p.sub(s)
         const nextS = drawSegment(s, v, v.length())
@@ -105,7 +106,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     // Collision to ideal lens
     //--------------------------------
     if (options.value.lensIdeal && options.value.lens) {
-      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(xm, -lens.r), vec(xm, lens.r))
+      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(xm, -r), vec(xm, r))
       if (p) {
         v = p.sub(s)
         s = drawSegment(s, v, v.length())

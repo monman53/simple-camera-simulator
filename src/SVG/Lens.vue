@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { items, sensor, options, style, rUI, maxLightX } from '../globals'
-import { vec, calcLensF, intersectCC, intersectionCC } from '../math'
+import { calcLensF, calcRMax } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
 
@@ -32,18 +32,7 @@ const fNumber = computed(() => {
 })
 
 const rMax = computed(() => {
-    const R1 = props.lens.R1
-    const R2 = props.lens.R2
-    const c1 = vec(props.lens.x1 + R1, 0)
-    const c2 = vec(props.lens.x2 + R2, 0)
-    if (intersectCC(c1, Math.abs(R1), c2, Math.abs(R2))) {
-        const [p1, p2] = intersectionCC(c1, Math.abs(R1), c2, Math.abs(R2))
-        // TODO:
-        // const minR = Math.min(Math.abs(R1), Math.abs(R2))
-        return Math.abs(p1.y)
-    } else {
-        return Math.min(Math.abs(R1), Math.abs(R2))
-    }
+    return calcRMax(props.lens)
 })
 
 const r = computed(() => {
@@ -90,13 +79,12 @@ const x1MoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const x10 = props.lens.x1;
-    const leftX0 = leftX.value
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (x10 + d.x < maxLightX.value) {
             items.value[props.idx].x1 = maxLightX.value
-        }else if(leftX0 + d.x > rightX.value) {
-            items.value[props.idx].x1 = rightX.value - (leftX0 - x10)
+        } else if (x10 + d.x > props.lens.x2) {
+            items.value[props.idx].x1 = props.lens.x2
         } else {
             items.value[props.idx].x1 = x10 + d.x
         }
@@ -107,13 +95,11 @@ const x2MoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const x20 = props.lens.x2
-    // const leftX0 = leftX.value
-    const rightX0 = rightX.value
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (rightX0 + d.x < leftX.value) {
-            items.value[props.idx].x2 = leftX.value + (x20 - rightX0)
-        }else if(x20 + d.x > sensor.value.x) {
+        if (x20 + d.x < props.lens.x1) {
+            items.value[props.idx].x2 = props.lens.x1
+        } else if (x20 + d.x > sensor.value.x) {
             items.value[props.idx].x2 = sensor.value.x
         } else {
             items.value[props.idx].x2 = x20 + d.x

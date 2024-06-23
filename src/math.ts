@@ -263,3 +263,20 @@ export const calcLensF = (lens: any) => {
     const inv = (n - 1) * (1 / R1 - 1 / R2) + (d / n) * ((n - 1) * (n - 1) / (R1 * R2))
     return 1 / inv
 }
+
+export const calcRMax = (lens: any) => {
+    const R1 = lens.R1
+    const R2 = lens.R2
+    const c1 = vec(lens.x1 + R1, 0)
+    const c2 = vec(lens.x2 + R2, 0)
+    if (intersectCC(c1, Math.abs(R1), c2, Math.abs(R2))) {
+        const [p1, p2] = intersectionCC(c1, Math.abs(R1), c2, Math.abs(R2))
+        // TODO:
+        // const minR = Math.min(Math.abs(R1), Math.abs(R2))
+        // items.value[props.idx].r = Math.abs(p1.y) // DANGER!!
+        return Math.abs(p1.y)
+    } else {
+        // items.value[props.idx].r = Math.min(Math.abs(R1), Math.abs(R2)) // DANGER!!
+        return Math.min(Math.abs(R1), Math.abs(R2))
+    }
+}
