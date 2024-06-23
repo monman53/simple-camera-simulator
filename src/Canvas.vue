@@ -2,7 +2,7 @@
 import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, items, sensor, sensorData, apple, options, style, infR } from './globals'
-import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensR, intersectionSS } from './math'
+import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensF, intersectionSS } from './math'
 
 import { Light } from './type'
 
@@ -31,23 +31,25 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
 
   // Multiple lens
   const lenses = items.value.filter(() => true)
-  lenses.sort((a, b) => { return a.x - b.x })
+  lenses.sort((a, b) => { return a.x1 - b.x1 })
   for (const lens of lenses) {
     const s0 = s.copy()
-    const lensR = calcLensR(lens.f, lens.n, lens.d)
+    const xm = (lens.x1 + lens.x2) / 2
+    const f = calcLensF(lens)
     let innerLens = false
 
     // Find image position of the light source
-    const image = fGaussian(lens.f, lens.x - s.x, -s.y)
+    // TODO:
+    const image = fGaussian(f, xm - s.x, -s.y)
 
     //--------------------------------
     // Collision to lens surface (left-side)
     //--------------------------------
     if (!options.value.lensIdeal && options.value.lens) {
       // Center of lens curvature circle
-      const c = vec(lens.x - lens.d / 2 + lensR, 0)
+      const c = vec(lens.x1 + lens.R1, 0)
 
-      const p = getIntersectionLens(s, v, c, lens.r, lensR, true)
+      const p = getIntersectionLens(s, v, c, lens.r, Math.abs(lens.R1), true)
       if (p) {
         v = p.sub(s)
         s = drawSegment(s, v, v.length())
@@ -66,7 +68,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     // Collision to aperture
     //--------------------------------
     if (options.value.aperture) {
-      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(lens.x, -lens.r), vec(lens.x, lens.r))
+      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(xm, -lens.r), vec(xm, lens.r))
       if (p) {
         const upperHit = p.y > lens.aperture * lens.r
         const lowerHit = p.y < -lens.aperture * lens.r
@@ -83,9 +85,9 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     //--------------------------------
     if (!options.value.lensIdeal && innerLens) {
       // Center of lens curvature circle
-      const c = vec(lens.x + lens.d / 2 - lensR, 0)
+      const c = vec(lens.x2 + lens.R2, 0)
 
-      const p = getIntersectionLens(s, v, c, lens.r, lensR, false)
+      const p = getIntersectionLens(s, v, c, lens.r, Math.abs(lens.R2), false)
       if (p) {
         v = p.sub(s)
         const nextS = drawSegment(s, v, v.length())
@@ -103,7 +105,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     // Collision to ideal lens
     //--------------------------------
     if (options.value.lensIdeal && options.value.lens) {
-      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(lens.x, -lens.r), vec(lens.x, lens.r))
+      const p = intersectionSS(s, s.add(v.normalize().mul(infR.value)), vec(xm, -lens.r), vec(xm, lens.r))
       if (p) {
         v = p.sub(s)
         s = drawSegment(s, v, v.length())
@@ -111,9 +113,9 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
         // Refracted ray
         let theta = Math.atan2(image.y - s.y, image.x);
         if (image.x === Infinity) {
-          theta = Math.atan2(-s0.y, -(s0.x - lens.x));
+          theta = Math.atan2(-s0.y, -(s0.x - xm));
         }
-        if (lens.x - lens.f < s0.x) {
+        if (xm - f < s0.x) {
           theta += Math.PI;
         }
         v = vecRad(theta)

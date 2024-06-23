@@ -217,9 +217,11 @@ export const fGaussian = (f: number, px: number, py: number) => {
     return vec(qx, qy)
 }
 
-export const calcLensR = (f: number, n: number, d: number) => {
-    const a = n
-    const b = -2 * f * n * (n - 1)
-    const c = d * f * (n - 1) * (n - 1)
-    return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a)
+export const calcLensF = (lens: any) => {
+    const d = lens.x2 - lens.x1
+    const R1 = lens.R1
+    const R2 = lens.R2
+    const n = lens.n
+    const inv = (n - 1) * (1 / R1 - 1 / R2) + (d / n) * ((n - 1) * (n - 1) / (R1 * R2))
+    return 1 / inv
 }

@@ -1,6 +1,6 @@
 import { ref, computed } from "vue"
-import { Vec, vec, calcLensR } from "./math"
-import { Light } from "./type"
+import { Vec, vec } from "./math"
+import { type Lens, Light } from "./type"
 
 //================================
 // States
@@ -41,10 +41,10 @@ export const lights = ref(lights0())
 // Items
 //--------------------------------
 
-export const items0 = () => {
+export const items0 = (): Lens[] => {
     return [
-        { x: -50, r: 10, f: 50, n: 1.5, d: 5, aperture: 1 },
-        { x: 0, r: 10, f: 50, n: 1.5, d: 5, aperture: 1 },
+        { x1: 0, x2: 6, R1: 25, R2: -50, r: 10, n: 1.5, aperture: 1 },
+        { x1: -106, x2: -100, R1: 50, R2: -25, r: 10, n: 1.5, aperture: 1 },
     ]
 }
 export const items = ref(items0())
@@ -207,7 +207,8 @@ export const infR = computed(() => {
 export const minLensX = computed(() => {
     let minX = infR.value
     for (const lens of items.value) {
-        minX = Math.min(minX, lens.x - lens.d / 2)
+        const left = Math.min(lens.x1, lens.x1)
+        minX = Math.min(minX, left)
     }
     return minX
 })
@@ -215,7 +216,7 @@ export const minLensX = computed(() => {
 export const maxLensX = computed(() => {
     let maxX = -infR.value
     for (const lens of items.value) {
-        maxX = Math.min(maxX, lens.x)
+        maxX = Math.min(maxX, lens.x2)
     }
     return maxX
 })
