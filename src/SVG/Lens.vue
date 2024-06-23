@@ -23,15 +23,57 @@ const xm = computed(() => {
     return (props.lens.x1 + props.lens.x2) / 2
 })
 
+const fNumber = computed(() => {
+    if (options.value.aperture) {
+        return f.value / (2 * props.lens.r * props.lens.aperture)
+    } else {
+        return f.value / (2 * props.lens.r)
+    }
+})
+
+// const rMax = computed(() => {
+//     const d = props.lens.d
+//     return Math.sqrt(R.value * R.value - (R.value - d / 2) * (R.value - d / 2))
+// })
+
+const r = computed(() => {
+    // return Math.min(rMax.value, props.lens.r)
+    return props.lens.r
+})
+
+const leftX = computed(() => {
+    const x = props.lens.x1
+    const R1 = Math.abs(props.lens.R1)
+    const d = R1 - Math.sqrt(R1 * R1 - r.value * r.value)
+    return x + d
+})
+
+const rightX = computed(() => {
+    const x = props.lens.x2
+    const R2 = Math.abs(props.lens.R2)
+    const d = R2 - Math.sqrt(R2 * R2 - r.value * r.value)
+    return x - d
+})
+
 const moveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
     const x10 = props.lens.x1;
     const x20 = props.lens.x2;
+    const leftX0 = leftX.value
+    const rightX0 = rightX.value
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        items.value[props.idx].x1 = x10 + d.x
-        items.value[props.idx].x2 = x20 + d.x
+        if (x10 + d.x < maxLightX.value) {
+            items.value[props.idx].x1 = maxLightX.value
+            items.value[props.idx].x2 = maxLightX.value + (x20 - x10)
+        } else if (x20 + d.x > sensor.value.x) {
+            items.value[props.idx].x1 = sensor.value.x - (x20 - x10)
+            items.value[props.idx].x2 = sensor.value.x
+        } else {
+            items.value[props.idx].x1 = x10 + d.x
+            items.value[props.idx].x2 = x20 + d.x
+        }
         // if (x10 + d.x < maxLightX.value + props.lens.d / 2) {
         //     items.value[props.idx].x = maxLightX.value + props.lens.d / 2
         // } else if (sensor.value.x < cx0 + d.x) {
@@ -85,38 +127,6 @@ const apertureSizeChangeStartHandler = (e: any) => {
         }
     })
 }
-
-const fNumber = computed(() => {
-    if (options.value.aperture) {
-        return f.value / (2 * props.lens.r * props.lens.aperture)
-    } else {
-        return f.value / (2 * props.lens.r)
-    }
-})
-
-// const rMax = computed(() => {
-//     const d = props.lens.d
-//     return Math.sqrt(R.value * R.value - (R.value - d / 2) * (R.value - d / 2))
-// })
-
-const r = computed(() => {
-    // return Math.min(rMax.value, props.lens.r)
-    return props.lens.r
-})
-
-const leftX = computed(() => {
-    const x = props.lens.x1
-    const R1 = Math.abs(props.lens.R1)
-    const d = R1 - Math.sqrt(R1 * R1 - r.value * r.value)
-    return x + d
-})
-
-const rightX = computed(() => {
-    const x = props.lens.x2
-    const R2 = Math.abs(props.lens.R2)
-    const d = R2 - Math.sqrt(R2 * R2 - r.value * r.value)
-    return x - d
-})
 
 </script>
 
