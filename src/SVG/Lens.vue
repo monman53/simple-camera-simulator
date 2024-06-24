@@ -91,19 +91,24 @@ const moveStartHandler = (e: any) => {
     items.value[props.idx].selected = true
 
     const m0 = getPositionOnSvg(e);
-    const x10 = props.lens.x1;
-    const x20 = props.lens.x2;
+    // const x10 = props.lens.x1;
+    // const x20 = props.lens.x2;
+    const x10s = items.value.map((lens) => lens.x1)
+    const x20s = items.value.map((lens) => lens.x2)
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (x10 + d.x < maxLightX.value) {
-            items.value[props.idx].x1 = maxLightX.value
-            items.value[props.idx].x2 = maxLightX.value + (x20 - x10)
-        } else if (x20 + d.x > sensor.value.x) {
-            items.value[props.idx].x1 = sensor.value.x - (x20 - x10)
-            items.value[props.idx].x2 = sensor.value.x
-        } else {
-            items.value[props.idx].x1 = x10 + d.x
-            items.value[props.idx].x2 = x20 + d.x
+        for (let i=0;i<items.value.length;i++){
+            if (x10s[i] + d.x < maxLightX.value) {
+                d.x = maxLightX.value - x10s[i]
+            } else if (x20s[i] + d.x > sensor.value.x) {
+                d.x = sensor.value.x - x20s[i]
+            }
+        }
+        for (let i=0;i<items.value.length;i++){
+            if (items.value[i].selected) {
+                items.value[i].x1 = x10s[i] + d.x
+                items.value[i].x2 = x20s[i] + d.x
+            }
         }
     })
 }
