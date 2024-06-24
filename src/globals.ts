@@ -43,11 +43,17 @@ export const lights = ref(lights0())
 
 export const items0 = (): Lens[] => {
     return [
-        { x1: -106, x2: -100, R1: -50, R2: -25, r: 10, n: 1.5, aperture: 1 },
-        { x1: 0, x2: 6, R1: 25, R2: -50, r: 10, n: 1.5, aperture: 1 },
+        { x1: -106, x2: -100, R1: -50, R2: -25, r: 10, n: 1.5, aperture: 1, selected: false },
+        { x1: 0, x2: 6, R1: 25, R2: -50, r: 10, n: 1.5, aperture: 1, selected: false },
     ]
 }
 export const items = ref(items0())
+
+export const releaseAllLenses = () => {
+    for (let i = 0; i < items.value.length; i++) {
+        items.value[i].selected = false
+    }
+}
 
 //--------------------------------
 // Sensor

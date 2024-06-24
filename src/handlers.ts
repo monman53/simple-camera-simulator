@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, sensor, minLensX, maxLensX } from "./globals";
+import { state, lights, sensor, minLensX, maxLensX, releaseAllLenses } from "./globals";
 import { Light } from './type'
 import { vec, Vec } from './math'
 
@@ -45,6 +45,7 @@ export const svgMoveStartHandler = (e: any) => {
     e.preventDefault();
     const m0 = getPositionOnSvg(e);
     const c0 = state.value.c.copy()
+    releaseAllLenses()
     moveHandler = (e_: any) => {
         let clientX = e_.clientX
         let clientY = e_.clientY

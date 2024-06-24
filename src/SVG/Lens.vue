@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { items, sensor, options, style, rUI, maxLightX } from '../globals'
+import { items, releaseAllLenses, sensor, options, style, rUI, maxLightX } from '../globals'
 import { calcLensF, calcRMax } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
@@ -84,11 +84,15 @@ const path2 = computed(() => {
 
 const moveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
+    // Selection
+    if (!e.shiftKey && !props.lens.selected) {
+        releaseAllLenses()
+    }
+    items.value[props.idx].selected = true
+
     const m0 = getPositionOnSvg(e);
     const x10 = props.lens.x1;
     const x20 = props.lens.x2;
-    // const leftX0 = leftX.value
-    // const rightX0 = rightX.value
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (x10 + d.x < maxLightX.value) {

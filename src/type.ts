@@ -12,4 +12,5 @@ export type Lens = {
     r: number,
     n: number,
     aperture: number,
+    selected: boolean,
 }
