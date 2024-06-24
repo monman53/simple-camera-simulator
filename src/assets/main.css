@@ -1,3 +1,30 @@
 body {
     margin: 0;
 }
+
+.grab {
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
+.grab:active {
+    cursor: -webkit-grabbing;
+    cursor: grabbing;
+}
+
+.grabbing {
+    cursor: -webkit-grabbing;
+    cursor: grabbing;
+}
+
+.move {
+    cursor: move;
+}
+
+.horizontal-resize {
+    cursor: col-resize;
+}
+
+.vertical-resize {
+    cursor: row-resize;
+}

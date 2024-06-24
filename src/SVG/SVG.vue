@@ -52,7 +52,7 @@ const strokeDashArray = computed(() => {
 </script>
 
 <template>
-  <svg id="main-svg" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
+  <svg id="main-svg" class="move" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
     @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="h.addLight">
 
@@ -89,11 +89,11 @@ const strokeDashArray = computed(() => {
         <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
         <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui-bg"></circle>
         <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
-          @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
+          @mousedown="h.lightMoveStartHandler($event, idx)" class="ui grab">
         </circle>
       </g>
       <g v-if="light.type === Light.Parallel">
-        <LightParallel :light :idx></LightParallel>
+        <LightParallel :light :idx class="grab"></LightParallel>
       </g>
     </g>
 
@@ -103,11 +103,12 @@ const strokeDashArray = computed(() => {
         <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child-bg" />
         <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
         <!-- dummy for ui -->
-        <rect :x="sensor.x - rUI" :y="-sensor.r" :width="rUI * 2" :height="2 * sensor.r"
-          @mousedown="h.sensorMoveStartHandler" class='ui-transparent' />
+        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="ui-stroke transparent grab"
+          @mousedown="h.sensorMoveStartHandler" />
       </g>
 
-      <circle :cx="sensor.x" :cy="-sensor.r" :r="rUI" class="ui-hidden" @mousedown="h.sensorSizeChangeStartHandler">
+      <circle :cx="sensor.x" :cy="-sensor.r" :r="rUI" class="transparent vertical-resize"
+        @mousedown="h.sensorSizeChangeStartHandler">
       </circle>
     </g>
   </svg>
@@ -238,5 +239,21 @@ svg {
   /* stroke-dasharray: v-bind(strokeDashArray); */
   stroke-width: v-bind('strokeWidth.thickerBg');
   fill: none;
+}
+
+.transparent {
+  fill: transparent;
+  color: transparent;
+  stroke: transparent;
+}
+
+.ui-stroke {
+  stroke-width: v-bind((2 * rUI));
+  pointer-events: stroke;
+
+  circle {
+    stroke-width: 0;
+    pointer-events: all;
+  }
 }
 </style>

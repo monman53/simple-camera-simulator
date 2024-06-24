@@ -222,7 +222,7 @@ export const minLensX = computed(() => {
 export const maxLensX = computed(() => {
     let maxX = -infR.value
     for (const lens of items.value) {
-        maxX = Math.min(maxX, lens.x2)
+        maxX = Math.max(maxX, lens.x2)
     }
     return maxX
 })

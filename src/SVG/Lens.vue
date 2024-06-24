@@ -97,14 +97,14 @@ const moveStartHandler = (e: any) => {
     const x20s = items.value.map((lens) => lens.x2)
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        for (let i=0;i<items.value.length;i++){
+        for (let i = 0; i < items.value.length; i++) {
             if (x10s[i] + d.x < maxLightX.value) {
                 d.x = maxLightX.value - x10s[i]
             } else if (x20s[i] + d.x > sensor.value.x) {
                 d.x = sensor.value.x - x20s[i]
             }
         }
-        for (let i=0;i<items.value.length;i++){
+        for (let i = 0; i < items.value.length; i++) {
             if (items.value[i].selected) {
                 items.value[i].x1 = x10s[i] + d.x
                 items.value[i].x2 = x20s[i] + d.x
@@ -280,7 +280,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
         <!-- Lens -->
         <g class="hover-parent">
             <!-- dummy for ui -->
-            <path :d="path" class='ui-transparent' @mousedown="moveStartHandler" />
+            <path :d="path" class='transparent grab' @mousedown="moveStartHandler" />
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->
@@ -306,16 +306,18 @@ const apertureSizeChangeStartHandler = (e: any) => {
         </g>
 
         <!-- Thickness change UI -->
-        <g class="fill-none" pointer-events="stroke">
+        <g class="ui-stroke transparent horizontal-resize">
             <!-- left -->
-            <path :d="path1" class="ui-hidden" @mousedown="x1MoveStartHandler" />
+            <path :d="path1" @mousedown="x1MoveStartHandler" />
             <!-- right -->
-            <path :d="path2" class="ui-hidden" @mousedown="x2MoveStartHandler" />
+            <path :d="path2" @mousedown="x2MoveStartHandler" />
         </g>
 
         <!-- Curvature change UI -->
-        <circle :cx="lens.x1" :cy="0" :r="rUI" class="ui-hidden" @mousedown="r1MoveStartHandler"></circle>
-        <circle :cx="lens.x2" :cy="0" :r="rUI" class="ui-hidden" @mousedown="r2MoveStartHandler"></circle>
+        <g class="horizontal-resize">
+            <circle class="ui-hidden" :cx="lens.x1" :cy="0" :r="rUI" @mousedown="r1MoveStartHandler"></circle>
+            <circle class="ui-hidden" :cx="lens.x2" :cy="0" :r="rUI" @mousedown="r2MoveStartHandler"></circle>
+        </g>
 
         <!-- Focal points -->
         <g v-if="options.lensFocalPoints">
@@ -339,8 +341,10 @@ const apertureSizeChangeStartHandler = (e: any) => {
         </g>
 
         <!-- Lens size change UI-->
-        <circle :cx="(leftX + rightX) / 2" :cy="-r" :r="rUI" class="ui-hidden" @mousedown="lensSizeChangeStartHandler">
-        </circle>
+        <g class="ui-stroke transparent vertical-resize" @mousedown="lensSizeChangeStartHandler">
+            <circle :cx="(leftX + rightX) / 2" :cy="-r" :r="rUI"></circle>
+            <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r"></line>
+        </g>
 
         <!-- Aperture -->
         <g v-if="options.aperture">
@@ -357,7 +361,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
             </g>
             <!-- UI -->
             <circle :cx="xm" :cy="r * lens.aperture" :r="rUI" @mousedown="apertureSizeChangeStartHandler"
-                class="hover-sibling-master ui-hidden"></circle>
+                class="ui-hidden vertical-resize"></circle>
         </g>
     </g>
 </template>
