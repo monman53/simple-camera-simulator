@@ -151,6 +151,7 @@ const r1MoveStartHandler = (e: any) => {
         if (x1n > props.lens.x2) {
             x1n = props.lens.x2
         }
+        // TODO: Fix here
         const a = x1n - leftX0
         const R1n = (-r0 * r0 - a * a) / (2 * a)
         items.value[props.idx].R1 = R1n

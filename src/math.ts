@@ -266,21 +266,23 @@ export const calcLensF = (lens: any) => {
 }
 
 export const calcRMax = (lens: any) => {
-    const R1 = lens.R1
-    const R2 = lens.R2
-    const c1 = vec(lens.x1 + R1, 0)
-    const c2 = vec(lens.x2 + R2, 0)
-    if (intersectCC(c1, Math.abs(R1), c2, Math.abs(R2))) {
-        const [p1, p2] = intersectionCC(c1, Math.abs(R1), c2, Math.abs(R2))
-        const dc1 = c1.x - p1.x
-        const dc2 = c2.x - p2.x
-        const minR = Math.min(Math.abs(R1), Math.abs(R2))
-        if (dc1 * dc2 < 0) {
-            return Math.min(minR, Math.abs(p1.y))
+    const R1 = Math.abs(lens.R1)
+    const R2 = Math.abs(lens.R2)
+    const c1 = vec(lens.x1 + lens.R1, 0)
+    const c2 = vec(lens.x2 + lens.R2, 0)
+    const minR = Math.min(R1, R2)
+    if (intersectCC(c1, R1, c2, R2)) {
+        const [p1, p2] = intersectionCC(c1, R1, c2, R2)
+        const l1 = Math.min(lens.x1, c1.x)
+        const r1 = Math.max(lens.x1, c1.x)
+        const l2 = Math.min(lens.x2, c2.x)
+        const r2 = Math.max(lens.x2, c2.x)
+        if ((l1 < p1.x && p1.x < r1) && (l2 < p1.x && p1.x < r2)) {
+            return Math.abs(p1.y)
         } else {
             return minR
         }
     } else {
-        return Math.min(Math.abs(R1), Math.abs(R2))
+        return minR
     }
 }
