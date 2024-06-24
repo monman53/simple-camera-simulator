@@ -145,13 +145,22 @@ const r1MoveStartHandler = (e: any) => {
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         let x1n = x10 + d.x
-        if (leftX0 - x1n > r0) {
-            x1n = leftX0 - r0
+        if (x1n < maxLightX.value) {
+            x1n = maxLightX.value
         }
         if (x1n > props.lens.x2) {
             x1n = props.lens.x2
         }
-        // TODO: Fix here
+        if (leftX0 - x1n > r0) {
+            items.value[props.idx].R1 = r0
+            items.value[props.idx].x1 = x1n
+            return
+        }
+        if (x1n - leftX0 > r0) {
+            items.value[props.idx].R1 = -r0
+            items.value[props.idx].x1 = x1n
+            return
+        }
         const a = x1n - leftX0
         const R1n = (-r0 * r0 - a * a) / (2 * a)
         items.value[props.idx].R1 = R1n
@@ -168,11 +177,21 @@ const r2MoveStartHandler = (e: any) => {
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         let x2n = x20 + d.x
-        if (x2n - rightX0 > r0) {
-            x2n = r0 + rightX0
-        }
         if (x2n < props.lens.x1) {
             x2n = props.lens.x1
+        }
+        if (x2n > sensor.value.x) {
+            x2n = sensor.value.x
+        }
+        if (x2n - rightX0 > r0) {
+            items.value[props.idx].R2 = -r0
+            items.value[props.idx].x2 = x2n
+            return
+        }
+        if (rightX0 - x2n > r0) {
+            items.value[props.idx].R2 = r0
+            items.value[props.idx].x2 = x2n
+            return
         }
         const a = x2n - rightX0
         const R2n = (-r0 * r0 - a * a) / (2 * a)
@@ -252,7 +271,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
         <!-- Lens -->
         <g class="hover-parent">
             <!-- dummy for ui -->
-            <path :d="path" class='ui-transparent' @mousedown="moveStartHandler"/>
+            <path :d="path" class='ui-transparent' @mousedown="moveStartHandler" />
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->
