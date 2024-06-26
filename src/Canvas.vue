@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, onMounted, ref } from 'vue'
+import { watch, onMounted, ref, computed } from 'vue'
 
 import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR } from './globals'
 import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensF, intersectionSS, calcRMax } from './math'
@@ -27,17 +27,28 @@ const drawSegment = (p: Vec, v: Vec, length: number) => {
   return q
 };
 
-const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
+const lenses = computed(() => {
+  const res = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
+  res.sort((a, b) => { return a.x1 - b.x1 })
+  return res
+})
 
+const fs = computed(() => {
+  return lenses.value.map((lens) => calcLensF(lens))
+})
+
+const rMaxes = computed(() => {
+  return lenses.value.map((lens) => calcRMax(lens))
+})
+
+const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
   // Multiple lens
-  // const lenses = items.value.filter(() => true)
-  const lenses = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
-  lenses.sort((a, b) => { return a.x1 - b.x1 })
-  for (const lens of lenses) {
+  for (let lensIdx = 0; lensIdx < lenses.value.length; lensIdx++) {
+    const lens = lenses.value[lensIdx]
     const s0 = s.copy()
     const xm = (lens.x1 + lens.x2) / 2
-    const f = calcLensF(lens)
-    const r = Math.min(calcRMax(lens), lens.r)
+    const f = fs.value[lensIdx]
+    const r = Math.min(rMaxes.value[lensIdx], lens.r)
     let innerLens = false
 
     // Find image position of the light source

@@ -246,22 +246,20 @@ const apertureSizeChangeStartHandler = (e: any) => {
                     <circle :cx="lens.x1 + lens.R1" :cy="0" :r="Math.abs(lens.R1)"></circle>
                     <circle :cx="lens.x2 + lens.R2" :cy="0" :r="Math.abs(lens.R2)"></circle>
                 </g>
+                <!-- center point -->
+                <g class="fill-white stroke-white normal">
+                    <circle :cx="lens.x1 + lens.R1" cy="0" :r="rUI / 2"></circle>
+                    <circle :cx="lens.x2 + lens.R2" cy="0" :r="rUI / 2"></circle>
+                </g>
             </WithBackground>
-            <!-- center point -->
-            <!-- bg -->
-            <circle :cx="lens.x1 + lens.R1" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
-            <circle :cx="lens.x2 + lens.R2" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
-            <!-- fg -->
-            <circle :cx="lens.x1 + lens.R1" cy="0" :r="rUI / 2" class="fill-white"></circle>
-            <circle :cx="lens.x2 + lens.R2" cy="0" :r="rUI / 2" class="fill-white"></circle>
         </g>
 
         <!-- Hyperfocal point -->
         <g
             v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
-            <circle :cx="H" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
-            <circle :cx="H" cy=" 0" :r="rUI / 2" class="fill-white">
-            </circle>
+            <WithBackground>
+                <circle :cx="H" cy=" 0" :r="rUI / 2" class="fill-white stroke-white normal"></circle>
+            </WithBackground>
         </g>
 
         <!-- Lens -->
@@ -286,6 +284,9 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <path :d="path2" @mousedown="x2MoveStartHandler" />
         </g>
 
+        <!-- dummy for ui -->
+        <path :d="path" class='transparent grab' stroke-width="0" />
+
         <!-- Curvature change UI -->
         <g class="horizontal-resize">
             <circle class="ui-hidden" :cx="lens.x1" :cy="0" :r="rUI" @mousedown="r1MoveStartHandler"></circle>
@@ -294,18 +295,17 @@ const apertureSizeChangeStartHandler = (e: any) => {
 
         <!-- Focal points -->
         <g v-if="options.lensFocalPoints">
-            <!-- left hand -->
-            <circle :cx="xm - f" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
-            <circle :cx="xm - f" cy="0" :r="rUI / 2" class="fill-white"></circle>
-            <!-- right hand -->
-            <circle :cx="xm + f" cy="0" :r="rUI / 2 * 1.2" :fill="style.lineBgColor"></circle>
-            <circle :cx="xm + f" cy="0" :r="rUI / 2" class="fill-white"></circle>
-
-            <!-- Double focal points -->
-            <g v-if="options.lensDoubleFocalPoints">
-                <circle :cx="xm - 2 * f" cy="0" :r="rUI / 2" class="white"></circle>
-                <circle :cx="xm + 2 * f" cy="0" :r="rUI / 2" class="white"></circle>
-            </g>
+            <WithBackground>
+                <g class="fill-white stroke-white normal">
+                    <circle :cx="xm - f" cy="0" :r="rUI / 2"></circle>
+                    <circle :cx="xm + f" cy="0" :r="rUI / 2"></circle>
+                </g>
+                <!-- Double focal points -->
+                <g v-if="options.lensDoubleFocalPoints">
+                    <circle :cx="xm - 2 * f" cy="0" :r="rUI / 2"></circle>
+                    <circle :cx="xm + 2 * f" cy="0" :r="rUI / 2"></circle>
+                </g>
+            </WithBackground>
         </g>
 
         <!-- Lens size change UI-->
@@ -313,9 +313,6 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <circle :cx="(leftX + rightX) / 2" :cy="-r" :r="rUI"></circle>
             <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r"></line>
         </g>
-
-        <!-- dummy for ui -->
-        <path :d="path" class='transparent grab' />
 
         <!-- Aperture -->
         <g v-if="options.aperture">

@@ -177,6 +177,10 @@ svg {
 }
 
 .background {
+  .fill-white {
+    fill: v-bind('style.lineBgColor');
+  }
+
   .stroke-white {
     stroke: v-bind('style.lineBgColor');
   }
