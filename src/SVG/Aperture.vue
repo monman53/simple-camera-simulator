@@ -40,7 +40,7 @@ const move = (e: any) => {
 
 <template>
     <WithBackground>
-        <g class="stroke-white normal">
+        <g v-if="body.r" class="stroke-white normal">
             <!-- Top -->
             <line :x1="aperture.x" :y1="-body.r - style.bodyPadding" :x2="aperture.x" :y2="-aperture.r"></line>
             <!-- Bottom -->

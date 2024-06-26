@@ -300,15 +300,50 @@ export const rUI = computed(() => {
 })
 
 export const body = computed(() => {
+    const lensExist = options.value.lens && lensesSorted.value.length > 0
     const padding = style.value.bodyPadding
-    const rs = lensGroups.value.reduce((acc: number[], lensGroup) => {
-        const rs = lensGroup.lenses.map((lens) => lens.r + padding)
-        return acc.concat(rs)
-    }, []).concat([aperture.value.r, sensor.value.r + padding])
-    const r = Math.max(...rs)
 
-    const front = Math.min(aperture.value.x, calcLensFront(lensesSorted.value[0]))
-    const back = sensor.value.x + padding
+    let rs: number[] = []
+    if (options.value.lens) {
+        rs = lensGroups.value.reduce((acc: number[], lensGroup) => {
+            const rs = lensGroup.lenses.map((lens) => lens.r + padding)
+            return acc.concat(rs)
+        }, [])
+    }
+    if (options.value.aperture) {
+        rs.push(aperture.value.r)
+    }
+    if (options.value.sensor) {
+        rs.push(sensor.value.r + padding)
+    }
+
+    let r = null
+    if (rs.length > 0) {
+        r = Math.max(...rs)
+    }
+
+    let front = null
+    if (lensExist) {
+        if (options.value.aperture) {
+            front = Math.min(aperture.value.x, calcLensFront(lensesSorted.value[0]))
+        } else {
+            front = calcLensFront(lensesSorted.value[0])
+        }
+    } else {
+        if (options.value.aperture) {
+            front = aperture.value.x
+        }
+    }
+    let back = null
+    if (options.value.sensor) {
+        back = sensor.value.x + padding
+    } else if (lensExist) {
+        if (options.value.aperture) {
+            back = Math.max(...lensFronts.value, aperture.value.x)
+        } else {
+            back = Math.max(...lensFronts.value)
+        }
+    }
 
     return {
         r,

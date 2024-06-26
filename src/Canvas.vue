@@ -32,34 +32,40 @@ const intersectionBody = (s: Vec, v: Vec) => {
   let ps = []
 
   // Outlines
-  if (options.value.body) {
+  if (options.value.body && body.value.r && body.value.front && body.value.back) {
     ps.push(intersectionX(s, v, -body.value.r, body.value.front, body.value.back))
     ps.push(intersectionX(s, v, body.value.r, body.value.front, body.value.back))
-    ps.push(intersectionY(s, v, body.value.back, -body.value.r, body.value.r))
+    if (options.value.sensor) {
+      ps.push(intersectionY(s, v, body.value.back, -body.value.r, body.value.r))
+    }
   }
 
   // Lenses
-  lensesSorted.value.forEach((lens, idx) => {
-    const lensR = lensRs.value[idx]
-    const front = lensFronts.value[idx]
-    const back = lensBacks.value[idx]
-    // Lens to body
-    if (options.value.body) {
-      ps.push(intersectionY(s, v, front, -body.value.r, -lensR))
-      ps.push(intersectionY(s, v, front, lensR, body.value.r))
-    }
-    // Upper / Bottom
-    ps.push(intersectionX(s, v, -lensR, front, back))
-    ps.push(intersectionX(s, v, lensR, front, back))
-    // Aperture
-    const xm = (lens.x1 + lens.x2) / 2
-    ps.push(intersectionY(s, v, xm, -lensR, -lensR * lens.aperture))
-    ps.push(intersectionY(s, v, xm, lensR * lens.aperture, lensR))
-  })
+  if (options.value.lens) {
+    lensesSorted.value.forEach((lens, idx) => {
+      const lensR = lensRs.value[idx]
+      const front = lensFronts.value[idx]
+      const back = lensBacks.value[idx]
+      // Lens to body
+      if (options.value.body && body.value.r) {
+        ps.push(intersectionY(s, v, front, -body.value.r, -lensR))
+        ps.push(intersectionY(s, v, front, lensR, body.value.r))
+      }
+      // Upper / Bottom
+      ps.push(intersectionX(s, v, -lensR, front, back))
+      ps.push(intersectionX(s, v, lensR, front, back))
+      // Aperture
+      const xm = (lens.x1 + lens.x2) / 2
+      ps.push(intersectionY(s, v, xm, -lensR, -lensR * lens.aperture))
+      ps.push(intersectionY(s, v, xm, lensR * lens.aperture, lensR))
+    })
+  }
 
   // Aperture
-  ps.push(intersectionY(s, v, aperture.value.x, -body.value.r, -aperture.value.r))
-  ps.push(intersectionY(s, v, aperture.value.x, aperture.value.r, body.value.r))
+  if (options.value.aperture && body.value.r) {
+    ps.push(intersectionY(s, v, aperture.value.x, -body.value.r, -aperture.value.r))
+    ps.push(intersectionY(s, v, aperture.value.x, aperture.value.r, body.value.r))
+  }
 
   ps = ps.filter((p) => p.p !== null)
   ps.sort((p, q) => p.d - q.d)
@@ -203,6 +209,13 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
       sensorDataTmp.push({ y: p.y, color })
       return
     }
+  }
+
+  const pb = intersectionBody(s, v)
+  if (pb.p) {
+    v = pb.p.sub(s)
+    drawSegment(s, v, v.length())
+    return
   }
 
   // to infinity
