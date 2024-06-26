@@ -90,8 +90,8 @@ const nRays = computed(() => {
                 </tr>
                 <tr>
                     <td>
-                        <button @click="lensGroups.push({ lenses: [defaultConvexLens(0)] })">Add convex lens</button>
-                        <button @click="lensGroups.push({ lenses: [defaultConcaveLens(0)] })">Add concave lens</button>
+                        <button @click="lensGroups.push({ lenses: [defaultConvexLens(0)], selected: false })">Add convex lens</button>
+                        <button @click="lensGroups.push({ lenses: [defaultConcaveLens(0)], selected: false })">Add concave lens</button>
                     </td>
                 </tr>
                 <!-- <tr>

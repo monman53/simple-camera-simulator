@@ -12,9 +12,9 @@ export type Lens = {
     r: number,
     n: number,
     aperture: number,
-    selected: boolean,
 }
 
 export type LensGroup = {
     lenses: Lens[],
+    selected: boolean,
 }

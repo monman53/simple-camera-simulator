@@ -54,16 +54,14 @@ export const defaultConcaveLens = (x: number) => {
 
 export const lensGroups0 = (): LensGroup[] => {
     return [
-        { lenses: [defaultConvexLens(0)] }
+        { lenses: [defaultConvexLens(0)], selected: false }
     ]
 }
 export const lensGroups = ref(lensGroups0())
 
 export const releaseAllLenses = () => {
-    for (let i = 0; i < lensGroups.value.length; i++) {
-        for (let j = 0; j < lensGroups.value[i].lenses.length; j++) {
-            lensGroups.value[i].lenses[j].selected = false
-        }
+    for (const lensGroup of lensGroups.value) {
+        lensGroup.selected = false
     }
 }
 

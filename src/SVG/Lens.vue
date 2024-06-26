@@ -81,46 +81,6 @@ const path2 = computed(() => {
     return `M ${rightX.value} ${-r.value} A ${absR2} ${absR2} 0 0 ${sweep} ${rightX.value} ${r.value}`
 })
 
-const moveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const lens = props.lens
-    // Selection
-    if (!e.shiftKey && !props.lens.selected) {
-        releaseAllLenses()
-    }
-    lens.selected = true
-
-    const m0 = getPositionOnSvg(e);
-    const x10s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x1))
-    const x20s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x2))
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        // Fix d.x within maxLightX < d.x < sensor.x
-        for (let i = 0; i < lensGroups.value.length; i++) {
-            for (let j = 0; j < lensGroups.value[i].lenses.length; j++) {
-                if (x10s[i][j] + d.x < maxLightX.value) {
-                    if (Math.abs(maxLightX.value - x10s[i][j]) < Math.abs(d.x)) {
-                        d.x = maxLightX.value - x10s[i][j]
-                    }
-                } else if (x20s[i][j] + d.x > sensor.value.x) {
-                    if (Math.abs(sensor.value.x - x20s[i][j]) < Math.abs(d.x)) {
-                        d.x = sensor.value.x - x20s[i][j]
-                    }
-                }
-            }
-        }
-        // Update x1 and x2
-        lensGroups.value.forEach((lensGroup, i) => {
-            lensGroup.lenses.forEach((lens, j) => {
-                if (lens.selected) {
-                    lens.x1 = x10s[i][j] + d.x
-                    lens.x2 = x20s[i][j] + d.x
-                }
-            })
-        })
-    })
-}
-
 const x1MoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
@@ -377,6 +337,6 @@ const apertureSizeChangeStartHandler = (e: any) => {
         </g>
 
         <!-- dummy for ui -->
-        <path :d="path" class='transparent grab' @mousedown="moveStartHandler" />
+        <path :d="path" class='transparent grab' />
     </g>
 </template>
