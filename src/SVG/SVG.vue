@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI } from '../globals'
+import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI, aperture } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 import { vec } from '../math'
@@ -12,6 +12,8 @@ import LightParallel from './LightParallel.vue'
 import LensGroup from './LensGroup.vue'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
+import Aperture from './Aperture.vue'
+import Body from './Body.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -67,6 +69,9 @@ const strokeDashArray = computed(() => {
     <!-- Grid -->
     <Grid v-if="options.grid"></Grid>
 
+    <!-- Body -->
+    <Body v-if="options.body"></Body>
+
     <!-- Guidelines -->
     <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
 
@@ -76,6 +81,9 @@ const strokeDashArray = computed(() => {
         <LensGroup :lensGroup :idx></LensGroup>
       </g>
     </g>
+
+    <!-- Aperture -->
+    <Aperture v-if="options.aperture"></Aperture>
 
     <!-- Apple -->
     <g v-if="options.apple">

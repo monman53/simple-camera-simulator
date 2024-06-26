@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { lensGroups, releaseAllLenses, sensor, options, style, rUI, maxLightX } from '../globals'
-import { vec, calcLensF, calcRMax } from '../math'
+import { vec, calcLensF, calcRMax, calcLensFront, calcLensBack } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
 import WithBackground from './WithBackground.vue'
@@ -41,25 +41,11 @@ const r = computed(() => {
 })
 
 const leftX = computed(() => {
-    const x = props.lens.x1
-    const R1 = props.lens.R1
-    const d = Math.abs(R1) - Math.sqrt(R1 * R1 - r.value * r.value)
-    if (R1 > 0) {
-        return x + d
-    } else {
-        return x - d
-    }
+    return calcLensFront(props.lens)
 })
 
 const rightX = computed(() => {
-    const x = props.lens.x2
-    const R2 = props.lens.R2
-    const d = Math.abs(R2) - Math.sqrt(R2 * R2 - r.value * r.value)
-    if (R2 > 0) {
-        return x + d
-    } else {
-        return x - d
-    }
+    return calcLensBack(props.lens)
 })
 
 const path = computed(() => {

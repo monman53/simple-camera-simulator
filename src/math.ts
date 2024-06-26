@@ -1,3 +1,5 @@
+import type { Lens } from "./type"
+
 //================================
 // Liner algebra
 //================================
@@ -256,7 +258,7 @@ export const fGaussian = (f: number, px: number, py: number) => {
     return vec(qx, qy)
 }
 
-export const calcLensF = (lens: any) => {
+export const calcLensF = (lens: Lens) => {
     const d = lens.x2 - lens.x1
     const R1 = lens.R1
     const R2 = lens.R2
@@ -265,7 +267,7 @@ export const calcLensF = (lens: any) => {
     return 1 / inv
 }
 
-export const calcRMax = (lens: any) => {
+export const calcRMax = (lens: Lens) => {
     const R1 = Math.abs(lens.R1)
     const R2 = Math.abs(lens.R2)
     const c1 = vec(lens.x1 + lens.R1, 0)
@@ -285,4 +287,35 @@ export const calcRMax = (lens: any) => {
     } else {
         return minR
     }
+}
+
+export const calcLensR = (lens: Lens) => {
+    const rMax = calcRMax(lens)
+    return Math.min(rMax, lens.r)
+}
+
+// TODO: merge with calcLensBack
+export const calcLensFront = (lens: Lens) => {
+    const x = lens.x1
+    const R1 = lens.R1
+    const r = calcLensR(lens)
+    const d = Math.abs(R1) - Math.sqrt(R1 * R1 - r * r)
+    if (R1 > 0) {
+        return x + d
+    } else {
+        return x - d
+    }
+}
+
+export const calcLensBack = (lens: Lens) => {
+    const x = lens.x2
+    const R2 = lens.R2
+    const r = calcLensR(lens)
+    const d = Math.abs(R2) - Math.sqrt(R2 * R2 - r * r)
+    if (R2 > 0) {
+        return x + d
+    } else {
+        return x - d
+    }
+
 }

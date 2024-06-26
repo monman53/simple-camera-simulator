@@ -1,5 +1,5 @@
 import { ref, computed } from "vue"
-import { Vec, vec } from "./math"
+import { Vec, calcLensFront, vec } from "./math"
 import { type Lens, type LensGroup, Light } from "./type"
 
 //================================
@@ -38,7 +38,7 @@ export const lights0 = ():
 export const lights = ref(lights0())
 
 //--------------------------------
-// Items
+// Lenses
 //--------------------------------
 
 export const defaultConvexLens = (x: number) => {
@@ -60,9 +60,9 @@ export const lensGroups0 = (): LensGroup[] => {
 export const lensGroups = ref(lensGroups0())
 
 export const lensesSorted = computed(() => {
-  const res = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
-  res.sort((a, b) => { return a.x1 - b.x1 })
-  return res
+    const res = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
+    res.sort((a, b) => { return a.x1 - b.x1 })
+    return res
 })
 
 export const releaseAllLenses = () => {
@@ -70,6 +70,18 @@ export const releaseAllLenses = () => {
         lensGroup.selected = false
     }
 }
+
+//--------------------------------
+// Sensor
+//--------------------------------
+
+export const aperture0 = () => {
+    return {
+        x: 40,
+        r: 10,
+    }
+}
+export const aperture = ref(aperture0())
 
 //--------------------------------
 // Sensor
@@ -264,4 +276,21 @@ export const maxLightX = computed(() => {
 export const rUI = computed(() => {
     const scale = 1 / state.value.scale
     return 8 * scale;
+})
+
+export const body = computed(() => {
+    const rs = lensGroups.value.reduce((acc: number[], lensGroup) => {
+        const rs = lensGroup.lenses.map((lens) => lens.r + rUI.value * 2)
+        return acc.concat(rs)
+    }, []).concat([aperture.value.r, sensor.value.r + rUI.value * 2])
+    const r = Math.max(...rs)
+
+    const front = Math.min(aperture.value.x, calcLensFront(lensesSorted.value[0]))
+    const back = sensor.value.x + rUI.value * 2
+
+    return {
+        r,
+        front,
+        back,
+    }
 })

@@ -90,8 +90,10 @@ const nRays = computed(() => {
                 </tr>
                 <tr>
                     <td>
-                        <button @click="lensGroups.push({ lenses: [defaultConvexLens(0)], selected: false })">Add convex lens</button>
-                        <button @click="lensGroups.push({ lenses: [defaultConcaveLens(0)], selected: false })">Add concave lens</button>
+                        <button @click="lensGroups.push({ lenses: [defaultConvexLens(0)], selected: false })">Add convex
+                            lens</button>
+                        <button @click="lensGroups.push({ lenses: [defaultConcaveLens(0)], selected: false })">Add
+                            concave lens</button>
                     </td>
                 </tr>
                 <!-- <tr>
@@ -164,13 +166,16 @@ const nRays = computed(() => {
             </th>
         </tr>
         <tr>
-            <td><label><input type="checkbox" v-model="options.body"> Wall</label></td>
+            <td><label><input type="checkbox" v-model="options.body"> Body</label></td>
         </tr>
         <tr v-if="options.lens && options.sensor">
             <td><label><input type="checkbox" v-model="options.angleOfView"> Guide lines</label></td>
         </tr>
         <tr>
             <td><label><input type="checkbox" v-model="options.advanced"> Advanced mode</label></td>
+        </tr>
+        <tr>
+            <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
         </tr>
         <template v-if="options.advanced">
             <tr v-if="options.lens && options.sensor && options.circleOfConfusion">
