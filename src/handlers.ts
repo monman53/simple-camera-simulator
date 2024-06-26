@@ -119,31 +119,6 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         }
     }
 }
-export const parallelLightNodeMoveStartHandler = (e: any, idx: number, which: string) => {
-    preventDefaultAndStopPropagation(e)
-    // Last touched light is always front
-    const light = lights.value[idx];
-    const newLights = lights.value.filter((light, i) => {
-        return i !== idx
-    })
-    newLights.push(light)
-    lights.value = newLights
-
-    if (light.type === Light.Parallel) {
-        const m0 = getPositionOnSvg(e);
-        const p0 = which === "s" ? light.s.copy() : light.t.copy()
-        const p = which === "s" ? light.s : light.t
-        moveHandler = (e_: any) => {
-            const d = getPositionDiffOnSvgApp(e_, m0)
-            if (p0.x + d.x > minLensX.value) {
-                p.x = minLensX.value
-            } else {
-                p.x = p0.x + d.x
-            }
-            p.y = p0.y + d.y
-        }
-    }
-}
 export const sensorMoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);

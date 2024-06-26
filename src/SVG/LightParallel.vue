@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { state, infR, rUI } from '../globals'
+import { state, lights, infR, rUI, minLensX } from '../globals'
 import { vec, Vec } from '../math'
 import * as h from '../handlers'
 import WithBackground from './WithBackground.vue';
+import {Light} from '../type'
 
 const props = defineProps(['light', 'idx'])
 
@@ -23,6 +24,32 @@ const points = computed(() => {
     return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
 })
 
+const parallelLightNodeMoveStartHandler = (e: any, idx: number, node: Vec) => {
+    h.preventDefaultAndStopPropagation(e)
+    // Last touched light is always front
+    const light = lights.value[idx];
+    const newLights = lights.value.filter((light, i) => {
+        return i !== idx
+    })
+    newLights.push(light)
+    lights.value = newLights
+
+    if (light.type === Light.Parallel) {
+        const m0 = h.getPositionOnSvg(e);
+        const p0 = node.copy()
+        const p = node
+        h.setMoveHandler((e_: any) => {
+            const d = h.getPositionDiffOnSvgApp(e_, m0)
+            if (p0.x + d.x > minLensX.value) {
+                p.x = minLensX.value
+            } else {
+                p.x = p0.x + d.x
+            }
+            p.y = p0.y + d.y
+        })
+    }
+}
+
 </script>
 
 <template>
@@ -36,8 +63,8 @@ const points = computed(() => {
         </g>
 
         <circle :cx="light.s.x" :cy="light.s.y" :r="rUI"
-            @mousedown="h.parallelLightNodeMoveStartHandler($event, idx, 's')" class="ui-hidden"></circle>
+            @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.s)" class="ui-hidden"></circle>
         <circle :cx="light.t.x" :cy="light.t.y" :r="rUI"
-            @mousedown="h.parallelLightNodeMoveStartHandler($event, idx, 't')" class="ui-hidden"></circle>
+            @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.t)" class="ui-hidden"></circle>
     </g>
 </template>

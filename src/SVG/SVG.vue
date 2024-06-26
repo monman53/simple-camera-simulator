@@ -78,9 +78,10 @@ const strokeDashArray = computed(() => {
     <!-- Apple -->
     <g v-if="options.apple">
       <g v-for="(light, idx) of apple">
+        <WithBackground>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+        </WithBackground>
         <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui-bg"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui"></circle>
       </g>
     </g>
 
