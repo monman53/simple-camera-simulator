@@ -72,6 +72,7 @@ const path = computed(() => {
     const absR2 = Math.abs(props.lens.R2)
     const sweep2 = props.lens.R2 > 0 ? 1 : 0
     d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${rightX.value} ${-r.value} `
+    d += `Z`
     return d
 })
 
@@ -266,14 +267,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
         <!-- Lens -->
         <WithBackground>
             <g class="stroke-white fill-none" :class="{ normal: !selected, bold: selected }">
-                <!-- left -->
-                <path :d="path1" />
-                <!-- right -->
-                <path :d="path2" />
-                <!-- Top -->
-                <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r"></line>
-                <!-- Bottom -->
-                <line :x1="leftX" :y1="r" :x2="rightX" :y2="r"></line>
+                <path :d="path"></path>
             </g>
         </WithBackground>
 

@@ -169,7 +169,7 @@ const isIntersectedSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
 const intersectionLL = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
     const a = a2.sub(a1)
     const b = b2.sub(b1)
-    return a1.add(a.mul(cross(b, b1.sub(a1))).div(cross(b, a)))
+    return a1.add(a.mul(cross(b, b1.sub(a1))).inplaceDiv(cross(b, a)))
 }
 
 export const intersectionSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
@@ -213,9 +213,9 @@ export const intersectionCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
         r2 = rTmp
     }
     const d = c2.sub(c1).length()
-    const n = c2.sub(c1).normalize()
+    const n = c2.sub(c1).inplaceNormalize()
     const theta = Math.acos((d * d + r1 * r1 - r2 * r2) / (2.0 * d * r1));
-    return [c1.add(n.rotate(theta).mul(r1)), c1.add(n.rotate(-theta).mul(r1))]
+    return [c1.add(n.rotate(theta).inplaceMul(r1)), c1.add(n.rotate(-theta).inplaceMul(r1))]
 }
 
 //================================
