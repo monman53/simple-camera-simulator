@@ -30,9 +30,9 @@ export const lights0 = ():
     )[] => {
     return [
         // { type: Light.Point, c: vec(-200, 20), color: 0 }, // red
-        { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
+        // { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
         // { type: Light.Point, c: vec(-120, -20), color: 240 }, // blue
-        // { type: Light.Parallel, s: vec(-180, -30), t: vec(-180, 30), color: 120 }, // green
+        { type: Light.Parallel, s: vec(-180, -30), t: vec(-180, 30), color: 120 }, // green
     ]
 }
 export const lights = ref(lights0())
@@ -41,10 +41,20 @@ export const lights = ref(lights0())
 // Items
 //--------------------------------
 
+export const defaultConvexLens = (x: number) => {
+    const d = 10
+    const R = 70
+    return { x1: x - d / 2, x2: x + d / 2, R1: R, R2: -R, r: 20, n: 1.5, aperture: 1, selected: false }
+}
+
+export const defaultConcaveLens = (x: number) => {
+    const R = 30
+    return { x1: x - 2, x2: x + 2, R1: -R, R2: R, r: 10, n: 1.5, aperture: 1, selected: false }
+}
+
 export const items0 = (): Lens[] => {
     return [
-        { x1: -106, x2: -100, R1: -50, R2: -25, r: 10, n: 1.5, aperture: 1, selected: false },
-        { x1: 0, x2: 6, R1: 25, R2: -50, r: 10, n: 1.5, aperture: 1, selected: false },
+        defaultConvexLens(0),
     ]
 }
 export const items = ref(items0())
@@ -146,7 +156,7 @@ export const options0 = () => {
     return {
         advanced: false,
         lens: true,
-        lensIdeal: false,
+        lensIdeal: true,
         lensFocalPoints: false,
         lensDoubleFocalPoints: false,
         hyperfocalPoint: false,

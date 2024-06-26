@@ -255,6 +255,11 @@ const apertureSizeChangeStartHandler = (e: any) => {
     })
 }
 
+const deleteLens = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    items.value.splice(props.idx, 1)
+}
+
 </script>
 
 <template>
@@ -280,7 +285,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
         <!-- Lens -->
         <g class="hover-parent">
             <!-- dummy for ui -->
-            <path :d="path" class='transparent grab' @mousedown="moveStartHandler" />
+            <path :d="path" class='transparent grab' @mousedown="moveStartHandler" @dblclick="deleteLens" />
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->

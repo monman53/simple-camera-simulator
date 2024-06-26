@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, sensor, appleProps, options, style } from './globals'
+import { state, items, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
 
@@ -87,6 +87,12 @@ const nRays = computed(() => {
                 </tr> -->
                 <tr>
                     <td><label><input type="checkbox" v-model="options.lensIdeal"> Ideal lens</label></td>
+                </tr>
+                <tr>
+                    <td>
+                        <button @click="items.push(defaultConvexLens(0))">Add convex lens</button>
+                        <button @click="items.push(defaultConcaveLens(0))">Add concave lens</button>
+                    </td>
                 </tr>
                 <!-- <tr>
                     <td>Refractive index</td>
