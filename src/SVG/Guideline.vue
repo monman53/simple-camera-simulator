@@ -4,6 +4,8 @@ import { lensGroups, sensor, options, infR } from '../globals'
 
 import { vec, fGaussian, calcLensF } from '../math'
 
+import WithBackground from './WithBackground.vue'
+
 const lens = computed(() => {
     return lensGroups.value[0].lenses[0]
 })
@@ -92,66 +94,47 @@ const dof = computed(() => {
 </script>
 
 <template>
-    <!-- Inside camera -->
-    <line :x1="sensor.x" :y1="sensor.r" :x2="x" :y2="re" class="dotted-bg"></line>
-    <line :x1="sensor.x" :y1="-sensor.r" :x2="x" :y2="-re" class="dotted-bg"></line>
-    <line :x1="sensor.x" :y1="sensor.r" :x2="x" :y2="re" class="dotted"></line>
-    <line :x1="sensor.x" :y1="-sensor.r" :x2="x" :y2="-re" class="dotted"></line>
-    <g v-if="x !== sensor.x">
-        <!-- Lens to focal plane (outer) -->
-        <line :x1="x" :y1="-re" :x2="x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted-bg">
-        </line>
-        <line :x1="x" :y1="re" :x2="x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted-bg">
-        </line>
-        <line :x1="x" :y1="-re" :x2="x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted">
-        </line>
-        <line :x1="x" :y1="re" :x2="x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted"></line>
-        <!-- Lens to focal plane (inner) -->
-        <line :x1="x" :y1="-re" :x2="x + aov.middleInner.x" :y2="-re + aov.middleInner.y" class="dotted-thick-bg">
-        </line>
-        <line :x1="x" :y1="re" :x2="x + aov.middleInner.x" :y2="re - aov.middleInner.y" class="dotted-thick-bg">
-        </line>
-        <line :x1="x" :y1="-re" :x2="x + aov.middleInner.x" :y2="-re + aov.middleInner.y" class="dotted-thick">
-        </line>
-        <line :x1="x" :y1="re" :x2="x + aov.middleInner.x" :y2="re - aov.middleInner.y" class="dotted-thick">
-        </line>
-    </g>
-    <!-- Non over infinity -->
-    <g v-if="x + f < sensor.x">
-        <!-- Focal plane -->
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x" :y2="focal.d" class="dotted-bg"></line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x" :y2="focal.d" class="dotted"></line>
-        <!-- Focal plane to inf (outer) -->
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.outer.x" :y2="focal.d + aov.outer.y" class="dotted-bg">
-        </line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.outer.x" :y2="-focal.d - aov.outer.y" class="dotted-bg">
-        </line>
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.outer.x" :y2="focal.d + aov.outer.y" class="dotted"></line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.outer.x" :y2="-focal.d - aov.outer.y" class="dotted">
-        </line>
-        <!-- Focal plane to inf (inner) -->
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.inner.x" :y2="focal.d - aov.inner.y"
-            class="dotted-thick-bg">
-        </line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.inner.x" :y2="-focal.d + aov.inner.y"
-            class="dotted-thick-bg"></line>
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.inner.x" :y2="focal.d - aov.inner.y" class="dotted-thick">
-        </line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.inner.x" :y2="-focal.d + aov.inner.y"
-            class="dotted-thick">
-        </line>
-
-        <!-- Depth of field -->
-        <g v-if="options.circleOfConfusion && options.depthOfField">
-            <line :x1="x - dof.inner.x" :y1="-dof.inner.d" :x2="x - dof.inner.x" :y2="dof.inner.d"
-                class="dotted-thick-bg"></line>
-            <line :x1="x - dof.outer.x" :y1="-dof.outer.d" :x2="x - dof.outer.x" :y2="dof.outer.d"
-                class="dotted-thick-bg"></line>
-            <line :x1="x - dof.inner.x" :y1="-dof.inner.d" :x2="x - dof.inner.x" :y2="dof.inner.d" class="dotted-thick">
-            </line>
-            <line :x1="x - dof.outer.x" :y1="-dof.outer.d" :x2="x - dof.outer.x" :y2="dof.outer.d" class="dotted-thick">
-            </line>
+    <WithBackground>
+        <g class="stroke-white">
+            <!-- Inside camera -->
+            <g class="thick">
+                <line :x1="sensor.x" :y1="sensor.r" :x2="x" :y2="re"></line>
+                <line :x1="sensor.x" :y1="-sensor.r" :x2="x" :y2="-re"></line>
+            </g>
+            <g v-if="x !== sensor.x">
+                <!-- Lens to focal plane (outer) -->
+                <g class="thick">
+                    <line :x1="x" :y1="-re" :x2="x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y"></line>
+                    <line :x1="x" :y1="re" :x2="x + aov.middleOuter.x" :y2="re - aov.middleOuter.y"></line>
+                </g>
+                <!-- Lens to focal plane (inner) -->
+                <g class="thicker">
+                    <line :x1="x" :y1="-re" :x2="x + aov.middleInner.x" :y2="-re + aov.middleInner.y"></line>
+                    <line :x1="x" :y1="re" :x2="x + aov.middleInner.x" :y2="re - aov.middleInner.y"></line>
+                </g>
+            </g>
+            <!-- Non over infinity -->
+            <g v-if="x + f < sensor.x">
+                <!-- Focal plane -->
+                <line :x1="focal.x" :y1="-focal.d" :x2="focal.x" :y2="focal.d" class="thick"></line>
+                <!-- Focal plane to inf (outer) -->
+                <g class="thick">
+                    <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.outer.x" :y2="focal.d + aov.outer.y"></line>
+                    <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.outer.x" :y2="-focal.d - aov.outer.y"></line>
+                </g>
+                <!-- Focal plane to inf (inner) -->
+                <g class="thicker">
+                    <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.inner.x" :y2="focal.d - aov.inner.y"></line>
+                    <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.inner.x" :y2="-focal.d + aov.inner.y"></line>
+                </g>
+                <!-- Depth of field -->
+                <g v-if="options.circleOfConfusion && options.depthOfField">
+                    <g class="thick">
+                        <line :x1="x - dof.inner.x" :y1="-dof.inner.d" :x2="x - dof.inner.x" :y2="dof.inner.d"></line>
+                        <line :x1="x - dof.outer.x" :y1="-dof.outer.d" :x2="x - dof.outer.x" :y2="dof.outer.d"></line>
+                    </g>
+                </g>
+            </g>
         </g>
-
-    </g>
+    </WithBackground>
 </template>

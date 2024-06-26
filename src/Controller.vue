@@ -80,11 +80,11 @@ const nRays = computed(() => {
         </tr> -->
         <template v-if="options.lens">
             <template v-if="options.advanced">
-                <!-- <tr>
+                <tr>
                     <td><label><input type="checkbox" v-model="options.curvature"> Curvature</label></td>
                     <td></td>
-                    <td>{{ humanReadable(lensR) }}</td>
-                </tr> -->
+                    <!-- <td>{{ humanReadable(lensR) }}</td> -->
+                </tr>
                 <tr>
                     <td><label><input type="checkbox" v-model="options.lensIdeal"> Ideal lens</label></td>
                 </tr>

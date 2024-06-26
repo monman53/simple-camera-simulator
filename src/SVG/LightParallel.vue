@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { state, infR, rUI } from '../globals'
 import { vec, Vec } from '../math'
 import * as h from '../handlers'
+import WithBackground from './WithBackground.vue';
 
 const props = defineProps(['light', 'idx'])
 
@@ -26,9 +27,13 @@ const points = computed(() => {
 
 <template>
     <g>
-        <polygon :points :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></polygon>
-        <polygon :points class="ui-bg"></polygon>
-        <polygon :points class="ui" @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)"></polygon>
+        <!-- <polygon :points class="ui-bg"></polygon> -->
+        <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)">
+            <polygon :points :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></polygon>
+            <WithBackground>
+                <polygon :points class="stroke-white normal fill-none"></polygon>
+            </WithBackground>
+        </g>
 
         <circle :cx="light.s.x" :cy="light.s.y" :r="rUI"
             @mousedown="h.parallelLightNodeMoveStartHandler($event, idx, 's')" class="ui-hidden"></circle>

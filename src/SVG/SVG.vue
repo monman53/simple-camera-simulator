@@ -9,6 +9,7 @@ import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
 import LightParallel from './LightParallel.vue'
 import LensGroup from './LensGroup.vue'
+import WithBackground from './WithBackground.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -70,7 +71,7 @@ const strokeDashArray = computed(() => {
     <!-- Items -->
     <g v-if="options.lens">
       <g v-for="(lensGroup, idx) in lensGroups">
-          <LensGroup :lensGroup :idx></LensGroup>
+        <LensGroup :lensGroup :idx></LensGroup>
       </g>
     </g>
 
@@ -86,11 +87,12 @@ const strokeDashArray = computed(() => {
     <!-- Lights -->
     <g v-for="(light, idx) of lights">
       <g v-if="light.type === Light.Point">
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui-bg"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
-          @mousedown="h.lightMoveStartHandler($event, idx)" class="ui grab">
-        </circle>
+        <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)" class="grab">
+          <WithBackground>
+            <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+          </WithBackground>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
+        </g>
       </g>
       <g v-if="light.type === Light.Parallel">
         <LightParallel :light :idx class="grab"></LightParallel>
@@ -99,14 +101,12 @@ const strokeDashArray = computed(() => {
 
     <!-- Sensor -->
     <g v-if="options.sensor">
-      <g class="hover-parent">
-        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child-bg" />
-        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
-        <!-- dummy for ui -->
-        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="ui-stroke transparent grab"
-          @mousedown="h.sensorMoveStartHandler" />
-      </g>
-
+      <WithBackground>
+        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="stroke-white normal" />
+      </WithBackground>
+      <!-- dummies for ui -->
+      <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="ui-stroke transparent grab"
+        @mousedown="h.sensorMoveStartHandler" />
       <circle :cx="sensor.x" :cy="-sensor.r" :r="rUI" class="transparent vertical-resize"
         @mousedown="h.sensorSizeChangeStartHandler">
       </circle>
@@ -120,46 +120,12 @@ svg {
   display: block;
 }
 
-.hover-child {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.normal');
-}
-
-.hover-child-bg {
-  stroke: v-bind('style.lineBgColor');
-  stroke-width: v-bind('strokeWidth.normalBg');
-}
-
 .fill-none {
   fill: none;
 }
 
 .no-pointer-events {
   pointer-events: none;
-}
-
-.hover-sibling {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.normal');
-}
-
-.hover-sibling-bg {
-  stroke: v-bind('style.lineBgColor');
-  stroke-width: v-bind('strokeWidth.normalBg');
-}
-
-.hover-sibling-master:hover~.hover-sibling,
-.hover-parent:hover .hover-child,
-.hover-parent:hover .hidden-hover-child {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.bold');
-}
-
-.hover-sibling-master:hover~.hover-sibling-bg,
-.hover-parent:hover .hover-child-bg,
-.hover-parent:hover .hidden-hover-child-bg {
-  stroke: v-bind('style.lineBgColor');
-  stroke-width: v-bind('strokeWidth.boldBg');
 }
 
 .ui {
@@ -174,7 +140,6 @@ svg {
   fill: transparent
 }
 
-.ui-transparent,
 .ui-hidden {
   stroke: none;
   fill: transparent;
@@ -186,22 +151,23 @@ svg {
   stroke-width: v-bind('strokeWidth.bold');
 }
 
-.white {
+.fill-white {
   fill: white;
 }
 
-.thicker {
+.stroke-white {
   stroke: white;
+}
+
+.thicker {
   stroke-width: v-bind('strokeWidth.thicker');
 }
 
 .thick {
-  stroke: white;
   stroke-width: v-bind('strokeWidth.thick');
 }
 
 .normal {
-  stroke: white;
   stroke-width: v-bind('strokeWidth.normal');
 }
 
@@ -209,36 +175,26 @@ svg {
   stroke-width: v-bind('strokeWidth.bold');
 }
 
-.dotted {
-  stroke: white;
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thick');
-  fill: none;
-}
+.background {
+  .stroke-white {
+    stroke: v-bind('style.lineBgColor');
+  }
 
-.dotted-thick {
-  stroke: white;
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thicker');
-  fill: none;
-}
+  .thicker {
+    stroke-width: v-bind('strokeWidth.thickerBg');
+  }
 
-.dotted-bg {
-  stroke: v-bind('style.lineBgColor');
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thickBg');
-  fill: none;
-}
+  .thick {
+    stroke-width: v-bind('strokeWidth.thickBg');
+  }
 
-.dotted-thick-bg {
-  stroke: v-bind('style.lineBgColor');
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thickerBg');
-  fill: none;
+  .normal {
+    stroke-width: v-bind('strokeWidth.normalBg');
+  }
+
+  .bold {
+    stroke-width: v-bind('strokeWidth.boldBg');
+  }
 }
 
 .transparent {
