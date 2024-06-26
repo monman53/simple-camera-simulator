@@ -66,6 +66,6 @@ const deleteLensGroup = (e: any) => {
 
 <template>
     <g v-for="(lens, idx) in lensGroup.lenses" @dblclick="deleteLensGroup" @mousedown="moveStartHandler">
-        <Lens :lens></Lens>
+        <Lens :lens :selected="lensGroup.selected"></Lens>
     </g>
 </template>

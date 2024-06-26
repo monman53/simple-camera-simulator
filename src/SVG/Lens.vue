@@ -7,9 +7,9 @@ import type { Lens } from '../type'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 
-// const props = defineProps(['lens', 'idx'])
 const props = defineProps<{
-    lens: Lens
+    lens: Lens,
+    selected: boolean,
 }>()
 
 const f = computed(() => {
@@ -265,7 +265,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
 
         <!-- Lens -->
         <WithBackground>
-            <g class="stroke-white normal fill-none">
+            <g class="stroke-white fill-none" :class="{ normal: !selected, bold: selected }">
                 <!-- left -->
                 <path :d="path1" />
                 <!-- right -->
@@ -324,7 +324,8 @@ const apertureSizeChangeStartHandler = (e: any) => {
                 </g>
             </WithBackground>
             <!-- UI -->
-            <CircleUI :c="vec(xm, r * lens.aperture)" @mousedown="apertureSizeChangeStartHandler" class="vertical-resize">
+            <CircleUI :c="vec(xm, r * lens.aperture)" @mousedown="apertureSizeChangeStartHandler"
+                class="vertical-resize">
             </CircleUI>
         </g>
     </g>
