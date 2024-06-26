@@ -15,34 +15,44 @@ const props = defineProps<{
 
 const moveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
-    const lensGroup = props.lensGroup
     // Selection
     if (!e.shiftKey && !props.lensGroup.selected) {
         releaseAllLenses()
     }
-    lensGroup.selected = true
+    props.lensGroup.selected = true
 
     const m0 = getPositionOnSvg(e);
-    const x10s = lensGroup.lenses.map((lens) => lens.x1)
-    const x20s = lensGroup.lenses.map((lens) => lens.x2)
+    const x10s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x1))
+    const x20s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x2))
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         // Fix d.x within maxLightX < d.x < sensor.x
-        for (let i = 0; i < lensGroup.lenses.length; i++) {
-            if (x10s[i] + d.x < maxLightX.value) {
-                if (Math.abs(maxLightX.value - x10s[i]) < Math.abs(d.x)) {
-                    d.x = maxLightX.value - x10s[i]
-                }
-            } else if (x20s[i] + d.x > sensor.value.x) {
-                if (Math.abs(sensor.value.x - x20s[i]) < Math.abs(d.x)) {
-                    d.x = sensor.value.x - x20s[i]
+        for (let i = 0; i < lensGroups.value.length; i++) {
+            const lensGroup = lensGroups.value[i];
+            if (!lensGroup.selected) {
+                continue
+            }
+            for (let j = 0; j < lensGroup.lenses.length; j++) {
+                if (x10s[i][j] + d.x < maxLightX.value) {
+                    if (Math.abs(maxLightX.value - x10s[i][j]) < Math.abs(d.x)) {
+                        d.x = maxLightX.value - x10s[i][j]
+                    }
+                } else if (x20s[i][j] + d.x > sensor.value.x) {
+                    if (Math.abs(sensor.value.x - x20s[i][j]) < Math.abs(d.x)) {
+                        d.x = sensor.value.x - x20s[i][j]
+                    }
                 }
             }
         }
         // Update x1 and x2
-        lensGroup.lenses.forEach((lens, i) => {
-            lens.x1 = x10s[i] + d.x
-            lens.x2 = x20s[i] + d.x
+        lensGroups.value.forEach((lensGroup, i) => {
+            if (!lensGroup.selected) {
+                return
+            }
+            lensGroup.lenses.forEach((lens, j) => {
+                lens.x1 = x10s[i][j] + d.x
+                lens.x2 = x20s[i][j] + d.x
+            })
         })
     })
 }

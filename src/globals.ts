@@ -59,6 +59,12 @@ export const lensGroups0 = (): LensGroup[] => {
 }
 export const lensGroups = ref(lensGroups0())
 
+export const lensesSorted = computed(() => {
+  const res = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
+  res.sort((a, b) => { return a.x1 - b.x1 })
+  return res
+})
+
 export const releaseAllLenses = () => {
     for (const lensGroup of lensGroups.value) {
         lensGroup.selected = false
