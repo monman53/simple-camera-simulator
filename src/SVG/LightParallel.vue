@@ -5,6 +5,7 @@ import { vec, Vec } from '../math'
 import * as h from '../handlers'
 import WithBackground from './WithBackground.vue';
 import {Light} from '../type'
+import CircleUI from './CircleUI.vue';
 
 const props = defineProps(['light', 'idx'])
 
@@ -54,7 +55,6 @@ const parallelLightNodeMoveStartHandler = (e: any, idx: number, node: Vec) => {
 
 <template>
     <g>
-        <!-- <polygon :points class="ui-bg"></polygon> -->
         <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)">
             <polygon :points :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></polygon>
             <WithBackground>
@@ -62,9 +62,7 @@ const parallelLightNodeMoveStartHandler = (e: any, idx: number, node: Vec) => {
             </WithBackground>
         </g>
 
-        <circle :cx="light.s.x" :cy="light.s.y" :r="rUI"
-            @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.s)" class="ui-hidden"></circle>
-        <circle :cx="light.t.x" :cy="light.t.y" :r="rUI"
-            @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.t)" class="ui-hidden"></circle>
+        <CircleUI :c="light.s" @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.s)"></CircleUI>
+        <CircleUI :c="light.t" @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.t)"></CircleUI>
     </g>
 </template>

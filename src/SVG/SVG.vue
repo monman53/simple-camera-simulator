@@ -4,12 +4,14 @@ import { computed, ref, onMounted } from 'vue'
 import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
+import { vec } from '../math'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
 import LightParallel from './LightParallel.vue'
 import LensGroup from './LensGroup.vue'
 import WithBackground from './WithBackground.vue'
+import CircleUI from './CircleUI.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -59,7 +61,7 @@ const strokeDashArray = computed(() => {
 
     <!-- Optical axis -->
     <g v-if="options.opticalAxis">
-      <line :x1="-infR" y1="0" :x2="infR" y2="0" stroke="white" class="thick"></line>
+      <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thick"></line>
     </g>
 
     <!-- Grid -->
@@ -108,9 +110,8 @@ const strokeDashArray = computed(() => {
       <!-- dummies for ui -->
       <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="ui-stroke transparent grab"
         @mousedown="h.sensorMoveStartHandler" />
-      <circle :cx="sensor.x" :cy="-sensor.r" :r="rUI" class="transparent vertical-resize"
-        @mousedown="h.sensorSizeChangeStartHandler">
-      </circle>
+      <CircleUI :c="vec(sensor.x, -sensor.r)" class="vertical-resize" @mousedown="h.sensorSizeChangeStartHandler">
+      </CircleUI>
     </g>
   </svg>
 </template>
@@ -121,35 +122,39 @@ svg {
   display: block;
 }
 
-.fill-none {
-  fill: none;
-}
-
 .no-pointer-events {
   pointer-events: none;
 }
 
-.ui {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.normal');
-  fill: transparent
+.ui-stroke {
+  stroke-width: v-bind((2 * rUI));
+  pointer-events: stroke;
 }
 
-.ui-bg {
-  stroke: v-bind('style.lineBgColor');
-  stroke-width: v-bind('strokeWidth.normalBg');
-  fill: transparent
-}
-
-.ui-hidden {
-  stroke: none;
+.hover-hidden-child,
+.hover-hidden {
+  stroke: transparent;
   fill: transparent;
 }
 
-.ui:hover,
-.ui-hidden:hover {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.bold');
+.hover-hidden-parent:hover .hover-hidden-child,
+.hover-hidden:hover {
+  stroke: inherit;
+  fill: inherit;
+}
+
+.transparent {
+  fill: transparent;
+  color: transparent;
+  stroke: transparent;
+}
+
+.fill-transparent {
+  fill: transparent;
+}
+
+.fill-none {
+  fill: none;
 }
 
 .fill-white {
@@ -199,22 +204,6 @@ svg {
 
   .bold {
     stroke-width: v-bind('strokeWidth.boldBg');
-  }
-}
-
-.transparent {
-  fill: transparent;
-  color: transparent;
-  stroke: transparent;
-}
-
-.ui-stroke {
-  stroke-width: v-bind((2 * rUI));
-  pointer-events: stroke;
-
-  circle {
-    stroke-width: 0;
-    pointer-events: all;
   }
 }
 </style>

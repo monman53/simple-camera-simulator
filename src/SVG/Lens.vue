@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { lensGroups, releaseAllLenses, sensor, options, style, rUI, maxLightX } from '../globals'
-import { calcLensF, calcRMax } from '../math'
+import { vec, calcLensF, calcRMax } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
 import WithBackground from './WithBackground.vue'
+import CircleUI from './CircleUI.vue'
 
 // const props = defineProps(['lens', 'idx'])
 const props = defineProps<{
@@ -284,13 +285,18 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <path :d="path2" @mousedown="x2MoveStartHandler" />
         </g>
 
+        <!-- Lens size change UI-->
+        <g class="ui-stroke transparent vertical-resize" @mousedown="lensSizeChangeStartHandler">
+            <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r" stroke-linecap="round"></line>
+        </g>
+
         <!-- dummy for ui -->
         <path :d="path" class='transparent grab' stroke-width="0" />
 
         <!-- Curvature change UI -->
         <g class="horizontal-resize">
-            <circle class="ui-hidden" :cx="lens.x1" :cy="0" :r="rUI" @mousedown="r1MoveStartHandler"></circle>
-            <circle class="ui-hidden" :cx="lens.x2" :cy="0" :r="rUI" @mousedown="r2MoveStartHandler"></circle>
+            <CircleUI :c="vec(lens.x1, 0)" @mousedown="r1MoveStartHandler"></CircleUI>
+            <CircleUI :c="vec(lens.x2, 0)" @mousedown="r2MoveStartHandler"></CircleUI>
         </g>
 
         <!-- Focal points -->
@@ -308,12 +314,6 @@ const apertureSizeChangeStartHandler = (e: any) => {
             </WithBackground>
         </g>
 
-        <!-- Lens size change UI-->
-        <g class="ui-stroke transparent vertical-resize" @mousedown="lensSizeChangeStartHandler">
-            <circle :cx="(leftX + rightX) / 2" :cy="-r" :r="rUI"></circle>
-            <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r"></line>
-        </g>
-
         <!-- Aperture -->
         <g v-if="options.aperture">
             <WithBackground>
@@ -324,8 +324,8 @@ const apertureSizeChangeStartHandler = (e: any) => {
                 </g>
             </WithBackground>
             <!-- UI -->
-            <circle :cx="xm" :cy="r * lens.aperture" :r="rUI" @mousedown="apertureSizeChangeStartHandler"
-                class="ui-hidden vertical-resize"></circle>
+            <CircleUI :c="vec(xm, r * lens.aperture)" @mousedown="apertureSizeChangeStartHandler" class="vertical-resize">
+            </CircleUI>
         </g>
     </g>
 </template>
