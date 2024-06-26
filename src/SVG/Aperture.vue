@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aperture, body, maxLightX, rUI, sensor } from '@/globals';
+import { aperture, body, maxLightX, rUI, sensor, style } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import * as h from '../handlers'
 import CircleUI from './CircleUI.vue';
@@ -42,17 +42,19 @@ const move = (e: any) => {
     <WithBackground>
         <g class="stroke-white normal">
             <!-- Top -->
-            <line :x1="aperture.x" :y1="-body.r - 2 * rUI" :x2="aperture.x" :y2="-aperture.r"></line>
+            <line :x1="aperture.x" :y1="-body.r - style.bodyPadding" :x2="aperture.x" :y2="-aperture.r"></line>
             <!-- Bottom -->
-            <line :x1="aperture.x" :y1="body.r + 2 * rUI" :x2="aperture.x" :y2="aperture.r"></line>
+            <line :x1="aperture.x" :y1="body.r + style.bodyPadding" :x2="aperture.x" :y2="aperture.r"></line>
             <g class="ui-stroke transparent grab" @mousedown="move">
                 <!-- Top -->
-                <line :x1="aperture.x" :y1="-body.r - 2 * rUI" :x2="aperture.x" :y2="-aperture.r"></line>
+                <line :x1="aperture.x" :y1="-body.r - style.bodyPadding" :x2="aperture.x" :y2="-aperture.r"></line>
                 <!-- Bottom -->
-                <line :x1="aperture.x" :y1="body.r + 2 * rUI" :x2="aperture.x" :y2="aperture.r"></line>
+                <line :x1="aperture.x" :y1="body.r + style.bodyPadding" :x2="aperture.x" :y2="aperture.r"></line>
             </g>
-            <CircleUI :c="vec(aperture.x, -aperture.r)" class="vertical-resize" @mousedown="resize($event, -1)"></CircleUI>
-            <CircleUI :c="vec(aperture.x, aperture.r)" class="vertical-resize" @mousedown="resize($event, +1)"></CircleUI>
+            <CircleUI :c="vec(aperture.x, -aperture.r)" class="vertical-resize" @mousedown="resize($event, -1)">
+            </CircleUI>
+            <CircleUI :c="vec(aperture.x, aperture.r)" class="vertical-resize" @mousedown="resize($event, +1)">
+            </CircleUI>
         </g>
     </WithBackground>
 </template>

@@ -1,5 +1,5 @@
 import { ref, computed } from "vue"
-import { Vec, calcLensFront, vec } from "./math"
+import { Vec, calcLensFront, vec, calcLensF, calcLensR, calcLensBack } from "./math"
 import { type Lens, type LensGroup, Light } from "./type"
 
 //================================
@@ -63,6 +63,26 @@ export const lensesSorted = computed(() => {
     const res = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
     res.sort((a, b) => { return a.x1 - b.x1 })
     return res
+})
+
+export const lensFs = computed(() => {
+    return lensesSorted.value.map((lens) => calcLensF(lens))
+})
+
+export const lensRs = computed(() => {
+    return lensesSorted.value.map((lens) => calcLensR(lens))
+})
+
+export const lensFronts = computed(() => {
+    return lensesSorted.value.map((lens) => {
+        return calcLensFront(lens)
+    })
+})
+
+export const lensBacks = computed(() => {
+    return lensesSorted.value.map((lens) => {
+        return calcLensBack(lens)
+    })
 })
 
 export const releaseAllLenses = () => {
@@ -206,6 +226,7 @@ export const style0 = () => {
         // UI
         widthUI: 1.0,
         lineBgColor: "#000a",
+        bodyPadding: 4,
     }
 }
 export const style = ref(style0())
@@ -279,14 +300,15 @@ export const rUI = computed(() => {
 })
 
 export const body = computed(() => {
+    const padding = style.value.bodyPadding
     const rs = lensGroups.value.reduce((acc: number[], lensGroup) => {
-        const rs = lensGroup.lenses.map((lens) => lens.r + rUI.value * 2)
+        const rs = lensGroup.lenses.map((lens) => lens.r + padding)
         return acc.concat(rs)
-    }, []).concat([aperture.value.r, sensor.value.r + rUI.value * 2])
+    }, []).concat([aperture.value.r, sensor.value.r + padding])
     const r = Math.max(...rs)
 
     const front = Math.min(aperture.value.x, calcLensFront(lensesSorted.value[0]))
-    const back = sensor.value.x + rUI.value * 2
+    const back = sensor.value.x + padding
 
     return {
         r,
