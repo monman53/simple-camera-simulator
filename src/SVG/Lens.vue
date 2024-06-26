@@ -293,8 +293,6 @@ const apertureSizeChangeStartHandler = (e: any) => {
 
         <!-- Lens -->
         <g class="hover-parent">
-            <!-- dummy for ui -->
-            <path :d="path" class='transparent grab' @mousedown="moveStartHandler" />
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->
@@ -377,5 +375,8 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <circle :cx="xm" :cy="r * lens.aperture" :r="rUI" @mousedown="apertureSizeChangeStartHandler"
                 class="ui-hidden vertical-resize"></circle>
         </g>
+
+        <!-- dummy for ui -->
+        <path :d="path" class='transparent grab' @mousedown="moveStartHandler" />
     </g>
 </template>
