@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { items, sensor, options, infR } from '../globals'
+import { lensGroups, sensor, options, infR } from '../globals'
 
 import { vec, fGaussian, calcLensF } from '../math'
 
 const lens = computed(() => {
-    return items.value[0]
+    return lensGroups.value[0].lenses[0]
 })
 
 const x = computed(() => {

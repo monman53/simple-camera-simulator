@@ -14,3 +14,7 @@ export type Lens = {
     aperture: number,
     selected: boolean,
 }
+
+export type LensGroup = {
+    lenses: Lens[],
+}

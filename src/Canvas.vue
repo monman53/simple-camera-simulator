@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { watch, onMounted, ref } from 'vue'
 
-import { state, lights, items, sensor, sensorData, apple, options, style, infR } from './globals'
+import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR } from './globals'
 import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensF, intersectionSS, calcRMax } from './math'
 
-import { Light } from './type'
+import { Light, type Lens, type LensGroup } from './type'
 
 // Reference to the canvas
 const canvas = ref()
@@ -30,7 +30,8 @@ const drawSegment = (p: Vec, v: Vec, length: number) => {
 const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
 
   // Multiple lens
-  const lenses = items.value.filter(() => true)
+  // const lenses = items.value.filter(() => true)
+  const lenses = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
   lenses.sort((a, b) => { return a.x1 - b.x1 })
   for (const lens of lenses) {
     const s0 = s.copy()
@@ -260,7 +261,7 @@ onMounted(() => {
 })
 
 // TODO: Optimize here ('deep' is enabled)
-watch([state, lights, apple, items, sensor, options, style], () => {
+watch([state, lights, apple, lensGroups, sensor, options, style], () => {
   canvas.value.width = state.value.width
   canvas.value.height = state.value.height
   offscreenCanvas.width = state.value.width

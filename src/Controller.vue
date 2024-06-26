@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, items, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style } from './globals'
+import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
 
@@ -90,8 +90,8 @@ const nRays = computed(() => {
                 </tr>
                 <tr>
                     <td>
-                        <button @click="items.push(defaultConvexLens(0))">Add convex lens</button>
-                        <button @click="items.push(defaultConcaveLens(0))">Add concave lens</button>
+                        <button @click="lensGroups.push({ lenses: [defaultConvexLens(0)] })">Add convex lens</button>
+                        <button @click="lensGroups.push({ lenses: [defaultConcaveLens(0)] })">Add concave lens</button>
                     </td>
                 </tr>
                 <!-- <tr>

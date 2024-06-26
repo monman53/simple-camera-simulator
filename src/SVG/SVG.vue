@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, items, sensor, style, apple, options, infR, rUI } from '../globals'
+import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
 import LightParallel from './LightParallel.vue'
-import Lens from './Lens.vue'
+import LensGroup from './LensGroup.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -69,8 +69,8 @@ const strokeDashArray = computed(() => {
 
     <!-- Items -->
     <g v-if="options.lens">
-      <g v-for="(item, idx) in items">
-        <Lens :lens="item" :idx></Lens>
+      <g v-for="(lensGroup, idx) in lensGroups">
+          <LensGroup :lensGroup :idx></LensGroup>
       </g>
     </g>
 

@@ -1,6 +1,6 @@
 import { ref, computed } from "vue"
 import { Vec, vec } from "./math"
-import { type Lens, Light } from "./type"
+import { type Lens, type LensGroup, Light } from "./type"
 
 //================================
 // States
@@ -52,16 +52,18 @@ export const defaultConcaveLens = (x: number) => {
     return { x1: x - 2, x2: x + 2, R1: -R, R2: R, r: 10, n: 1.5, aperture: 1, selected: false }
 }
 
-export const items0 = (): Lens[] => {
+export const lensGroups0 = (): LensGroup[] => {
     return [
-        defaultConvexLens(0),
+        { lenses: [defaultConvexLens(0)] }
     ]
 }
-export const items = ref(items0())
+export const lensGroups = ref(lensGroups0())
 
 export const releaseAllLenses = () => {
-    for (let i = 0; i < items.value.length; i++) {
-        items.value[i].selected = false
+    for (let i = 0; i < lensGroups.value.length; i++) {
+        for (let j = 0; j < lensGroups.value[i].lenses.length; j++) {
+            lensGroups.value[i].lenses[j].selected = false
+        }
     }
 }
 
@@ -222,17 +224,21 @@ export const infR = computed(() => {
 
 export const minLensX = computed(() => {
     let minX = infR.value
-    for (const lens of items.value) {
-        const left = Math.min(lens.x1, lens.x1)
-        minX = Math.min(minX, left)
+    for (const lensGroup of lensGroups.value) {
+        for (const lens of lensGroup.lenses) {
+            const left = Math.min(lens.x1, lens.x1)
+            minX = Math.min(minX, left)
+        }
     }
     return minX
 })
 
 export const maxLensX = computed(() => {
     let maxX = -infR.value
-    for (const lens of items.value) {
-        maxX = Math.max(maxX, lens.x2)
+    for (const lensGroup of lensGroups.value) {
+        for (const lens of lensGroup.lenses) {
+            maxX = Math.max(maxX, lens.x2)
+        }
     }
     return maxX
 })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { items, releaseAllLenses, sensor, options, style, rUI, maxLightX } from '../globals'
+import { lensGroups, releaseAllLenses, sensor, options, style, rUI, maxLightX } from '../globals'
 import { calcLensF, calcRMax } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
@@ -8,7 +8,6 @@ import type { Lens } from '../type'
 // const props = defineProps(['lens', 'idx'])
 const props = defineProps<{
     lens: Lens
-    idx: number
 }>()
 
 const f = computed(() => {
@@ -84,47 +83,57 @@ const path2 = computed(() => {
 
 const moveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
+    const lens = props.lens
     // Selection
     if (!e.shiftKey && !props.lens.selected) {
         releaseAllLenses()
     }
-    items.value[props.idx].selected = true
+    lens.selected = true
 
     const m0 = getPositionOnSvg(e);
-    // const x10 = props.lens.x1;
-    // const x20 = props.lens.x2;
-    const x10s = items.value.map((lens) => lens.x1)
-    const x20s = items.value.map((lens) => lens.x2)
+    const x10s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x1))
+    const x20s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x2))
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        for (let i = 0; i < items.value.length; i++) {
-            if (x10s[i] + d.x < maxLightX.value) {
-                d.x = maxLightX.value - x10s[i]
-            } else if (x20s[i] + d.x > sensor.value.x) {
-                d.x = sensor.value.x - x20s[i]
+        // Fix d.x within maxLightX < d.x < sensor.x
+        for (let i = 0; i < lensGroups.value.length; i++) {
+            for (let j = 0; j < lensGroups.value[i].lenses.length; j++) {
+                if (x10s[i][j] + d.x < maxLightX.value) {
+                    if (Math.abs(maxLightX.value - x10s[i][j]) < Math.abs(d.x)) {
+                        d.x = maxLightX.value - x10s[i][j]
+                    }
+                } else if (x20s[i][j] + d.x > sensor.value.x) {
+                    if (Math.abs(sensor.value.x - x20s[i][j]) < Math.abs(d.x)) {
+                        d.x = sensor.value.x - x20s[i][j]
+                    }
+                }
             }
         }
-        for (let i = 0; i < items.value.length; i++) {
-            if (items.value[i].selected) {
-                items.value[i].x1 = x10s[i] + d.x
-                items.value[i].x2 = x20s[i] + d.x
-            }
-        }
+        // Update x1 and x2
+        lensGroups.value.forEach((lensGroup, i) => {
+            lensGroup.lenses.forEach((lens, j) => {
+                if (lens.selected) {
+                    lens.x1 = x10s[i][j] + d.x
+                    lens.x2 = x20s[i][j] + d.x
+                }
+            })
+        })
     })
 }
 
 const x1MoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
-    const x10 = props.lens.x1;
+    const lens = props.lens
+    const x10 = lens.x1;
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (x10 + d.x < maxLightX.value) {
-            items.value[props.idx].x1 = maxLightX.value
+            lens.x1 = maxLightX.value
         } else if (x10 + d.x > props.lens.x2) {
-            items.value[props.idx].x1 = props.lens.x2
+            lens.x1 = props.lens.x2
         } else {
-            items.value[props.idx].x1 = x10 + d.x
+            lens.x1 = x10 + d.x
         }
     })
 }
@@ -132,15 +141,16 @@ const x1MoveStartHandler = (e: any) => {
 const x2MoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
-    const x20 = props.lens.x2
+    const lens = props.lens
+    const x20 = lens.x2
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (x20 + d.x < props.lens.x1) {
-            items.value[props.idx].x2 = props.lens.x1
+            lens.x2 = props.lens.x1
         } else if (x20 + d.x > sensor.value.x) {
-            items.value[props.idx].x2 = sensor.value.x
+            lens.x2 = sensor.value.x
         } else {
-            items.value[props.idx].x2 = x20 + d.x
+            lens.x2 = x20 + d.x
         }
     })
 }
@@ -148,8 +158,9 @@ const x2MoveStartHandler = (e: any) => {
 const r1MoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
+    const lens = props.lens
     const r0 = r.value
-    const x10 = props.lens.x1
+    const x10 = lens.x1
     const leftX0 = leftX.value
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
@@ -161,27 +172,28 @@ const r1MoveStartHandler = (e: any) => {
             x1n = props.lens.x2
         }
         if (leftX0 - x1n > r0) {
-            items.value[props.idx].R1 = r0
-            items.value[props.idx].x1 = x1n
+            lens.R1 = r0
+            lens.x1 = x1n
             return
         }
         if (x1n - leftX0 > r0) {
-            items.value[props.idx].R1 = -r0
-            items.value[props.idx].x1 = x1n
+            lens.R1 = -r0
+            lens.x1 = x1n
             return
         }
         const a = x1n - leftX0
         const R1n = (-r0 * r0 - a * a) / (2 * a)
-        items.value[props.idx].R1 = R1n
-        items.value[props.idx].x1 = x1n
+        lens.R1 = R1n
+        lens.x1 = x1n
     })
 }
 
 const r2MoveStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
+    const lens = props.lens
     const r0 = r.value
-    const x20 = props.lens.x2
+    const x20 = lens.x2
     const rightX0 = rightX.value
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
@@ -193,34 +205,35 @@ const r2MoveStartHandler = (e: any) => {
             x2n = sensor.value.x
         }
         if (x2n - rightX0 > r0) {
-            items.value[props.idx].R2 = -r0
-            items.value[props.idx].x2 = x2n
+            lens.R2 = -r0
+            lens.x2 = x2n
             return
         }
         if (rightX0 - x2n > r0) {
-            items.value[props.idx].R2 = r0
-            items.value[props.idx].x2 = x2n
+            lens.R2 = r0
+            lens.x2 = x2n
             return
         }
         const a = x2n - rightX0
         const R2n = (-r0 * r0 - a * a) / (2 * a)
-        items.value[props.idx].R2 = R2n
-        items.value[props.idx].x2 = x2n
+        lens.R2 = R2n
+        lens.x2 = x2n
     })
 }
 
 const lensSizeChangeStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
+    const lens = props.lens
     const r0 = props.lens.r;
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         if (r0 - d.y < 0.1) {
-            items.value[props.idx].r = 0.1
+            lens.r = 0.1
         } else if (r0 - d.y > rMax.value) {
-            items.value[props.idx].r = rMax.value
+            lens.r = rMax.value
         } else {
-            items.value[props.idx].r = r0 - d.y
+            lens.r = r0 - d.y
         }
     })
 }
@@ -241,23 +254,19 @@ const lensSizeChangeStartHandler = (e: any) => {
 const apertureSizeChangeStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
+    const lens = props.lens
     const a0 = props.lens.aperture * r.value;
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         const an = (a0 + d.y) / r.value;
         if (an < 0) {
-            items.value[props.idx].aperture = 0;
+            lens.aperture = 0;
         } else if (an > 1) {
-            items.value[props.idx].aperture = 1;
+            lens.aperture = 1;
         } else {
-            items.value[props.idx].aperture = an;
+            lens.aperture = an;
         }
     })
-}
-
-const deleteLens = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    items.value.splice(props.idx, 1)
 }
 
 </script>
@@ -285,7 +294,7 @@ const deleteLens = (e: any) => {
         <!-- Lens -->
         <g class="hover-parent">
             <!-- dummy for ui -->
-            <path :d="path" class='transparent grab' @mousedown="moveStartHandler" @dblclick="deleteLens" />
+            <path :d="path" class='transparent grab' @mousedown="moveStartHandler" />
             <!-- Background -->
             <g class="hover-child-bg fill-none">
                 <!-- left -->
