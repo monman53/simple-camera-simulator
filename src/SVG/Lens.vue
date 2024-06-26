@@ -318,6 +318,9 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r"></line>
         </g>
 
+        <!-- dummy for ui -->
+        <path :d="path" class='transparent grab' />
+
         <!-- Aperture -->
         <g v-if="options.aperture">
             <!-- Lines -->
@@ -335,8 +338,5 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <circle :cx="xm" :cy="r * lens.aperture" :r="rUI" @mousedown="apertureSizeChangeStartHandler"
                 class="ui-hidden vertical-resize"></circle>
         </g>
-
-        <!-- dummy for ui -->
-        <path :d="path" class='transparent grab' />
     </g>
 </template>
