@@ -226,7 +226,7 @@ export const intersectionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: num
     if (!isFinite(d) || d < 0) {
         return {p: null, d}
     } else {
-        const p = s.add(v.mul(d))
+        const p = s.add(v.inplaceMul(d))
         if (p.y < yMin || p.y > yMax) {
             return {p: null, d}
         } else {
@@ -241,7 +241,7 @@ export const intersectionX = (s: Vec, v: Vec, y: number, xMin: number, xMax: num
     if (!isFinite(d) || d < 0) {
         return {p: null, d}
     } else {
-        const p = s.add(v.mul(d))
+        const p = s.add(v.inplaceMul(d))
         if (p.x < xMin || p.x > xMax) {
             return {p: null, d}
         } else {

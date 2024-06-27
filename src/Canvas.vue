@@ -87,10 +87,6 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     const r = lensRs.value[lensIdx]
     let innerLens = false
 
-    // Find image position of the light source
-    // TODO:
-    const image = fGaussian(f, xm - s.x, -s.y)
-
     //--------------------------------
     // Collision to lens surface (left-side)
     //--------------------------------
@@ -122,6 +118,12 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
         }
 
         innerLens = true
+      }
+
+      // Optimization
+      if (lensIdx === 0 && !pl.p && !pb.p) {
+        drawSegment(s, v, infR.value)
+        return
       }
     }
 
@@ -175,6 +177,10 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
         v = p.sub(s)
         s = drawSegment(s, v, v.length())
 
+        // Find image position of the light source
+        // TODO:
+        const image = fGaussian(f, xm - s0.x, -s0.y)
+
         // Refracted ray
         let theta = Math.atan2(image.y - s.y, image.x);
         if (image.x === Infinity) {
@@ -187,6 +193,12 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
           theta += Math.PI
         }
         v = vecRad(theta)
+      }
+
+      // Optimization
+      if (lensIdx === 0 && !pl.p && !pb.p) {
+        drawSegment(s, v, infR.value)
+        return
       }
     }
   }
