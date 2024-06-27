@@ -256,7 +256,6 @@ const draw = () => {
     ctx.lineWidth = style.value.rayWidth
     // Point light source
     if (light.type === Light.Point) {
-      ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
       // Draw 2^nRaysLog rays from light center
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
@@ -264,22 +263,7 @@ const draw = () => {
         const s = light.c.copy()
         const theta = 2 * Math.PI * i / nRays
         const v = vecRad(theta)
-        drawRay(s, v, light.color, sensorDataTmp)
-      }
-    }
-
-    // White light source
-    if (light.type === Light.White) {
-      // Draw 2^nRaysLog rays from light center
-      const nRays = (1 << params.nRaysLog);
-      for (let i = 0; i < nRays; i++) {
-        // Initial position and direction
-        const s = light.c.copy()
-        const theta = 2 * Math.PI * i / nRays
-        const v = vecRad(theta)
-        const nColor = 20
-        for (let j=0;j<nColor;j++){
-          const color = 360 * j / nColor
+        for (let color of light.colors) {
           ctx.strokeStyle = `hsl(${color}, 100%, 50%, ${style.value.rayIntensity})`
           drawRay(s, v, color, sensorDataTmp)
         }
@@ -288,7 +272,6 @@ const draw = () => {
 
     // Parallel light source
     if (light.type === Light.Parallel) {
-      ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
       const l = Vec.sub(light.t, light.s)
       const ln = l.normalize()
       const length = l.length()
@@ -297,7 +280,10 @@ const draw = () => {
       for (let i = 0; i < nRays; i++) {
         const s = light.s.add(ln.mul(i / nRays * length))
         const v = l.rotate(-Math.PI / 2).normalize()
-        drawRay(s, v, light.color, sensorDataTmp)
+        for (let color of light.colors) {
+          ctx.strokeStyle = `hsl(${color}, 100%, 50%, ${style.value.rayIntensity})`
+          drawRay(s, v, color, sensorDataTmp)
+        }
       }
     }
   }

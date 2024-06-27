@@ -51,12 +51,20 @@ const parallelLightNodeMoveStartHandler = (e: any, idx: number, node: Vec) => {
     }
 }
 
+const fill = computed(()=>{
+    if (props.light.colors.length > 1) {
+        return `hsl(0, 100%, 100%, 0.5)`
+    } else {
+        return `hsl(${props.light.colors[0]}, 100%, 50%, 0.5)`
+    }
+})
+
 </script>
 
 <template>
     <g>
         <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)">
-            <polygon :points :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></polygon>
+            <polygon :points :fill></polygon>
             <WithBackground>
                 <polygon :points class="stroke-white normal fill-none"></polygon>
             </WithBackground>

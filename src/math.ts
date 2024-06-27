@@ -352,6 +352,6 @@ export const calcLensBack = (lens: Lens) => {
 
 // Just for demo
 export const calcLensNWavelength = (n: number, color: number) => {
-    const d = (color - (360 / 2)) * 0.0005 + 1.0
+    const d = (color - (360 / 2)) * 0.0002 + 1.0
     return d * n
 }

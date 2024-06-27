@@ -35,13 +35,25 @@ const nRays = computed(() => {
         <tr>
             <td>New light color</td>
             <td>
-                <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
+                <label>
+                    <input type="checkbox" v-model="state.newLightColorComposite">
+                    Composite
+                </label>
                 <br>
-                <button @click="state.newLightColor = 0">Red</button>
-                <button @click="state.newLightColor = 120">Green</button>
-                <button @click="state.newLightColor = 240">Blue</button>
+                <template v-if="!state.newLightColorComposite">
+                    <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
+                    <br>
+                    <button @click="state.newLightColor = 0">Red</button>
+                    <button @click="state.newLightColor = 120">Green</button>
+                    <button @click="state.newLightColor = 240">Blue</button>
+                </template>
+                <template v-if="state.newLightColorComposite">
+                    <input type="range" min="0" max="16" v-model="state.newLightColorCompositeN">
+                </template>
             </td>
-            <td :style="`background-color: hsl(${state.newLightColor}, 100%, 50%)`"></td>
+            <td v-if="!state.newLightColorComposite"
+                :style="`background-color: hsl(${state.newLightColor}, 100%, 50%)`"></td>
+            <td v-if="state.newLightColorComposite">{{ state.newLightColorCompositeN }}</td>
         </tr>
         <tr>
             <td>New light type</td>
@@ -49,10 +61,6 @@ const nRays = computed(() => {
                 <label>
                     <input type="radio" :value="Light.Point" v-model="state.newLightType">
                     Point
-                </label>
-                <label>
-                    <input type="radio" :value="Light.White" v-model="state.newLightType">
-                    White
                 </label>
                 <br>
                 <label>

@@ -14,6 +14,8 @@ export const createInitialParams = () => {
         scale: 4,
         nRaysLog: 10,
         newLightColor: 120,
+        newLightColorComposite: false,
+        newLightColorCompositeN: 3,
         newLightType: Light.Point,
     }
 }
@@ -25,16 +27,15 @@ export const state = ref(createInitialParams())
 
 export const lights0 = ():
     (
-        { type: Light.Point, c: Vec, color: number } |
-        { type: Light.White, c: Vec } |
-        { type: Light.Parallel, s: Vec, t: Vec, color: number }
+        { type: Light.Point, c: Vec, colors: number[] } |
+        { type: Light.Parallel, s: Vec, t: Vec, colors: number[] }
     )[] => {
     return [
         // { type: Light.Point, c: vec(-200, 20), color: 0 }, // red
         // { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
         // { type: Light.Point, c: vec(-120, -20), color: 240 }, // blue
         // { type: Light.White, c: vec(-200, -18) }, // white
-        { type: Light.Parallel, s: vec(-180, -30), t: vec(-180, 30), color: 120 }, // green
+        { type: Light.Parallel, s: vec(-180, -30), t: vec(-180, 30), colors: [120] }, // green
     ]
 }
 export const lights = ref(lights0())

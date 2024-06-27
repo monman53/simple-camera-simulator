@@ -108,15 +108,8 @@ const strokeDashArray = computed(() => {
           <WithBackground>
             <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
           </WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
-        </g>
-      </g>
-      <g v-if="light.type === Light.White">
-        <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)" class="grab">
-          <WithBackground>
-            <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
-          </WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(0, 100%, 100%, 0.5)`"></circle>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
+            :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 100 : 50}%, 0.5)`"></circle>
         </g>
       </g>
       <g v-if="light.type === Light.Parallel">
