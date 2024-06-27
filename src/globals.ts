@@ -351,3 +351,49 @@ export const body = computed(() => {
         back,
     }
 })
+
+export const calcLensInfo = (lenses: Lens[]) => {
+    const ll: { d: number, r: number, n: number, nn: number }[] = []
+    lenses.forEach((lens, idx) => {
+        // Left-side
+        {
+            const d = idx === 0 ? 0 : lens.x1 - lenses[idx - 1].x2
+            const r = lens.R1
+            const n = 1
+            const nn = lens.n
+            ll.push({ d, r, n, nn })
+        }
+        // Right-side
+        {
+            const d = lens.x2 - lens.x1
+            const r = lens.R2
+            const n = lens.n
+            const nn = 1
+            ll.push({ d, r, n, nn })
+        }
+    })
+
+    const ls: number[] = []
+    const lss: number[] = []
+    let f = 1
+    ll.forEach((l, i) => {
+        if (i === 0) {
+            //ls[i] = Infinity
+            lss[i] = 1 / (1 / l.r * (1 - l.n / l.nn))
+            f *= lss[i]
+        } else {
+            ls[i] = lss[i - 1] - ll[i].d
+            lss[i] = 1 / (l.n / l.nn / ls[i] + 1 / l.r * (1 - l.n / l.nn))
+            f *= lss[i] / ls[i]
+        }
+    })
+    let H = 0
+    if (lenses.length > 0) {
+        H = lenses[lenses.length - 1].x2 + lss[lss.length - 1] - f
+    }
+    return { f, H }
+}
+
+export const globalLensInfo = computed(() => {
+    return calcLensInfo(lensesSorted.value)
+})

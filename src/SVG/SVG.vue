@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI, aperture } from '../globals'
+import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI, aperture, globalLensInfo } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 import { vec } from '../math'
@@ -14,6 +14,7 @@ import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 import Aperture from './Aperture.vue'
 import Body from './Body.vue'
+import Point from './Point.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -75,6 +76,10 @@ const strokeDashArray = computed(() => {
 
     <!-- Guidelines -->
     <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
+
+    <!-- Global focal point -->
+    <Point :c="vec(globalLensInfo.H, 0)"></Point>
+    <Point :c="vec(globalLensInfo.H + globalLensInfo.f, 0)"></Point>
 
     <!-- Items -->
     <g v-if="options.lens">

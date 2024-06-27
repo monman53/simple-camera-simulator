@@ -6,6 +6,7 @@ import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, get
 import type { Lens } from '../type'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
+import Point from './Point.vue'
 
 const props = defineProps<{
     lens: Lens,
@@ -190,19 +191,6 @@ const lensSizeChangeStartHandler = (e: any) => {
         }
     })
 }
-// const focalPointMoveStartHandler = (e: any) => {
-//     preventDefaultAndStopPropagation(e)
-//     const m0 = getPositionOnSvg(e);
-//     const f0 = props.lens.f;
-//     setMoveHandler((e_: any) => {
-//         const d = getPositionDiffOnSvgApp(e_, m0)
-//         if (f0 - d.x < props.lens.d / 2) {
-//             items.value[props.idx].f = props.lens.d / 2
-//         } else {
-//             items.value[props.idx].f = f0 - d.x
-//         }
-//     })
-// }
 
 const apertureSizeChangeStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
@@ -234,20 +222,16 @@ const apertureSizeChangeStartHandler = (e: any) => {
                     <circle :cx="lens.x1 + lens.R1" :cy="0" :r="Math.abs(lens.R1)"></circle>
                     <circle :cx="lens.x2 + lens.R2" :cy="0" :r="Math.abs(lens.R2)"></circle>
                 </g>
-                <!-- center point -->
-                <g class="fill-white stroke-white normal">
-                    <circle :cx="lens.x1 + lens.R1" cy="0" :r="rUI / 2"></circle>
-                    <circle :cx="lens.x2 + lens.R2" cy="0" :r="rUI / 2"></circle>
-                </g>
             </WithBackground>
+            <!-- Center Pointg -->
+            <Point :c="vec(lens.x1 + lens.R1, 0)"></Point>
+            <Point :c="vec(lens.x2 + lens.R2, 0)"></Point>
         </g>
 
         <!-- Hyperfocal point -->
         <g
             v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
-            <WithBackground>
-                <circle :cx="H" cy=" 0" :r="rUI / 2" class="fill-white stroke-white normal"></circle>
-            </WithBackground>
+            <Point :c="vec(H, 0)"></Point>
         </g>
 
         <!-- Lens -->
@@ -281,17 +265,13 @@ const apertureSizeChangeStartHandler = (e: any) => {
 
         <!-- Focal points -->
         <g v-if="options.lensFocalPoints">
-            <WithBackground>
-                <g class="fill-white stroke-white normal">
-                    <circle :cx="xm - f" cy="0" :r="rUI / 2"></circle>
-                    <circle :cx="xm + f" cy="0" :r="rUI / 2"></circle>
-                </g>
-                <!-- Double focal points -->
-                <g v-if="options.lensDoubleFocalPoints">
-                    <circle :cx="xm - 2 * f" cy="0" :r="rUI / 2"></circle>
-                    <circle :cx="xm + 2 * f" cy="0" :r="rUI / 2"></circle>
-                </g>
-            </WithBackground>
+            <Point :c="vec(xm - f, 0)"></Point>
+            <Point :c="vec(xm + f, 0)"></Point>
+            <!-- Double focal points -->
+            <g v-if="options.lensDoubleFocalPoints">
+                <Point :c="vec(xm - 2 * f, 0)"></Point>
+                <Point :c="vec(xm + 2 * f, 0)"></Point>
+            </g>
         </g>
 
         <!-- Aperture -->
