@@ -1,52 +1,45 @@
 <script setup lang="ts">
 import { aperture, maxLensX, sensor } from '@/globals';
 import * as h from '../handlers'
-import { vec } from '@/math';
+import { Vec, vec } from '@/math';
 import WithBackground from './WithBackground.vue';
 import CircleUI from './CircleUI.vue';
+import MoveUI from './MoveUI.vue';
 
-const move = (e: any) => {
-    h.preventDefaultAndStopPropagation(e)
-    const m0 = h.getPositionOnSvg(e);
+const move = () => {
     const cx0 = sensor.value.x;
-    h.setMoveHandler((e_: any) => {
-        const d = h.getPositionDiffOnSvgApp(e_, m0)
+    return (e: any, d: Vec) => {
         const maxX = Math.max(maxLensX.value, aperture.value.x)
         if (cx0 + d.x < maxX) {
             sensor.value.x = maxX
             return
         }
         sensor.value.x = cx0 + d.x
-    })
+    }
 }
 
-const resize = (e: any) => {
-    h.preventDefaultAndStopPropagation(e)
-    const m0 = h.getPositionOnSvg(e);
+const resize = () => {
     const r0 = sensor.value.r;
-    h.setMoveHandler((e_: any) => {
-        const d = h.getPositionDiffOnSvgApp(e_, m0)
+    return (e: any, d: Vec) => {
         if (r0 - d.y < 0.1) {
             sensor.value.r = 0.1;
         } else {
             sensor.value.r = r0 - d.y;
         }
-    })
+    }
 }
 
 </script>
 
 <template>
     <g>
-        <g @mousedown="move">
+        <MoveUI :handler-creator="move" class="grab">
             <WithBackground :ui="true">
                 <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="stroke-white normal" />
             </WithBackground>
-        </g>
-        <!-- dummies for ui -->
-        <!-- <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="ui-stroke transparent grab"
-        @mousedown="move" /> -->
-        <CircleUI :c="vec(sensor.x, -sensor.r)" class="vertical-resize" @mousedown="resize">
-        </CircleUI>
+        </MoveUI>
+        <MoveUI :handler-creator="resize" class="vertical-resize">
+            <CircleUI :c="vec(sensor.x, -sensor.r)"></CircleUI>
+        </MoveUI>
     </g>
 </template>

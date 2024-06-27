@@ -38,8 +38,14 @@ export const preventDefaultAndStopPropagation = (e: any) => {
 
 // Event handlers
 let moveHandler: any = null;
+let moveHandlerWithM0: any = null;
+let m0: Vec
 export const setMoveHandler = (h: any) => {
     moveHandler = h
+}
+export const setMoveHandlerWithM0 = (h: any, m: Vec) => {
+    moveHandlerWithM0 = h
+    m0 = m
 }
 export const svgMoveStartHandler = (e: any) => {
     const m0 = getPositionOnSvg(e);
@@ -62,10 +68,15 @@ export const svgMoveHandler = (e: any) => {
         preventDefaultAndStopPropagation(e)
         moveHandler(e)
     }
+    if (moveHandlerWithM0 !== null){
+        preventDefaultAndStopPropagation(e)
+        const d = getPositionDiffOnSvgApp(e, m0)
+        moveHandlerWithM0(e, d)
+    }
 }
 export const svgMoveEndHandler = () => {
-    moveHandler = null;
-    // tpCache = [];
+    moveHandler = null
+    moveHandlerWithM0 = null
 }
 export const svgScaleHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
