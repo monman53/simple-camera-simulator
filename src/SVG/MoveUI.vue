@@ -3,7 +3,7 @@ import { getPositionOnSvg, preventDefaultAndStopPropagation, setMoveHandlerWithM
 import type { Vec } from '@/math';
 
 const props = defineProps<{
-    handlerCreator: ()=>((e: any, d: Vec)=>void)
+    handlerCreator: (...params: any[])=>((e: any, d: Vec)=>void)
 }>()
 
 const moveStart = (e: any) => {

@@ -3,29 +3,25 @@ import { aperture, body, maxLightX, rUI, sensor, style } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import * as h from '../handlers'
 import CircleUI from './CircleUI.vue';
-import { vec } from '@/math';
+import { Vec, vec } from '@/math';
+import MoveUI from './MoveUI.vue';
 
-const resize = (e: any, sgn: number) => {
-    h.preventDefaultAndStopPropagation(e)
-    // Last touched light is always front
-    const m0 = h.getPositionOnSvg(e)
-    const r0 = aperture.value.r
-    h.setMoveHandler((e_: any) => {
-        const d = h.getPositionDiffOnSvgApp(e_, m0)
-        let rn = r0 + sgn * d.y
-        if (rn < 0) {
-            rn = 0
+const resize = (sgn: number) => {
+    return () => {
+        const r0 = aperture.value.r
+        return (e: any, d: Vec) => {
+            let rn = r0 + sgn * d.y
+            if (rn < 0) {
+                rn = 0
+            }
+            aperture.value.r = rn
         }
-        aperture.value.r = rn
-    })
+    }
 }
 
-const move = (e: any) => {
-    h.preventDefaultAndStopPropagation(e)
-    const m0 = h.getPositionOnSvg(e)
+const move = () => {
     const x0 = aperture.value.x
-    h.setMoveHandler((e_: any) => {
-        const d = h.getPositionDiffOnSvgApp(e_, m0)
+    return (e: any, d: Vec) => {
         let xn = x0 + d.x
         if (xn < maxLightX.value) {
             xn = maxLightX.value
@@ -33,28 +29,28 @@ const move = (e: any) => {
             xn = sensor.value.x
         }
         aperture.value.x = xn
-    })
+    }
 }
 
 </script>
 
 <template>
-    <WithBackground>
-        <g v-if="body.r" class="stroke-white normal">
-            <!-- Top -->
-            <line :x1="aperture.x" :y1="-body.r - style.bodyPadding" :x2="aperture.x" :y2="-aperture.r"></line>
-            <!-- Bottom -->
-            <line :x1="aperture.x" :y1="body.r + style.bodyPadding" :x2="aperture.x" :y2="aperture.r"></line>
-            <g class="ui-stroke transparent grab" @mousedown="move">
+    <MoveUI :handler-creator="move" class="grab">
+        <WithBackground :ui="true">
+            <g v-if="body.r" class="stroke-white normal">
                 <!-- Top -->
                 <line :x1="aperture.x" :y1="-body.r - style.bodyPadding" :x2="aperture.x" :y2="-aperture.r"></line>
                 <!-- Bottom -->
                 <line :x1="aperture.x" :y1="body.r + style.bodyPadding" :x2="aperture.x" :y2="aperture.r"></line>
             </g>
-            <CircleUI :c="vec(aperture.x, -aperture.r)" class="vertical-resize" @mousedown="resize($event, -1)">
-            </CircleUI>
-            <CircleUI :c="vec(aperture.x, aperture.r)" class="vertical-resize" @mousedown="resize($event, +1)">
-            </CircleUI>
-        </g>
+        </WithBackground>
+    </MoveUI>
+    <WithBackground>
+        <MoveUI :handler-creator="resize(-1)" class="vertical-resize">
+            <CircleUI :c="vec(aperture.x, -aperture.r)"></CircleUI>
+        </MoveUI>
+        <MoveUI :handler-creator="resize(+1)" class="vertical-resize">
+            <CircleUI :c="vec(aperture.x, aperture.r)"></CircleUI>
+        </MoveUI>
     </WithBackground>
 </template>
