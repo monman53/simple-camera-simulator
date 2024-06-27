@@ -201,7 +201,7 @@ export const options0 = () => {
         sensor: true,
         sensorPreview: true,
         sensorMemory: false,
-        body: false,
+        body: true,
         aperture: true,
         grid: false,
         opticalAxis: false,

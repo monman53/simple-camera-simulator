@@ -30,7 +30,7 @@ const move = (e: any) => {
         if (xn < maxLightX.value) {
             xn = maxLightX.value
         } else if (xn > sensor.value.x - rUI.value) {
-            xn = sensor.value.x - rUI.value
+            xn = sensor.value.x
         }
         aperture.value.x = xn
     })

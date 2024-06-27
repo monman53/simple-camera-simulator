@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, sensor, minLensX, maxLensX, releaseAllLenses } from "./globals";
+import { state, lights, sensor, minLensX, maxLensX, releaseAllLenses, aperture } from "./globals";
 import { Light } from './type'
 import { vec, Vec } from './math'
 
@@ -125,11 +125,12 @@ export const sensorMoveStartHandler = (e: any) => {
     const cx0 = sensor.value.x;
     moveHandler = (e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (cx0 + d.x < maxLensX.value) {
-            sensor.value.x = maxLensX.value
-        } else {
-            sensor.value.x = cx0 + d.x
+        const maxX = Math.max(maxLensX.value, aperture.value.x)
+        if (cx0 + d.x < maxX) {
+            sensor.value.x = maxX
+            return
         }
+        sensor.value.x = cx0 + d.x
     }
 }
 export const sensorSizeChangeStartHandler = (e: any) => {

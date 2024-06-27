@@ -12,10 +12,12 @@ const move = (e: any) => {
     const apertureX0 = aperture.value.x
     h.setMoveHandler((e_: any) => {
         const d = h.getPositionDiffOnSvgApp(e_, m0)
-        let minX = Math.min(sensor.value.x, aperture.value.x)
-        if (lensesSorted.value.length > 0) {
-            minX = Math.min(minX, lensesSorted.value[0].x1)
-        }
+        let minX = Math.min(sensorX0, apertureX0)
+        x10.forEach((g) =>[
+            g.forEach((x1) => {
+                minX = Math.min(minX, x1)
+            })
+        ])
         if (minX + d.x < maxLightX.value) {
             d.x = maxLightX.value - minX
         }
