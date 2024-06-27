@@ -118,33 +118,6 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         }
     }
 }
-export const sensorMoveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const cx0 = sensor.value.x;
-    moveHandler = (e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        const maxX = Math.max(maxLensX.value, aperture.value.x)
-        if (cx0 + d.x < maxX) {
-            sensor.value.x = maxX
-            return
-        }
-        sensor.value.x = cx0 + d.x
-    }
-}
-export const sensorSizeChangeStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const r0 = sensor.value.r;
-    moveHandler = (e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        if (r0 - d.y < 0.1) {
-            sensor.value.r = 0.1;
-        } else {
-            sensor.value.r = r0 - d.y;
-        }
-    }
-}
 export const addLight = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m = getPositionOnSvgApp(e);

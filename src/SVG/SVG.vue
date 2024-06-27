@@ -15,6 +15,7 @@ import CircleUI from './CircleUI.vue'
 import Aperture from './Aperture.vue'
 import Body from './Body.vue'
 import Point from './Point.vue'
+import Sensor from './Sensor.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -60,7 +61,7 @@ const strokeDashArray = computed(() => {
 <template>
   <svg id="main-svg" class="move" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
-    @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="h.addLight">
+    @wheel="h.svgScaleHandler" @dblclick="h.addLight">
 
     <!-- Optical axis -->
     <g v-if="options.opticalAxis">
@@ -118,16 +119,7 @@ const strokeDashArray = computed(() => {
     </g>
 
     <!-- Sensor -->
-    <g v-if="options.sensor">
-      <WithBackground>
-        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="stroke-white normal" />
-      </WithBackground>
-      <!-- dummies for ui -->
-      <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="ui-stroke transparent grab"
-        @mousedown="h.sensorMoveStartHandler" />
-      <CircleUI :c="vec(sensor.x, -sensor.r)" class="vertical-resize" @mousedown="h.sensorSizeChangeStartHandler">
-      </CircleUI>
-    </g>
+    <Sensor v-if="options.sensor"></Sensor>
   </svg>
 </template>
 
