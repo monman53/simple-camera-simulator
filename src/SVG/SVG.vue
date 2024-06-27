@@ -70,6 +70,7 @@ const strokeDashArray = computed(() => {
     <Grid v-if="options.grid"></Grid>
 
     <!-- Body -->
+
     <Body v-if="options.body"></Body>
 
     <!-- Guidelines -->
@@ -212,6 +213,24 @@ svg {
 
   .bold {
     stroke-width: v-bind('strokeWidth.boldBg');
+  }
+}
+
+.ui {
+  .fill-white {
+    fill: transparent;
+  }
+
+  .stroke-white {
+    stroke: transparent;
+  }
+
+  .thicker,
+  .thick,
+  .normal,
+  .bold {
+    stroke-width: v-bind((2 * rUI));
+    pointer-events: stroke;
   }
 }
 </style>
