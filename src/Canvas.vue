@@ -2,7 +2,7 @@
 import { watch, onMounted, ref, computed } from 'vue'
 
 import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, body, lensFronts, aperture, lensBacks } from './globals'
-import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensF, intersectionSS, calcRMax, intersectionX, intersectionY } from './math'
+import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, calcLensF, intersectionSS, calcRMax, intersectionX, intersectionY, calcLensNWavelength } from './math'
 
 import { Light, type Lens, type LensGroup } from './type'
 
@@ -85,6 +85,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     const xm = (lens.x1 + lens.x2) / 2
     const f = lensFs.value[lensIdx]
     const r = lensRs.value[lensIdx]
+    const n = options.value.wavelength ? calcLensNWavelength(lens.n, color) : lens.n
     let innerLens = false
 
     //--------------------------------
@@ -109,7 +110,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
 
         // Refraction (inner lens rays)
         const phi1 = crossAngle(Vec.sub(p, c).mul(lens.R1 > 0 ? 1 : -1), Vec.sub(s0, p));
-        const phi2 = Math.asin(Math.sin(phi1) / lens.n);
+        const phi2 = Math.asin(Math.sin(phi1) / n);
         const theta = Math.atan2(p.y - c.y, p.x - c.x) + Math.PI + phi2;
         if (lens.R1 > 0) {
           v = vecRad(theta)
@@ -148,7 +149,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
 
         // Refraction (inner lens rays)
         const phi1 = crossAngle(Vec.sub(p, c).mul(lens.R2 < 0 ? 1 : -1), Vec.sub(p, s));
-        const phi2 = Math.asin(Math.sin(phi1) * lens.n);
+        const phi2 = Math.asin(Math.sin(phi1) * n);
         const theta = Math.atan2(p.y - c.y, p.x - c.x) + phi2;
         if (lens.R2 > 0) {
           v = vecRad(theta + Math.PI)
@@ -252,12 +253,10 @@ const draw = () => {
 
   // Light sources
   for (const light of lights.value) {
-    ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
     ctx.lineWidth = style.value.rayWidth
-
     // Point light source
     if (light.type === Light.Point) {
-
+      ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
       // Draw 2^nRaysLog rays from light center
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
@@ -269,8 +268,27 @@ const draw = () => {
       }
     }
 
+    // White light source
+    if (light.type === Light.White) {
+      // Draw 2^nRaysLog rays from light center
+      const nRays = (1 << params.nRaysLog);
+      for (let i = 0; i < nRays; i++) {
+        // Initial position and direction
+        const s = light.c.copy()
+        const theta = 2 * Math.PI * i / nRays
+        const v = vecRad(theta)
+        const nColor = 20
+        for (let j=0;j<nColor;j++){
+          const color = 360 * j / nColor
+          ctx.strokeStyle = `hsl(${color}, 100%, 50%, ${style.value.rayIntensity})`
+          drawRay(s, v, color, sensorDataTmp)
+        }
+      }
+    }
+
     // Parallel light source
     if (light.type === Light.Parallel) {
+      ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
       const l = Vec.sub(light.t, light.s)
       const ln = l.normalize()
       const length = l.length()

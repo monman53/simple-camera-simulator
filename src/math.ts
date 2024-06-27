@@ -224,13 +224,13 @@ export const intersectionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: num
     v = v.normalize()
     const d = (x - s.x) / v.x
     if (!isFinite(d) || d < 0) {
-        return {p: null, d}
+        return { p: null, d }
     } else {
         const p = s.add(v.inplaceMul(d))
         if (p.y < yMin || p.y > yMax) {
-            return {p: null, d}
+            return { p: null, d }
         } else {
-            return {p, d}
+            return { p, d }
         }
     }
 }
@@ -239,13 +239,13 @@ export const intersectionX = (s: Vec, v: Vec, y: number, xMin: number, xMax: num
     v = v.normalize()
     const d = (y - s.y) / v.y
     if (!isFinite(d) || d < 0) {
-        return {p: null, d}
+        return { p: null, d }
     } else {
         const p = s.add(v.inplaceMul(d))
         if (p.x < xMin || p.x > xMax) {
-            return {p: null, d}
+            return { p: null, d }
         } else {
-            return {p, d}
+            return { p, d }
         }
     }
 }
@@ -262,7 +262,7 @@ export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens d
     const c = Math.pow(s.x - cl.x, 2) + Math.pow(s.y - cl.y, 2) - absR * absR;
     const cond = b * b - 4 * a * c;
     if (cond < 0) {
-        return {p: null, d: 0}
+        return { p: null, d: 0 }
     }
     const d1 = (-b - Math.sqrt(cond)) / (2 * a);
     const d2 = (-b + Math.sqrt(cond)) / (2 * a);
@@ -271,15 +271,15 @@ export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens d
     const ty = s.y + d * n.y;
     // TODO: Workarounds
     if (Math.abs(ty) > r || d < 0) {
-        return {p: null, d}
+        return { p: null, d }
     }
     if (R >= 0 && tx >= cl.x) {
-        return {p: null, d}
+        return { p: null, d }
     }
     if (R < 0 && tx < cl.x) {
-        return {p: null, d}
+        return { p: null, d }
     }
-    return {p: vec(tx, ty), d}
+    return { p: vec(tx, ty), d }
 }
 
 export const fGaussian = (f: number, px: number, py: number) => {
@@ -348,4 +348,10 @@ export const calcLensBack = (lens: Lens) => {
         return x - d
     }
 
+}
+
+// Just for demo
+export const calcLensNWavelength = (n: number, color: number) => {
+    const d = (color - (360 / 2)) * 0.0005 + 1.0
+    return d * n
 }

@@ -87,7 +87,7 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
     newLights.push(light)
     lights.value = newLights
 
-    if (light.type === Light.Point) {
+    if (light.type === Light.Point || light.type === Light.White) {
         const m0 = getPositionOnSvg(e);
         const c0 = light.c.copy()
         moveHandler = (e_: any) => {
@@ -151,6 +151,9 @@ export const addLight = (e: any) => {
     const m = getPositionOnSvgApp(e);
     if (state.value.newLightType === Light.Point) {
         lights.value.push({ type: Light.Point, c: m, color: state.value.newLightColor })
+    }
+    if (state.value.newLightType === Light.White) {
+        lights.value.push({ type: Light.White, c: m })
     }
     if (state.value.newLightType === Light.Parallel) {
         lights.value.push({ type: Light.Parallel, s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), color: state.value.newLightColor })

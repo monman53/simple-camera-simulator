@@ -50,6 +50,10 @@ const nRays = computed(() => {
                     <input type="radio" :value="Light.Point" v-model="state.newLightType">
                     Point
                 </label>
+                <label>
+                    <input type="radio" :value="Light.White" v-model="state.newLightType">
+                    White
+                </label>
                 <br>
                 <label>
                     <input type="radio" :value="Light.Parallel" v-model="state.newLightType">
@@ -196,6 +200,9 @@ const nRays = computed(() => {
             <tr>
                 <td>UI stroke width</td>
                 <td><input type="range" min="0" max="3" step="0.01" v-model.number="style.widthUI"></td>
+            </tr>
+            <tr>
+                <td><label><input type="checkbox" v-model="options.wavelength"> Wavelength</label></td>
             </tr>
         </template>
         <!-- Field -->

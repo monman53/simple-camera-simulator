@@ -1,5 +1,6 @@
 // TODO: "Light" -> "LightType"
 export enum Light {
+    White,
     Point,
     Parallel
 }
