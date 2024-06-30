@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { aperture, body, maxLightX, rUI, sensor, style } from '@/globals';
 import WithBackground from './WithBackground.vue';
-import * as h from '../handlers'
 import CircleUI from './CircleUI.vue';
 import { Vec, vec } from '@/math';
 import MoveUI from './MoveUI.vue';
@@ -26,7 +25,7 @@ const move = () => {
         const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
         if (xn < maxLightX.value) {
             xn = maxLightX.value
-        } else if (xn > sensorMinX - rUI.value) {
+        } else if (xn > sensorMinX) {
             xn = sensorMinX
         }
         aperture.value.x = xn

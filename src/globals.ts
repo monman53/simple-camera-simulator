@@ -64,7 +64,13 @@ export const lensGroups = ref(lensGroups0())
 
 export const lensesSorted = computed(() => {
     const res = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
-    res.sort((a, b) => { return a.x1 - b.x1 })
+    res.sort((a, b) => {
+        if (options.value.lensIdeal) {
+            return (a.x1 + a.x2) / 2 - (b.x1 + b.x2) / 2
+        } else {
+            return a.x1 - b.x1
+        }
+    })
     return res
 })
 
@@ -423,28 +429,62 @@ export const globalLensInfos = computed(() => {
 })
 
 export const globalLensRe = computed(() => {
-    let re = 1
-    const res: number[] = []
-    const ps: number[] = []
-    const xs: number[] = []
+    // Setup
+    const params: { f: number, r: number, x: number }[] = []
     lensesSorted.value.forEach((lens, idx) => {
         const f = globalLensInfos.value[idx].f
         const r = calcLensR(lens) * lens.aperture
+        let x = globalLensInfos.value[idx].H
         if (options.value.lensIdeal) {
-            xs.push((lens.x1 + lens.x2) / 2)
-        } else {
-            xs.push(globalLensInfos.value[idx].H)
+            x = (lens.x1 + lens.x2) / 2
         }
+        params.push({ f, r, x })
+    })
+    if (options.value.aperture) {
+        params.push({ f: Infinity, r: aperture.value.r, x: aperture.value.x })
+    }
+    params.sort((a, b) => {return a.x - b.x})
+
+    // Calculation
+    let re = 1
+    let first = true
+    const res: number[] = []
+    const ps: number[] = []
+    params.forEach((param, idx) => {
+        const f = param.f
+        const r = param.r
+        const x = param.x
         if (idx === 0) {
-            ps.push(xs[idx] + f)
+            if (f === Infinity) {
+                ps.push(Infinity)
+            } else {
+                ps.push(x + f)
+            }
             res.push(r)
             re = 1
+            // first = false
         } else {
-            ps.push(xs[idx] + fGaussian(f, vec(ps[idx - 1] - xs[idx], 0)).x)
-            res.push((ps[idx - 1] - xs[idx]) / (ps[idx - 1] - xs[idx - 1]) * res[idx - 1])
-            if (r < Math.abs(res[idx])) {
-                re *= r / Math.abs(res[idx])
-                res[idx] = r
+            const xp = params[idx - 1].x
+            if (f === Infinity) {
+                ps.push(ps[idx - 1])
+                // res.push(Math.min(res[idx - 1], r))
+                res.push((ps[idx - 1] - x) / (ps[idx - 1] - xp) * res[idx - 1])
+                if (r < Math.abs(res[idx])) {
+                    re *= r / Math.abs(res[idx])
+                    res[idx] = r
+                }
+            } else {
+                if (ps[idx - 1] === Infinity) {
+                    ps.push(x + f)
+                    res.push(Math.min(res[idx - 1], r))
+                } else {
+                    ps.push(x + fGaussian(f, vec(ps[idx - 1] - x, 0)).x)
+                    res.push((ps[idx - 1] - x) / (ps[idx - 1] - xp) * res[idx - 1])
+                }
+                if (r < Math.abs(res[idx])) {
+                    re *= r / Math.abs(res[idx])
+                    res[idx] = r
+                }
             }
         }
     })
