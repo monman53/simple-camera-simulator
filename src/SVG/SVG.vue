@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI, aperture, globalLensInfo, globalLensRe } from '../globals'
+import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 import { vec } from '../math'
@@ -11,7 +11,6 @@ import Guideline from './Guideline.vue'
 import LightParallel from './LightParallel.vue'
 import LensGroup from './LensGroup.vue'
 import WithBackground from './WithBackground.vue'
-import CircleUI from './CircleUI.vue'
 import Aperture from './Aperture.vue'
 import Body from './Body.vue'
 import Point from './Point.vue'
@@ -51,10 +50,10 @@ const strokeWidth = computed(() => {
   }
 })
 
-const strokeDashArray = computed(() => {
-  const scale = 1 / state.value.scale
-  return 4 * scale;
-})
+// const strokeDashArray = computed(() => {
+//   const scale = 1 / state.value.scale
+//   return 4 * scale;
+// })
 
 </script>
 
@@ -79,11 +78,11 @@ const strokeDashArray = computed(() => {
     <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
 
     <!-- Global focal point -->
-    <g v-if="options.lensFocalPoints">
+    <g v-if="options.lensFocalPoints && lensExist">
       <WithBackground>
-        <line :x1="globalLensInfo.H" :y1="-globalLensRe" :x2="globalLensInfo.H" :y2="globalLensRe" class="stroke-white thick"></line>
+        <line :x1="globalLensRe.H" :y1="-globalLensRe.re" :x2="globalLensRe.H" :y2="globalLensRe.re" class="stroke-white thick"></line>
       </WithBackground>
-      <Point :c="vec(globalLensInfo.H + globalLensInfo.f, 0)"></Point>
+      <Point :c="vec(globalLensRe.H + globalLensInfo.f, 0)"></Point>
     </g>
 
     <!-- Items -->

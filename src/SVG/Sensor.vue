@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { aperture, maxLensX, sensor } from '@/globals';
-import { Vec, vec } from '@/math';
+import { sensor } from '@/globals';
+import { Vec } from '@/math';
 import WithBackground from './WithBackground.vue';
 import CircleUI from './CircleUI.vue';
 import MoveUI from './MoveUI.vue';

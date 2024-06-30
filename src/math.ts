@@ -288,14 +288,14 @@ export const fGaussian = (f: number, a: Vec) => {
     return vec(bx, by)
 }
 
-export const calcLensF = (lens: Lens) => {
-    const d = lens.x2 - lens.x1
-    const R1 = lens.R1
-    const R2 = lens.R2
-    const n = lens.n
-    const inv = (n - 1) * (1 / R1 - 1 / R2) + (d / n) * ((n - 1) * (n - 1) / (R1 * R2))
-    return 1 / inv
-}
+// export const calcLensF = (lens: Lens) => {
+//     const d = lens.x2 - lens.x1
+//     const R1 = lens.R1
+//     const R2 = lens.R2
+//     const n = lens.n
+//     const inv = (n - 1) * (1 / R1 - 1 / R2) + (d / n) * ((n - 1) * (n - 1) / (R1 * R2))
+//     return 1 / inv
+// }
 
 export const calcRMax = (lens: Lens) => {
     const R1 = Math.abs(lens.R1)

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { lensGroups, releaseAllLenses, sensor, options, style, rUI, maxLightX } from '../globals'
-import { vec, calcLensF, calcRMax, calcLensFront, calcLensBack } from '../math'
+import { sensor, options,  maxLightX, calcLensInfo } from '../globals'
+import { vec, calcRMax, calcLensFront, calcLensBack } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
 import WithBackground from './WithBackground.vue'
@@ -14,7 +14,7 @@ const props = defineProps<{
 }>()
 
 const f = computed(() => {
-    return calcLensF(props.lens)
+    return calcLensInfo([props.lens]).f
 })
 
 const H = computed(() => {

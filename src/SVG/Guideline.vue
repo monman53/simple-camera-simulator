@@ -1,30 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { lensGroups, sensor, options, infR } from '../globals'
+import { lensGroups, sensor, options, infR, globalLensInfo, globalLensRe } from '../globals'
 
-import { vec, fGaussian, calcLensF } from '../math'
+import { vec, fGaussian } from '../math'
 
 import WithBackground from './WithBackground.vue'
 
-const lens = computed(() => {
-    return lensGroups.value[0].lenses[0]
-})
-
 const x = computed(() => {
-    return (lens.value.x1 + lens.value.x2) / 2
+    return globalLensRe.value.H
 })
 
 const f = computed(() => {
-    return calcLensF(lens.value)
+    return globalLensInfo.value.f
 })
 
 // Effective lens radius
 const re = computed(() => {
-    if (options.value.aperture) {
-        return lens.value.r * lens.value.aperture;
-    } else {
-        return lens.value.r;
-    }
+    return globalLensRe.value.re
 })
 
 const sensorTop = computed(() => {
@@ -49,14 +41,10 @@ const sensorMiddle = computed(() => {
 
 // Focal plane
 const focal = computed(() => {
-    // const bx = sensor.value.x - x.value;
-    // const by = sensor.value.r
-
     const s = sensorTop.value
     const t = sensorBottom.value
     const ss = fGaussian(f.value, vec(x.value - s.x, s.y))
     const tt = fGaussian(f.value, vec(x.value - t.x, t.y))
-
     return { s: vec(x.value - ss.x, ss.y), t: vec(x.value - tt.x, tt.y) }
 })
 
