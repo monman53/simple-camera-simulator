@@ -5,7 +5,6 @@ import { lensGroups, sensor, options, infR } from '../globals'
 import { vec, fGaussian, calcLensF } from '../math'
 
 import WithBackground from './WithBackground.vue'
-import Point from './Point.vue';
 
 const lens = computed(() => {
     return lensGroups.value[0].lenses[0]
@@ -55,10 +54,10 @@ const focal = computed(() => {
 
     const s = sensorTop.value
     const t = sensorBottom.value
-    const ss = fGaussian(f.value, s.x - x.value, s.y)
-    const tt = fGaussian(f.value, t.x - x.value, t.y)
+    const ss = fGaussian(f.value, vec(x.value - s.x, s.y))
+    const tt = fGaussian(f.value, vec(x.value - t.x, t.y))
 
-    return { s: vec(x.value - ss.x, -ss.y), t: vec(x.value - tt.x, -tt.y) }
+    return { s: vec(x.value - ss.x, ss.y), t: vec(x.value - tt.x, tt.y) }
 })
 
 // Angle of view
@@ -112,9 +111,9 @@ const dof = computed(() => {
         const px = 2 * r * a.x * b.x / (a.x * b.y - b.x * a.y + (a.x + b.x) * r)
         const py = (a.y - r) / a.x * px + r
 
-        const p = fGaussian(f.value, px, py)
+        const p = fGaussian(f.value, vec(-px, py))
         p.x = x.value - p.x
-        p.y = -p.y
+        p.y = p.y
         if (inner === "") {
             inner += `M ${p.x} ${p.y} `
         } else {
@@ -128,9 +127,9 @@ const dof = computed(() => {
         const px = 2 * r * a.x * b.x / (a.x * b.y - b.x * a.y + (a.x + b.x) * r)
         const py = (a.y - r) / a.x * px + r
 
-        const p = fGaussian(f.value, px, py)
+        const p = fGaussian(f.value, vec(-px, py))
         p.x = x.value - p.x
-        p.y = -p.y
+        p.y = p.y
         if (outer === "") {
             outer += `M ${p.x} ${p.y} `
         } else {

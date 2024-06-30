@@ -187,7 +187,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
 
         // Find image position of the light source
         // TODO:
-        const image = fGaussian(f, xm - s0.x, -s0.y)
+        const image = fGaussian(f, vec(s0.x - xm, s0.y))
 
         // Refracted ray
         let theta = Math.atan2(image.y - s.y, image.x);

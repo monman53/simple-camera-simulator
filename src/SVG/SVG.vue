@@ -79,8 +79,10 @@ const strokeDashArray = computed(() => {
     <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
 
     <!-- Global focal point -->
-    <Point :c="vec(globalLensInfo.H, 0)"></Point>
-    <Point :c="vec(globalLensInfo.H + globalLensInfo.f, 0)"></Point>
+    <g v-if="options.lensFocalPoints">
+      <Point :c="vec(globalLensInfo.H, 0)"></Point>
+      <Point :c="vec(globalLensInfo.H + globalLensInfo.f, 0)"></Point>
+    </g>
 
     <!-- Items -->
     <g v-if="options.lens">
