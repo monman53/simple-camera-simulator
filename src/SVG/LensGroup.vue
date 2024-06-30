@@ -33,13 +33,14 @@ const moveStartHandler = (e: any) => {
                 continue
             }
             for (let j = 0; j < lensGroup.lenses.length; j++) {
+        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
                 if (x10s[i][j] + d.x < maxLightX.value) {
                     if (Math.abs(maxLightX.value - x10s[i][j]) < Math.abs(d.x)) {
                         d.x = maxLightX.value - x10s[i][j]
                     }
-                } else if (x20s[i][j] + d.x > sensor.value.x) {
-                    if (Math.abs(sensor.value.x - x20s[i][j]) < Math.abs(d.x)) {
-                        d.x = sensor.value.x - x20s[i][j]
+                } else if (x20s[i][j] + d.x > sensorMinX) {
+                    if (Math.abs(sensorMinX - x20s[i][j]) < Math.abs(d.x)) {
+                        d.x = sensorMinX - x20s[i][j]
                     }
                 }
             }

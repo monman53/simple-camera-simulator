@@ -99,10 +99,11 @@ const x2MoveStartHandler = (e: any) => {
     const x20 = lens.x2
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
+        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
         if (x20 + d.x < props.lens.x1) {
             lens.x2 = props.lens.x1
-        } else if (x20 + d.x > sensor.value.x) {
-            lens.x2 = sensor.value.x
+        } else if (x20 + d.x > sensorMinX) {
+            lens.x2 = sensorMinX
         } else {
             lens.x2 = x20 + d.x
         }
@@ -155,8 +156,9 @@ const r2MoveStartHandler = (e: any) => {
         if (x2n < props.lens.x1) {
             x2n = props.lens.x1
         }
-        if (x2n > sensor.value.x) {
-            x2n = sensor.value.x
+        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
+        if (x2n > sensorMinX) {
+            x2n = sensorMinX
         }
         if (x2n - rightX0 > r0) {
             lens.R2 = -r0

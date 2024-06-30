@@ -110,7 +110,7 @@ const strokeDashArray = computed(() => {
             <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
           </WithBackground>
           <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
-            :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 100 : 50}%, 0.5)`"></circle>
+            :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 50 : 100}%, 0.5)`"></circle>
         </g>
       </g>
       <g v-if="light.type === Light.Parallel">

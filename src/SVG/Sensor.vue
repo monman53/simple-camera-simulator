@@ -6,25 +6,33 @@ import CircleUI from './CircleUI.vue';
 import MoveUI from './MoveUI.vue';
 
 const move = () => {
-    const cx0 = sensor.value.x;
+    const s0 = sensor.value.s.copy()
+    const t0 = sensor.value.t.copy()
     return (e: any, d: Vec) => {
-        const maxX = Math.max(maxLensX.value, aperture.value.x)
-        if (cx0 + d.x < maxX) {
-            sensor.value.x = maxX
-            return
+        const sn = s0.add(d)
+        const tn = t0.add(d)
+        if (e.shiftKey) {
+            const ym = (s0.y + t0.y) / 2
+            sn.y = s0.y - ym
+            tn.y = t0.y - ym
         }
-        sensor.value.x = cx0 + d.x
+        sensor.value.s = sn
+        sensor.value.t = tn
     }
 }
 
 const resize = () => {
-    const r0 = sensor.value.r;
+    const s0 = sensor.value.s.copy()
+    const t0 = sensor.value.t.copy()
+    const m0 = s0.add(t0).div(2)
     return (e: any, d: Vec) => {
-        if (r0 - d.y < 0.1) {
-            sensor.value.r = 0.1;
-        } else {
-            sensor.value.r = r0 - d.y;
+        const sn = s0.add(d)
+        if (e.shiftKey) {
+            sn.x = m0.x
         }
+        const tn = m0.add(sn.sub(m0).minus())
+        sensor.value.s = sn
+        sensor.value.t = tn
     }
 }
 
@@ -34,11 +42,11 @@ const resize = () => {
     <g>
         <MoveUI :handler-creator="move" class="grab">
             <WithBackground :ui="true">
-                <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="stroke-white normal" />
+                <line :x1="sensor.s.x" :y1="sensor.s.y" :x2="sensor.t.x" :y2="sensor.t.y" class="stroke-white normal" />
             </WithBackground>
         </MoveUI>
-        <MoveUI :handler-creator="resize" class="vertical-resize">
-            <CircleUI :c="vec(sensor.x, -sensor.r)"></CircleUI>
+        <MoveUI :handler-creator="resize" class="grab">
+            <CircleUI :c="sensor.s"></CircleUI>
         </MoveUI>
     </g>
 </template>

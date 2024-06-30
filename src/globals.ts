@@ -112,8 +112,8 @@ export const aperture = ref(aperture0())
 
 export const sensor0 = () => {
     return {
-        x: 80,
-        r: 24 / 2, // Full frame
+        s: vec(80, -12),
+        t: vec(80, 12),
         circleOfConfusion: 1,
     }
 }
@@ -214,6 +214,7 @@ export const options0 = () => {
         circleOfConfusion: false,
         apple: false,
         wavelength: false,
+        sensorFreeMove: true,
     }
 }
 export const options = ref(options0())
@@ -246,7 +247,7 @@ export const infR = computed(() => {
     let screen = Math.sqrt(w * w + h * h);
 
     // light to center max distance
-    const c = state.value.c;
+    const c = vec((sensor.value.s.x + sensor.value.t.x) / 2, 0)
     let distanceMax = 0;
     for (const light of lights.value) {
         if (light.type === Light.Point) {
@@ -318,7 +319,8 @@ export const body = computed(() => {
         rs.push(aperture.value.r)
     }
     if (options.value.sensor) {
-        rs.push(sensor.value.r + padding)
+        const r = Math.max(Math.abs(sensor.value.s.y), Math.abs(sensor.value.t.y))
+        rs.push(r + padding)
     }
 
     let r = null
@@ -328,10 +330,19 @@ export const body = computed(() => {
 
     let front = null
     if (lensExist) {
+        const xm = (lensesSorted.value[0].x1 + lensesSorted.value[0].x2) / 2
         if (options.value.aperture) {
-            front = Math.min(aperture.value.x, calcLensFront(lensesSorted.value[0]))
+            if (options.value.lensIdeal) {
+                front = Math.min(aperture.value.x, xm)
+            } else {
+                front = Math.min(aperture.value.x, calcLensFront(lensesSorted.value[0]))
+            }
         } else {
-            front = calcLensFront(lensesSorted.value[0])
+            if (options.value.lensIdeal) {
+                front = xm
+            } else {
+                front = calcLensFront(lensesSorted.value[0])
+            }
         }
     } else {
         if (options.value.aperture) {
@@ -340,7 +351,8 @@ export const body = computed(() => {
     }
     let back = null
     if (options.value.sensor) {
-        back = sensor.value.x + padding
+        const maxX = Math.max(sensor.value.s.x, sensor.value.t.x)
+        back = maxX + padding
     } else if (lensExist) {
         if (options.value.aperture) {
             back = Math.max(...lensFronts.value, aperture.value.x)

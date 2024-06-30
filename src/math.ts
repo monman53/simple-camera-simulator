@@ -282,10 +282,10 @@ export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens d
     return { p: vec(tx, ty), d }
 }
 
-export const fGaussian = (f: number, px: number, py: number) => {
-    const qx = f * px / (px - f)
-    const qy = py * (qx / px)
-    return vec(qx, qy)
+export const fGaussian = (f: number, ax: number, ay: number) => {
+    const bx = f * ax / (ax - f)
+    const by = ay * (bx / ax)
+    return vec(bx, by)
 }
 
 export const calcLensF = (lens: Lens) => {

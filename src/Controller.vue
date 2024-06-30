@@ -4,10 +4,19 @@ import { computed } from 'vue'
 import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, globalLensInfo } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
+import { vec } from './math';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
+
+const createSensor = (d: number) => {
+    const xm = (sensor.value.s.x + sensor.value.t.x) / 2
+    sensor.value.s.x = xm
+    sensor.value.s.y = -d / 2
+    sensor.value.t.x = xm
+    sensor.value.t.y = d / 2
+}
 
 </script>
 
@@ -167,7 +176,7 @@ const nRays = computed(() => {
                 <tr>
                     <td>Diameter</td>
                     <td></td>
-                    <td>{{ humanReadable(sensor.r * 2) }}<br></td>
+                    <td>{{ humanReadable(sensor.t.sub(sensor.s).length()) }}<br></td>
                 </tr>
             </template>
         </template>
@@ -270,15 +279,15 @@ const nRays = computed(() => {
             <tr>
                 <td>Sensor height</td>
                 <td>
-                    <button @click="sensor.r = 24 / 2">Full frame</button>
+                    <button @click="createSensor(24)">Full frame</button>
                     <br>
-                    <button @click="sensor.r = 15.6 / 2">APS-C</button>
+                    <button @click="createSensor(15.6)">APS-C</button>
                     <br>
-                    <button @click="sensor.r = 14.9 / 2">APS-C (Canon)</button>
+                    <button @click="createSensor(14.9)">APS-C (Canon)</button>
                     <br>
-                    <button @click="sensor.r = 13 / 2">Four thirds</button>
+                    <button @click="createSensor(13)">Four thirds</button>
                     <br>
-                    <button @click="sensor.r = 8.8 / 2">1"</button>
+                    <button @click="createSensor(8.8)">1"</button>
                 </td>
                 <td></td>
             </tr>

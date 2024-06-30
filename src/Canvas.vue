@@ -46,16 +46,23 @@ const intersectionBody = (s: Vec, v: Vec) => {
       const lensR = lensRs.value[idx]
       const front = lensFronts.value[idx]
       const back = lensBacks.value[idx]
+      const xm = (lens.x1 + lens.x2) / 2
       // Lens to body
       if (options.value.body && body.value.r) {
-        ps.push(intersectionY(s, v, front, -body.value.r, -lensR))
-        ps.push(intersectionY(s, v, front, lensR, body.value.r))
+        if (options.value.lensIdeal) {
+          ps.push(intersectionY(s, v, xm, -body.value.r, -lensR))
+          ps.push(intersectionY(s, v, xm, lensR, body.value.r))
+        } else {
+          ps.push(intersectionY(s, v, front, -body.value.r, -lensR))
+          ps.push(intersectionY(s, v, front, lensR, body.value.r))
+        }
       }
       // Upper / Bottom
-      ps.push(intersectionX(s, v, -lensR, front, back))
-      ps.push(intersectionX(s, v, lensR, front, back))
+      if (!options.value.lensIdeal) {
+        ps.push(intersectionX(s, v, -lensR, front, back))
+        ps.push(intersectionX(s, v, lensR, front, back))
+      }
       // Aperture
-      const xm = (lens.x1 + lens.x2) / 2
       ps.push(intersectionY(s, v, xm, -lensR, -lensR * lens.aperture))
       ps.push(intersectionY(s, v, xm, lensR * lens.aperture, lensR))
     })
@@ -208,18 +215,18 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
   // Collision to sensor
   //--------------------------------
   if (options.value.sensor) {
-    const ps = intersectionY(s, v, sensor.value.x, -sensor.value.r, sensor.value.r)
+    const ps = intersectionSS(s, s.add(v.mul(infR.value)), sensor.value.s, sensor.value.t)
     const pb = intersectionBody(s, v)
-    if ((pb.p && ps.p && pb.d < ps.d) || (!ps.p && pb.p)) {
+    if ((pb.p && ps && pb.d < (ps.sub(s).length())) || (!ps && pb.p)) {
       v = pb.p.sub(s)
       drawSegment(s, v, v.length())
       return
     }
-    if (ps.p) {
-      const p = ps.p
+    if (ps) {
+      const p = ps
       v = p.sub(s)
       drawSegment(s, v, v.length())
-      sensorDataTmp.push({ y: p.y, color })
+      sensorDataTmp.push({ y: p.sub(sensor.value.s).length(), color })
       return
     }
   }
