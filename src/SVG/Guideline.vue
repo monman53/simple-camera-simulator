@@ -63,12 +63,14 @@ const aov = computed(() => {
     let middleInnerBottom = focalPlaneTop.sub(lensBottom)
     // For over infinity modification
     if (x.value + f.value > sensorMiddle.value.x) {
-        // middleOuter = middleOuter.minus().normalize().mul(infR.value)
-        // middleInner = middleInner.minus().normalize().mul(infR.value)
+        middleOuterTop = middleOuterTop.minus().normalize().mul(infR.value)
+        middleOuterBottom = middleOuterBottom.minus().normalize().mul(infR.value)
+        middleInnerTop = middleInnerTop.minus().normalize().mul(infR.value)
+        middleInnerBottom = middleInnerBottom.minus().normalize().mul(infR.value)
     }
     if (x.value + f.value === sensorMiddle.value.x) {
-        // middleOuter = vec(x.value - sensor.value.x, -sensor.value.r).normalize().mul(infR.value)
-        // middleInner = vec(x.value - sensor.value.x, sensor.value.r).normalize().mul(infR.value)
+        // middleOuterTop = vec(x.value - sensorMiddle.value.x, -sensor.value.r).normalize().mul(infR.value)
+        // middleInnerTop = vec(x.value - sensorMiddle.value.x, sensor.value.r).normalize().mul(infR.value)
     }
 
     // Focal plane to infinity

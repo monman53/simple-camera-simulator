@@ -430,6 +430,7 @@ export const globalLensInfos = computed(() => {
 
 export const globalLensRe = computed(() => {
     // Setup
+    // Lenses
     const params: { f: number, r: number, x: number }[] = []
     lensesSorted.value.forEach((lens, idx) => {
         const f = globalLensInfos.value[idx].f
@@ -440,10 +441,11 @@ export const globalLensRe = computed(() => {
         }
         params.push({ f, r, x })
     })
+    // Apertures
     if (options.value.aperture) {
         params.push({ f: Infinity, r: aperture.value.r, x: aperture.value.x })
     }
-    params.sort((a, b) => {return a.x - b.x})
+    params.sort((a, b) => { return a.x - b.x })
 
     // Calculation
     let re = 1
@@ -454,11 +456,7 @@ export const globalLensRe = computed(() => {
         const r = param.r
         const x = param.x
         if (idx === 0) {
-            if (f === Infinity) {
-                ps.push(Infinity)
-            } else {
-                ps.push(x + f)
-            }
+            ps.push(x + f)
             res.push(r)
             re = 1
         } else {
@@ -473,7 +471,7 @@ export const globalLensRe = computed(() => {
             } else {
                 if (ps[idx - 1] === Infinity) {
                     ps.push(x + f)
-                    res.push(Math.min(res[idx - 1], r))
+                    res.push(res[idx - 1])
                 } else {
                     ps.push(x + fGaussian(f, vec(ps[idx - 1] - x, 0)).x)
                     res.push((ps[idx - 1] - x) / (ps[idx - 1] - xp) * res[idx - 1])
