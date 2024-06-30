@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { lensGroups, releaseAllLenses, sensor, options, style, rUI, maxLightX } from '../globals'
+import { lensGroups, releaseAllLenses, sensor, maxLightX } from '../globals'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import { type LensGroup } from '../type'
 

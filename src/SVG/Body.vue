@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aperture, body, lensesSorted, lensFronts, lensGroups, lensRs, maxLensX, maxLightX, options, sensor } from '@/globals';
+import { aperture, body, lensesSorted, lensFronts, lensGroups, lensRs, maxLightX, options, sensor } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import * as h from '../handlers'
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { lensGroups, sensor, options, infR, globalLensInfo, globalLensRe } from '../globals'
+import { sensor, infR, globalLensInfo, globalLensRe } from '../globals'
 
 import { vec, fGaussian } from '../math'
 

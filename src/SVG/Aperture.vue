@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aperture, body, maxLightX, rUI, sensor, style } from '@/globals';
+import { aperture, body, maxLightX, sensor, style } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import CircleUI from './CircleUI.vue';
 import { Vec, vec } from '@/math';

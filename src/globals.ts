@@ -447,7 +447,6 @@ export const globalLensRe = computed(() => {
 
     // Calculation
     let re = 1
-    let first = true
     const res: number[] = []
     const ps: number[] = []
     params.forEach((param, idx) => {
@@ -462,12 +461,10 @@ export const globalLensRe = computed(() => {
             }
             res.push(r)
             re = 1
-            // first = false
         } else {
             const xp = params[idx - 1].x
             if (f === Infinity) {
                 ps.push(ps[idx - 1])
-                // res.push(Math.min(res[idx - 1], r))
                 res.push((ps[idx - 1] - x) / (ps[idx - 1] - xp) * res[idx - 1])
                 if (r < Math.abs(res[idx])) {
                     re *= r / Math.abs(res[idx])
