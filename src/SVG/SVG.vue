@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI, aperture, globalLensInfo } from '../globals'
+import { state, lights, lensGroups, sensor, style, apple, options, infR, rUI, aperture, globalLensInfo, globalLensRe } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 import { vec } from '../math'
@@ -80,7 +80,9 @@ const strokeDashArray = computed(() => {
 
     <!-- Global focal point -->
     <g v-if="options.lensFocalPoints">
-      <Point :c="vec(globalLensInfo.H, 0)"></Point>
+      <WithBackground>
+        <line :x1="globalLensInfo.H" :y1="-globalLensRe" :x2="globalLensInfo.H" :y2="globalLensRe" class="stroke-white thick"></line>
+      </WithBackground>
       <Point :c="vec(globalLensInfo.H + globalLensInfo.f, 0)"></Point>
     </g>
 

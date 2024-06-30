@@ -267,12 +267,12 @@ const apertureSizeChangeStartHandler = (e: any) => {
 
         <!-- Focal points -->
         <g v-if="options.lensFocalPoints">
-            <Point :c="vec(xm - f, 0)"></Point>
-            <Point :c="vec(xm + f, 0)"></Point>
+            <!-- <Point :c="vec(xm - f, 0)"></Point> -->
+            <!-- <Point :c="vec(xm + f, 0)"></Point> -->
             <!-- Double focal points -->
             <g v-if="options.lensDoubleFocalPoints">
-                <Point :c="vec(xm - 2 * f, 0)"></Point>
-                <Point :c="vec(xm + 2 * f, 0)"></Point>
+                <!-- <Point :c="vec(xm - 2 * f, 0)"></Point> -->
+                <!-- <Point :c="vec(xm + 2 * f, 0)"></Point> -->
             </g>
         </g>
 

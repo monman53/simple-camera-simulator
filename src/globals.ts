@@ -1,5 +1,5 @@
 import { ref, computed } from "vue"
-import { Vec, calcLensFront, vec, calcLensF, calcLensR, calcLensBack } from "./math"
+import { Vec, calcLensFront, vec, calcLensF, calcLensR, calcLensBack, fGaussian } from "./math"
 import { type Lens, type LensGroup, Light } from "./type"
 
 //================================
@@ -409,6 +409,38 @@ export const calcLensInfo = (lenses: Lens[]) => {
     }
     return { f, H }
 }
+
+const globalLensInfos = computed(() => {
+    return lensesSorted.value.map((lens) => {
+        return calcLensInfo([lens])
+    })
+})
+
+export const globalLensRe = computed(() => {
+    let re = 1
+    const res: number[] = []
+    const ps: number[] = []
+    const xs: number[] = []
+    lensesSorted.value.forEach((lens, idx) => {
+        const f = globalLensInfos.value[idx].f
+        const r = calcLensR(lens) * lens.aperture
+        // xs.push(globalLensInfos.value[idx].H)
+        xs.push((lens.x1 + lens.x2) / 2)
+        if (idx === 0) {
+            ps.push(xs[idx] + f)
+            res.push(r)
+            re = 1
+        } else {
+            ps.push(xs[idx] + fGaussian(f, vec(ps[idx - 1] - xs[idx], 0)).x)
+            res.push((ps[idx - 1] - xs[idx]) / (ps[idx - 1] - xs[idx - 1]) * res[idx - 1])
+            if (r < Math.abs(res[idx])) {
+                re *= r / Math.abs(res[idx])
+                res[idx] = r
+            }
+        }
+    })
+    return Math.abs(res[0]) * re
+})
 
 export const globalLensInfo = computed(() => {
     return calcLensInfo(lensesSorted.value)
