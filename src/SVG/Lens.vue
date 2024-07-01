@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { sensor, options,  maxLightX, calcLensInfo } from '../globals'
+import { sensor, options, maxLightX, calcLensInfo } from '../globals'
 import { vec, calcRMax, calcLensFront, calcLensBack } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
@@ -277,18 +277,15 @@ const apertureSizeChangeStartHandler = (e: any) => {
         </g>
 
         <!-- Aperture -->
-        <g v-if="options.aperture">
-            <WithBackground>
-                <!-- Lines -->
-                <g class="stroke-white normal no-pointer-events">
-                    <line :x1="xm" :y1="-r" :x2="xm" :y2="-r * lens.aperture"></line>
-                    <line :x1="xm" :y1="r" :x2="xm" :y2="r * lens.aperture"></line>
-                </g>
-            </WithBackground>
-            <!-- UI -->
-            <CircleUI :c="vec(xm, r * lens.aperture)" @mousedown="apertureSizeChangeStartHandler"
-                class="vertical-resize">
-            </CircleUI>
-        </g>
+        <WithBackground>
+            <!-- Lines -->
+            <g class="stroke-white normal no-pointer-events">
+                <line :x1="xm" :y1="-r" :x2="xm" :y2="-r * lens.aperture"></line>
+                <line :x1="xm" :y1="r" :x2="xm" :y2="r * lens.aperture"></line>
+            </g>
+        </WithBackground>
+        <!-- UI -->
+        <CircleUI :c="vec(xm, r * lens.aperture)" @mousedown="apertureSizeChangeStartHandler" class="vertical-resize">
+        </CircleUI>
     </g>
 </template>

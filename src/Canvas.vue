@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, onMounted, ref} from 'vue'
+import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, body, lensFronts, aperture, lensBacks } from './globals'
 import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, intersectionSS, intersectionX, intersectionY, calcLensNWavelength } from './math'

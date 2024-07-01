@@ -441,6 +441,15 @@ export const globalLensRe = computed(() => {
         }
         params.push({ f, r, x })
     })
+    // Body
+    if (!options.value.lensIdeal) {
+        lensFronts.value.forEach((front, idx) => {
+            params.push({ f: Infinity, r: lensRs.value[idx], x: front })
+        })
+        lensBacks.value.forEach((back, idx) => {
+            params.push({ f: Infinity, r: lensRs.value[idx], x: back })
+        })
+    }
     // Apertures
     if (options.value.aperture) {
         params.push({ f: Infinity, r: aperture.value.r, x: aperture.value.x })
