@@ -148,21 +148,21 @@ const collisionAll = (s: Vec, v: Vec) => {
 
 export const rayTrace = (s: Vec, v: Vec) => {
     const ps = []
-    while (true) {
-        // for (let i = 0; i < 100; i++) {
+    const maxItr = 100
+    for (let i = 0; i < maxItr; i++) {
         const c = collisionAll(s, v)
 
         if (c === null) {
-            ps.push(s.add(v.mul(infR.value)))
+            ps.push({p: s.add(v.mul(infR.value))})
             break
         }
 
         if (c.isSensor) {
-            ps.push(c.p)
+            ps.push({p: c.p, isSensor: true})
             break
         }
 
-        ps.push(c.p)
+        ps.push({p: c.p})
         s = c.p
         if (c.vn) {
             v = c.vn()

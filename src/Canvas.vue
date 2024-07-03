@@ -88,8 +88,12 @@ const intersectionBody = (s: Vec, v: Vec) => {
 const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
   const ps = rayTrace(s.copy(), v.copy())
   ps.forEach((p) => {
-    drawSegment(s, p)
-    s = p
+    drawSegment(s, p.p)
+    if (p.isSensor) {
+      sensorDataTmp.push({y: p.p.sub(sensor.value.s).length(), color})
+      return
+    }
+    s = p.p
   })
   return
   /*
