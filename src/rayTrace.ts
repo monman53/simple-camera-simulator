@@ -1,5 +1,5 @@
-import { infR, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
-import { cross, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionY, vec, vecRad, type Vec } from "./math";
+import { aperture, body, infR, lensBacks, lensFronts, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
+import { cross, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
 
 export const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: number, no: number) => {
     v = v.normalize()
@@ -89,12 +89,46 @@ const collisionSensor = (s: Vec, v: Vec) => {
     }
 }
 
+const collisionX = (s: Vec, v: Vec, y: number, xMin: number, xMax: number) => {
+    const ps = intersectionX(s, v, y, xMin, xMax)
+    if (ps.p !== null) {
+        return {
+            p: ps.p,
+            d: ps.d,
+            isEnd: true,
+        }
+    }
+    return null
+}
+
+const collisionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: number) => {
+    const ps = intersectionY(s, v, x, yMin, yMax)
+    if (ps.p !== null) {
+        return {
+            p: ps.p,
+            d: ps.d,
+            isEnd: true,
+        }
+    }
+    return null
+}
+
 const collisionAll = (s: Vec, v: Vec) => {
     //--------------------------------
     // Collisions
     //--------------------------------
-
     let ps: ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null)[] = []
+
+    // Body outline
+    if (options.value.body && body.value.r && body.value.front && body.value.back) {
+        ps.push(collisionX(s, v, -body.value.r, body.value.front, body.value.back))
+        ps.push(collisionX(s, v, body.value.r, body.value.front, body.value.back))
+        if (options.value.sensor) {
+            ps.push(collisionY(s, v, body.value.back, -body.value.r, body.value.r))
+        }
+    }
+
+    // Around lenses
     lensesSorted.value.forEach((lens, i) => {
         // Lense
         const h = lensRs.value[i]
@@ -120,8 +154,20 @@ const collisionAll = (s: Vec, v: Vec) => {
         ps.push(collisionAperture(s, v, xm, h * lens.aperture, h))
 
         // Lens to body
+        if (options.value.body && body.value.r !== null) {
+            const x = options.value.lensIdeal ? xm : lensFronts.value[i]
+            ps.push(collisionAperture(s, v, x, h, body.value.r))
+        }
+
+        // Lens upper and bottom
+        ps.push(collisionX(s, v, -h, lensFronts.value[i], lensBacks.value[i]))
         // TODO
     })
+
+    // Aperture
+    if (options.value.aperture && body.value.r) {
+        ps.push(collisionAperture(s, v, aperture.value.x, aperture.value.r, body.value.r))
+    }
 
     // Sensor
     if (options.value.sensor) {
