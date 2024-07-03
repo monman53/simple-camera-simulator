@@ -6,8 +6,12 @@ import { vec, fGaussian } from '../math'
 
 import WithBackground from './WithBackground.vue'
 
-const x = computed(() => {
-    return globalLensRe.value.H
+const xBack = computed(() => {
+    return globalLensRe.value.forward.H
+})
+
+const xFront = computed(() => {
+    return globalLensRe.value.backward.H
 })
 
 const f = computed(() => {
@@ -16,7 +20,7 @@ const f = computed(() => {
 
 // Effective lens radius
 const re = computed(() => {
-    return globalLensRe.value.re
+    return globalLensRe.value.forward.re
 })
 
 const sensorTop = computed(() => {
@@ -43,15 +47,15 @@ const sensorMiddle = computed(() => {
 const focal = computed(() => {
     const s = sensorTop.value
     const t = sensorBottom.value
-    const ss = fGaussian(f.value, vec(x.value - s.x, s.y))
-    const tt = fGaussian(f.value, vec(x.value - t.x, t.y))
-    return { s: vec(x.value - ss.x, ss.y), t: vec(x.value - tt.x, tt.y) }
+    const ss = fGaussian(f.value, vec(xBack.value - s.x, s.y))
+    const tt = fGaussian(f.value, vec(xBack.value - t.x, t.y))
+    return { s: vec(xFront.value - ss.x, ss.y), t: vec(xFront.value - tt.x, tt.y) }
 })
 
 // Angle of view
 const aov = computed(() => {
-    const lensTop = vec(x.value, -re.value)
-    const lensBottom = vec(x.value, re.value)
+    const lensTop = vec(xFront.value, -re.value)
+    const lensBottom = vec(xFront.value, re.value)
 
     const focalPlaneTop = focal.value.t
     const focalPlaneBottom = focal.value.s
@@ -62,13 +66,13 @@ const aov = computed(() => {
     let middleInnerTop = focalPlaneBottom.sub(lensTop)
     let middleInnerBottom = focalPlaneTop.sub(lensBottom)
     // For over infinity modification
-    if (x.value + f.value > sensorMiddle.value.x) {
+    if (xBack.value + f.value > sensorMiddle.value.x) {
         middleOuterTop = middleOuterTop.minus().normalize().mul(infR.value)
         middleOuterBottom = middleOuterBottom.minus().normalize().mul(infR.value)
         middleInnerTop = middleInnerTop.minus().normalize().mul(infR.value)
         middleInnerBottom = middleInnerBottom.minus().normalize().mul(infR.value)
     }
-    if (x.value + f.value === sensorMiddle.value.x) {
+    if (xBack.value + f.value === sensorMiddle.value.x) {
         // middleOuterTop = vec(x.value - sensorMiddle.value.x, -sensor.value.r).normalize().mul(infR.value)
         // middleInnerTop = vec(x.value - sensorMiddle.value.x, sensor.value.r).normalize().mul(infR.value)
     }
@@ -89,7 +93,7 @@ const dof = computed(() => {
     const sensorSize = st.length()
     const c = sensor.value.circleOfConfusion
     const v = st.normalize()
-    const s = sensor.value.s.add(vec(-x.value, 0))
+    const s = sensor.value.s.add(vec(-xBack.value, 0))
 
     let inner = ""
     let outer = ""
@@ -102,7 +106,7 @@ const dof = computed(() => {
         const py = (a.y - r) / a.x * px + r
 
         const p = fGaussian(f.value, vec(-px, py))
-        p.x = x.value - p.x
+        p.x = xFront.value - p.x
         p.y = p.y
         if (inner === "") {
             inner += `M ${p.x} ${p.y} `
@@ -118,7 +122,7 @@ const dof = computed(() => {
         const py = (a.y - r) / a.x * px + r
 
         const p = fGaussian(f.value, vec(-px, py))
-        p.x = x.value - p.x
+        p.x = xFront.value - p.x
         p.y = p.y
         if (outer === "") {
             outer += `M ${p.x} ${p.y} `
@@ -136,23 +140,23 @@ const dof = computed(() => {
         <g class="stroke-white">
             <!-- Inside camera -->
             <g class="thick">
-                <line :x1="sensorTop.x" :y1="sensorTop.y" :x2="x" :y2="-re"></line>
-                <line :x1="sensorBottom.x" :y1="sensorBottom.y" :x2="x" :y2="re"></line>
+                <line :x1="sensorTop.x" :y1="sensorTop.y" :x2="xBack" :y2="-re"></line>
+                <line :x1="sensorBottom.x" :y1="sensorBottom.y" :x2="xBack" :y2="re"></line>
             </g>
-            <g v-if="x !== sensorMiddle.x">
+            <g v-if="xBack !== sensorMiddle.x">
                 <!-- Lens to focal plane (outer) -->
                 <g class="thick">
-                    <line :x1="x" :y1="-re" :x2="x + aov.middleOuterTop.x" :y2="-re + aov.middleOuterTop.y"></line>
-                    <line :x1="x" :y1="re" :x2="x + aov.middleOuterBottom.x" :y2="re + aov.middleOuterBottom.y"></line>
+                    <line :x1="xFront" :y1="-re" :x2="xFront + aov.middleOuterTop.x" :y2="-re + aov.middleOuterTop.y"></line>
+                    <line :x1="xFront" :y1="re" :x2="xFront + aov.middleOuterBottom.x" :y2="re + aov.middleOuterBottom.y"></line>
                 </g>
                 <!-- Lens to focal plane (inner) -->
                 <g class="thicker">
-                    <line :x1="x" :y1="-re" :x2="x + aov.middleInnerTop.x" :y2="-re + aov.middleInnerTop.y"></line>
-                    <line :x1="x" :y1="re" :x2="x + aov.middleInnerBottom.x" :y2="re + aov.middleInnerBottom.y"></line>
+                    <line :x1="xFront" :y1="-re" :x2="xFront + aov.middleInnerTop.x" :y2="-re + aov.middleInnerTop.y"></line>
+                    <line :x1="xFront" :y1="re" :x2="xFront + aov.middleInnerBottom.x" :y2="re + aov.middleInnerBottom.y"></line>
                 </g>
             </g>
             <!-- Non over infinity -->
-            <g v-if="x + f < sensorMiddle.x">
+            <g v-if="xBack + f < sensorMiddle.x">
                 <!-- Focal plane -->
                 <line :x1="focal.s.x" :y1="focal.s.y" :x2="focal.t.x" :y2="focal.t.y" class="thick"></line>
                 <!-- Focal plane to inf (outer) -->
@@ -170,7 +174,7 @@ const dof = computed(() => {
                         :y2="focal.s.y + aov.innerBottom.y"></line>
                 </g>
                 <!-- Depth of focus -->
-                <g class="thicker">
+                <g class="thicker fill-none">
                     <path :d="dof.inner"></path>
                     <path :d="dof.outer"></path>
                 </g>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist } from '../globals'
+import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
 import { vec } from '../math'
@@ -75,14 +75,20 @@ const strokeWidth = computed(() => {
     <Body v-if="options.body"></Body>
 
     <!-- Guidelines -->
-    <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
+    <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView"></Guideline>
 
     <!-- Global focal point -->
     <g v-if="options.lensFocalPoints && lensExist">
       <WithBackground>
-        <line :x1="globalLensRe.H" :y1="-globalLensRe.re" :x2="globalLensRe.H" :y2="globalLensRe.re" class="stroke-white thick"></line>
+        <g class="stroke-white thicker">
+          <line :x1="globalLensRe.forward.H" :y1="-globalLensRe.forward.re" :x2="globalLensRe.forward.H"
+            :y2="globalLensRe.forward.re"></line>
+          <line :x1="globalLensRe.backward.H" :y1="-globalLensRe.backward.re" :x2="globalLensRe.backward.H"
+            :y2="globalLensRe.backward.re"></line>
+        </g>
       </WithBackground>
-      <Point :c="vec(globalLensRe.H + globalLensInfo.f, 0)"></Point>
+      <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)"></Point>
+      <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f, 0)"></Point>
     </g>
 
     <!-- Items -->
