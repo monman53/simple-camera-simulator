@@ -65,10 +65,11 @@ export const collisionIdealLens = (s: Vec, v: Vec, x: number, h: number, f: numb
 export const collisionAperture = (s: Vec, v: Vec, x: number, rMin: number, rMax: number) => {
     const pa = intersectionY(s, v, x, -rMax, rMax)
     if (pa.p !== null) {
-        if (pa.p.y < Math.abs(rMin)) {
+        if (Math.abs(pa.p.y) > Math.abs(rMin)) {
             return {
                 p: pa.p,
                 d: pa.d,
+                isEnd: true,
             }
         }
     }
@@ -93,15 +94,15 @@ const collisionAll = (s: Vec, v: Vec) => {
     // Collisions
     //--------------------------------
 
-    let ps: ({ p: Vec, d: number, isSensor?: boolean, vn?: () => Vec } | null)[] = []
+    let ps: ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null)[] = []
     lensesSorted.value.forEach((lens, i) => {
-        // Lenses
+        // Lense
         const h = lensRs.value[i]
         const f = lensFs.value[i]
         const n = lens.n
         const xm = (lens.x1 + lens.x2) / 2
         if (options.value.lensIdeal) {
-            ps.push(collisionIdealLens(s, v, xm, h, f))
+            ps.push(collisionIdealLens(s, v, xm, h * lens.aperture, f))
         } else {
             {
                 const ni = lens.R1 > 0 ? n : 1
@@ -116,7 +117,7 @@ const collisionAll = (s: Vec, v: Vec) => {
         }
 
         // Lens aperture
-        // ps.push(collisionAperture(s, v, xm, h * lens.aperture, h))
+        ps.push(collisionAperture(s, v, xm, h * lens.aperture, h))
 
         // Lens to body
         // TODO
@@ -153,16 +154,21 @@ export const rayTrace = (s: Vec, v: Vec) => {
         const c = collisionAll(s, v)
 
         if (c === null) {
-            ps.push({p: s.add(v.mul(infR.value))})
+            ps.push({ p: s.add(v.mul(infR.value)) })
+            break
+        }
+
+        if (c.isEnd) {
+            ps.push({ p: c.p })
             break
         }
 
         if (c.isSensor) {
-            ps.push({p: c.p, isSensor: true})
+            ps.push({ p: c.p, isSensor: true })
             break
         }
 
-        ps.push({p: c.p})
+        ps.push({ p: c.p })
         s = c.p
         if (c.vn) {
             v = c.vn()
