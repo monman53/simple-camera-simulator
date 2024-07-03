@@ -161,7 +161,7 @@ const collisionAll = (s: Vec, v: Vec) => {
 
         // Lens upper and bottom
         ps.push(collisionX(s, v, -h, lensFronts.value[i], lensBacks.value[i]))
-        // TODO
+        ps.push(collisionX(s, v, h, lensFronts.value[i], lensBacks.value[i]))
     })
 
     // Aperture
