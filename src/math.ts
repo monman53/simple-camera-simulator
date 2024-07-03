@@ -220,31 +220,26 @@ export const intersectionCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
     return [c1.add(n.rotate(theta).inplaceMul(r1)), c1.add(n.rotate(-theta).inplaceMul(r1))]
 }
 
-export const intersectionCLNearest = (cx: number, r: number, s: Vec, v: Vec) => {
+export const intersectionCL = (cx: number, r: number, s: Vec, v: Vec) => {
     const absR = Math.abs(r)
     const n = v.normalize()
     const a = 1;
     const b = 2 * ((s.x - cx) * n.x + (s.y) * n.y);
     const c = (s.x - cx) * (s.x - cx) + s.y * s.y - absR * absR;
     const cond = b * b - 4 * a * c;
+    const res: { p: Vec, d: number }[] = []
     if (cond < 0) {
-        return null
+        return res
     }
     const d1 = (-b - Math.sqrt(cond)) / (2 * a);
     const d2 = (-b + Math.sqrt(cond)) / (2 * a);
-    if (d1 >= 0 && d2 >= 0) {
-        if (d1 < d2) {
-            return { p: s.add(n.mul(d1)), d: d1 }
-        } else {
-            return { p: s.add(n.mul(d2)), d: d2 }
-        }
-    } else if (d1 >= 0) {
-        return { p: s.add(n.mul(d1)), d: d1 }
-    } else if (d2 >= 0) {
-        return { p: s.add(n.mul(d2)), d: d2 }
-    } else {
-        return null
+    if (d1 >= 0) {
+        res.push({ p: s.add(n.mul(d1)), d: d1 })
     }
+    if (d2 >= 0) {
+        res.push({ p: s.add(n.mul(d2)), d: d2 })
+    }
+    return res
 }
 
 export const intersectionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: number) => {
