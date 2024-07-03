@@ -128,7 +128,7 @@ export class Vec {
     // TODO: toString
 }
 
-const dot = (p: Vec, q: Vec) => {
+export const dot = (p: Vec, q: Vec) => {
     return p.x * q.x + p.y * q.y
 }
 
@@ -138,7 +138,7 @@ const dot = (p: Vec, q: Vec) => {
 //     return Math.acos((x1 * x2 + y1 * y2) / (norm1 * norm2));
 // };
 
-const cross = (p: Vec, q: Vec) => {
+export const cross = (p: Vec, q: Vec) => {
     return p.x * q.y - q.x * p.y
 }
 
@@ -218,6 +218,33 @@ export const intersectionCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
     const n = c2.sub(c1).inplaceNormalize()
     const theta = Math.acos((d * d + r1 * r1 - r2 * r2) / (2.0 * d * r1));
     return [c1.add(n.rotate(theta).inplaceMul(r1)), c1.add(n.rotate(-theta).inplaceMul(r1))]
+}
+
+export const intersectionCLNearest = (cx: number, r: number, s: Vec, v: Vec) => {
+    const absR = Math.abs(r)
+    const n = v.normalize()
+    const a = 1;
+    const b = 2 * ((s.x - cx) * n.x + (s.y) * n.y);
+    const c = (s.x - cx) * (s.x - cx) + s.y * s.y - absR * absR;
+    const cond = b * b - 4 * a * c;
+    if (cond < 0) {
+        return null
+    }
+    const d1 = (-b - Math.sqrt(cond)) / (2 * a);
+    const d2 = (-b + Math.sqrt(cond)) / (2 * a);
+    if (d1 >= 0 && d2 >= 0) {
+        if (d1 < d2) {
+            return { p: s.add(n.mul(d1)), d: d1 }
+        } else {
+            return { p: s.add(n.mul(d2)), d: d2 }
+        }
+    } else if (d1 >= 0) {
+        return { p: s.add(n.mul(d1)), d: d1 }
+    } else if (d2 >= 0) {
+        return { p: s.add(n.mul(d2)), d: d2 }
+    } else {
+        return null
+    }
 }
 
 export const intersectionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: number) => {

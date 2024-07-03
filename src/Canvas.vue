@@ -5,6 +5,7 @@ import { state, lights, lensGroups, sensor, sensorData, apple, options, style, i
 import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, intersectionSS, intersectionX, intersectionY, calcLensNWavelength } from './math'
 
 import { Light } from './type'
+import { collisionIdealLens, collisionLens } from './rayTrace';
 
 // Reference to the canvas
 const canvas = ref()
@@ -102,36 +103,22 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
       // Center of lens curvature circle
       const c = vec(lens.x1 + lens.R1, 0)
 
-      let pl = getIntersectionLens(s, v, c, r, lens.R1)
+      const ni = lens.R1 > 0 ? n : 1
+      const no = lens.R1 > 0 ? 1 : n
+      const pl = collisionLens(s, v, c.x, lens.R1, r, ni, no)
       const pb = intersectionBody(s, v)
-      if ((pb.p && pl.p && pb.d < pl.d) || (!pl.p && pb.p)) {
+      if ((pb.p && pl !== null && pb.d < pl.d) || (pl === null && pb.p)) {
         v = pb.p.sub(s)
         drawSegment(s, v, v.length())
         return
       }
 
-      if (pl.p) {
+      if (pl !== null) {
         const p = pl.p
         v = p.sub(s)
         s = drawSegment(s, v, v.length())
-
-        // Refraction (inner lens rays)
-        const phi1 = crossAngle(Vec.sub(p, c).mul(lens.R1 > 0 ? 1 : -1), Vec.sub(s0, p));
-        const phi2 = Math.asin(Math.sin(phi1) / n);
-        const theta = Math.atan2(p.y - c.y, p.x - c.x) + Math.PI + phi2;
-        if (lens.R1 > 0) {
-          v = vecRad(theta)
-        } else {
-          v = vecRad(theta + Math.PI)
-        }
-
+        v = pl.vn()
         innerLens = true
-      }
-
-      // Optimization
-      if (lensIdx === 0 && !pl.p && !pb.p) {
-        drawSegment(s, v, infR.value)
-        return
       }
     }
 
@@ -142,27 +129,20 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
       // Center of lens curvature circle
       const c = vec(lens.x2 + lens.R2, 0)
 
-      const pl = getIntersectionLens(s, v, c, r, lens.R2)
+      const ni = lens.R2 > 0 ? 1 : n
+      const no = lens.R2 > 0 ? n : 1
+      const pl = collisionLens(s, v, c.x, lens.R2, r, ni, no)
       const pb = intersectionBody(s, v)
-      if ((pb.p && pl.p && pb.d < pl.d) || (!pl.p && pb.p)) {
+      if ((pb.p && pl !== null && pb.d < pl.d) || (pl === null && pb.p)) {
         v = pb.p.sub(s)
         drawSegment(s, v, v.length())
         return
       }
-      if (pl.p) {
+      if (pl !== null) {
         const p = pl.p
         v = p.sub(s)
         const nextS = drawSegment(s, v, v.length())
-
-        // Refraction (inner lens rays)
-        const phi1 = crossAngle(Vec.sub(p, c).mul(lens.R2 < 0 ? 1 : -1), Vec.sub(p, s));
-        const phi2 = Math.asin(Math.sin(phi1) * n);
-        const theta = Math.atan2(p.y - c.y, p.x - c.x) + phi2;
-        if (lens.R2 > 0) {
-          v = vecRad(theta + Math.PI)
-        } else {
-          v = vecRad(theta)
-        }
+        v = pl.vn()
         s = nextS
       }
     }
@@ -171,40 +151,24 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
     // Collision to ideal lens
     //--------------------------------
     if (options.value.lensIdeal && options.value.lens) {
-      const pl = intersectionY(s, v, xm, -r, r)
+      const pl = collisionIdealLens(s, v, xm, r, f)
       const pb = intersectionBody(s, v)
       // TODO: Find better condition
       const eps = 1e-9
-      if ((pb.p && pl.p && pb.d < pl.d + eps) || (!pl.p && pb.p)) {
+      if ((pb.p && pl !== null && pb.d < pl.d + eps) || (pl === null && pb.p)) {
         v = pb.p.sub(s)
         drawSegment(s, v, v.length())
         return
       }
-      if (pl.p) {
+      if (pl !== null) {
         const p = pl.p
         v = p.sub(s)
         s = drawSegment(s, v, v.length())
-
-        // Find image position of the light source
-        // TODO:
-        const image = fGaussian(f, vec(s0.x - xm, s0.y))
-
-        // Refracted ray
-        let theta = Math.atan2(image.y - s.y, image.x);
-        if (image.x === Infinity) {
-          theta = Math.atan2(-s0.y, -(s0.x - xm));
-        }
-        if (f < 0) {
-          theta += Math.PI
-        }
-        if (xm - f < s0.x) {
-          theta += Math.PI
-        }
-        v = vecRad(theta)
+        v = pl.vn()
       }
 
       // Optimization
-      if (lensIdx === 0 && !pl.p && !pb.p) {
+      if (lensIdx === 0 && pl === null && !pb.p) {
         drawSegment(s, v, infR.value)
         return
       }
