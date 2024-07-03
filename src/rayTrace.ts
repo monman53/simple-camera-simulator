@@ -1,7 +1,7 @@
 import { aperture, body, infR, lensBacks, lensFronts, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
 import { cross, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
 
-export const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: number, no: number) => {
+const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: number, no: number) => {
     v = v.normalize()
     const pls = intersectionCL(cx, r, s, v)
     if (pls.length === 0) {
@@ -37,7 +37,7 @@ export const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, 
     return null
 }
 
-export const collisionIdealLens = (s: Vec, v: Vec, x: number, h: number, f: number) => {
+const collisionIdealLens = (s: Vec, v: Vec, x: number, h: number, f: number) => {
     const pl = intersectionY(s, v, x, -h, h)
     if (pl.p === null) {
         return null
@@ -62,7 +62,7 @@ export const collisionIdealLens = (s: Vec, v: Vec, x: number, h: number, f: numb
     }
 }
 
-export const collisionAperture = (s: Vec, v: Vec, x: number, rMin: number, rMax: number) => {
+const collisionAperture = (s: Vec, v: Vec, x: number, rMin: number, rMax: number) => {
     const pa = intersectionY(s, v, x, -rMax, rMax)
     if (pa.p !== null) {
         if (Math.abs(pa.p.y) > Math.abs(rMin)) {
@@ -215,6 +215,8 @@ export const rayTrace = (s: Vec, v: Vec) => {
         }
 
         ps.push({ p: c.p })
+
+        // Next ray
         s = c.p
         if (c.vn) {
             v = c.vn()

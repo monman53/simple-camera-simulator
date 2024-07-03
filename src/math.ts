@@ -276,34 +276,6 @@ export const intersectionX = (s: Vec, v: Vec, y: number, xMin: number, xMax: num
 // Lens
 //================================
 
-export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */) => {
-    const absR = Math.abs(R)
-    const n = v.normalize()
-    const a = 1;
-    const b = 2 * ((s.x - cl.x) * n.x + (s.y - cl.y) * n.y);
-    const c = Math.pow(s.x - cl.x, 2) + Math.pow(s.y - cl.y, 2) - absR * absR;
-    const cond = b * b - 4 * a * c;
-    if (cond < 0) {
-        return { p: null, d: 0 }
-    }
-    const d1 = (-b - Math.sqrt(cond)) / (2 * a);
-    const d2 = (-b + Math.sqrt(cond)) / (2 * a);
-    const d = R > 0 ? d1 : d2;
-    const tx = s.x + d * n.x;
-    const ty = s.y + d * n.y;
-    // TODO: Workarounds
-    if (Math.abs(ty) > r || d < 0) {
-        return { p: null, d }
-    }
-    if (R >= 0 && tx >= cl.x) {
-        return { p: null, d }
-    }
-    if (R < 0 && tx < cl.x) {
-        return { p: null, d }
-    }
-    return { p: vec(tx, ty), d }
-}
-
 export const fGaussian = (f: number, a: Vec) => {
     const bx = f * a.x / (a.x + f)
     const by = a.y * (bx / a.x)
