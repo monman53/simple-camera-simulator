@@ -102,11 +102,11 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const c0 = light.c.copy()
         moveHandler = (e_: any) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
-            if (c0.x + d.x > minLensX.value) {
-                light.c.x = minLensX.value
-            } else {
+            // if (c0.x + d.x > minLensX.value) {
+            //     light.c.x = minLensX.value
+            // } else {
                 light.c.x = c0.x + d.x
-            }
+            // }
             light.c.y = c0.y + d.y
         }
     }

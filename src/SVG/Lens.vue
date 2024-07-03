@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { sensor, options, maxLightX, calcLensInfo } from '../globals'
+import { sensor, options, calcLensInfo } from '../globals'
 import { vec, calcRMax, calcLensFront, calcLensBack } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens } from '../type'
@@ -82,9 +82,7 @@ const x1MoveStartHandler = (e: any) => {
     const x10 = lens.x1;
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (x10 + d.x < maxLightX.value) {
-            lens.x1 = maxLightX.value
-        } else if (x10 + d.x > props.lens.x2) {
+        if (x10 + d.x > props.lens.x2) {
             lens.x1 = props.lens.x2
         } else {
             lens.x1 = x10 + d.x
@@ -120,9 +118,6 @@ const r1MoveStartHandler = (e: any) => {
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         let x1n = x10 + d.x
-        if (x1n < maxLightX.value) {
-            x1n = maxLightX.value
-        }
         if (x1n > props.lens.x2) {
             x1n = props.lens.x2
         }

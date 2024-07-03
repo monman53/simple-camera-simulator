@@ -128,7 +128,7 @@ export class Vec {
     // TODO: toString
 }
 
-const dot = (p: Vec, q: Vec) => {
+export const dot = (p: Vec, q: Vec) => {
     return p.x * q.x + p.y * q.y
 }
 
@@ -138,7 +138,7 @@ const dot = (p: Vec, q: Vec) => {
 //     return Math.acos((x1 * x2 + y1 * y2) / (norm1 * norm2));
 // };
 
-const cross = (p: Vec, q: Vec) => {
+export const cross = (p: Vec, q: Vec) => {
     return p.x * q.y - q.x * p.y
 }
 
@@ -150,7 +150,7 @@ export const crossAngle = (p: Vec, q: Vec) => {
 // Geometry
 //================================
 
-const eps = 1e-9
+export const eps = 1e-9
 
 // ccw
 const ccw = (a: Vec, b: Vec, c: Vec) => {
@@ -220,6 +220,28 @@ export const intersectionCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
     return [c1.add(n.rotate(theta).inplaceMul(r1)), c1.add(n.rotate(-theta).inplaceMul(r1))]
 }
 
+export const intersectionCL = (cx: number, r: number, s: Vec, v: Vec) => {
+    const absR = Math.abs(r)
+    const n = v.normalize()
+    const a = 1;
+    const b = 2 * ((s.x - cx) * n.x + (s.y) * n.y);
+    const c = (s.x - cx) * (s.x - cx) + s.y * s.y - absR * absR;
+    const cond = b * b - 4 * a * c;
+    const res: { p: Vec, d: number }[] = []
+    if (cond < 0) {
+        return res
+    }
+    const d1 = (-b - Math.sqrt(cond)) / (2 * a);
+    const d2 = (-b + Math.sqrt(cond)) / (2 * a);
+    if (d1 >= 0) {
+        res.push({ p: s.add(n.mul(d1)), d: d1 })
+    }
+    if (d2 >= 0) {
+        res.push({ p: s.add(n.mul(d2)), d: d2 })
+    }
+    return res
+}
+
 export const intersectionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: number) => {
     v = v.normalize()
     const d = (x - s.x) / v.x
@@ -253,34 +275,6 @@ export const intersectionX = (s: Vec, v: Vec, y: number, xMin: number, xMax: num
 //================================
 // Lens
 //================================
-
-export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */) => {
-    const absR = Math.abs(R)
-    const n = v.normalize()
-    const a = 1;
-    const b = 2 * ((s.x - cl.x) * n.x + (s.y - cl.y) * n.y);
-    const c = Math.pow(s.x - cl.x, 2) + Math.pow(s.y - cl.y, 2) - absR * absR;
-    const cond = b * b - 4 * a * c;
-    if (cond < 0) {
-        return { p: null, d: 0 }
-    }
-    const d1 = (-b - Math.sqrt(cond)) / (2 * a);
-    const d2 = (-b + Math.sqrt(cond)) / (2 * a);
-    const d = R > 0 ? d1 : d2;
-    const tx = s.x + d * n.x;
-    const ty = s.y + d * n.y;
-    // TODO: Workarounds
-    if (Math.abs(ty) > r || d < 0) {
-        return { p: null, d }
-    }
-    if (R >= 0 && tx >= cl.x) {
-        return { p: null, d }
-    }
-    if (R < 0 && tx < cl.x) {
-        return { p: null, d }
-    }
-    return { p: vec(tx, ty), d }
-}
 
 export const fGaussian = (f: number, a: Vec) => {
     const bx = f * a.x / (a.x + f)

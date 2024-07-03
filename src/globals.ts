@@ -207,7 +207,7 @@ export const options0 = () => {
     return {
         advanced: false,
         lens: true,
-        lensIdeal: true,
+        lensIdeal: false,
         lensFocalPoints: false,
         lensDoubleFocalPoints: false,
         hyperfocalPoint: false,
@@ -215,7 +215,7 @@ export const options0 = () => {
         sensorPreview: true,
         sensorMemory: false,
         body: true,
-        aperture: true,
+        aperture: false,
         grid: false,
         opticalAxis: false,
         curvature: false,
@@ -293,20 +293,6 @@ export const maxLensX = computed(() => {
         }
     }
     return maxX
-})
-
-export const maxLightX = computed(() => {
-    let max = -infR.value
-    for (const light of lights.value) {
-        if (light.type === Light.Point) {
-            max = Math.max(max, light.c.x)
-        }
-        if (light.type === Light.Parallel) {
-            max = Math.max(max, light.s.x)
-            max = Math.max(max, light.t.x)
-        }
-    }
-    return max
 })
 
 export const rUI = computed(() => {

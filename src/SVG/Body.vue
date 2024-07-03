@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aperture, body, lensesSorted, lensFronts, lensGroups, lensRs, maxLightX, options, sensor } from '@/globals';
+import { aperture, body, lensesSorted, lensFronts, lensGroups, lensRs, options, sensor } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import * as h from '../handlers'
 
@@ -19,9 +19,6 @@ const move = (e: any) => {
                 minX = Math.min(minX, x1)
             })
         ])
-        if (minX + d.x < maxLightX.value) {
-            d.x = maxLightX.value - minX
-        }
 
         // Update
         lensGroups.value.forEach((lensGroup, i) => {

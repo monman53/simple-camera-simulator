@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { lensGroups, releaseAllLenses, sensor, maxLightX } from '../globals'
+import { lensGroups, releaseAllLenses, sensor } from '../globals'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import { type LensGroup } from '../type'
 
@@ -32,11 +32,7 @@ const moveStartHandler = (e: any) => {
             }
             for (let j = 0; j < lensGroup.lenses.length; j++) {
         const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
-                if (x10s[i][j] + d.x < maxLightX.value) {
-                    if (Math.abs(maxLightX.value - x10s[i][j]) < Math.abs(d.x)) {
-                        d.x = maxLightX.value - x10s[i][j]
-                    }
-                } else if (x20s[i][j] + d.x > sensorMinX) {
+                if (x20s[i][j] + d.x > sensorMinX) {
                     if (Math.abs(sensorMinX - x20s[i][j]) < Math.abs(d.x)) {
                         d.x = sensorMinX - x20s[i][j]
                     }
