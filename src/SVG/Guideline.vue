@@ -1,154 +1,184 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { lens, sensor, options, infR } from '../globals'
+import { sensor, infR, globalLensInfo, globalLensRe } from '../globals'
 
 import { vec, fGaussian } from '../math'
 
+import WithBackground from './WithBackground.vue'
+
+const xBack = computed(() => {
+    return globalLensRe.value.forward.H
+})
+
+const xFront = computed(() => {
+    return globalLensRe.value.backward.H
+})
+
+const f = computed(() => {
+    return globalLensInfo.value.f
+})
+
 // Effective lens radius
 const re = computed(() => {
-    if (options.value.aperture) {
-        return lens.value.r * lens.value.aperture;
+    return globalLensRe.value.forward.re
+})
+
+const sensorTop = computed(() => {
+    if (sensor.value.t.y < sensor.value.s.y) {
+        return sensor.value.t
     } else {
-        return lens.value.r;
+        return sensor.value.s
     }
+})
+
+const sensorBottom = computed(() => {
+    if (sensor.value.t.y < sensor.value.s.y) {
+        return sensor.value.s
+    } else {
+        return sensor.value.t
+    }
+})
+
+const sensorMiddle = computed(() => {
+    return sensor.value.t.add(sensor.value.s).div(2)
 })
 
 // Focal plane
 const focal = computed(() => {
-    const f = lens.value.f;
-
-    const bx = sensor.value.x - lens.value.x;
-    const by = sensor.value.r
-
-    const a = fGaussian(lens.value.f, bx, by)
-
-    return { x: lens.value.x - a.x, d: a.y }
+    const s = sensorTop.value
+    const t = sensorBottom.value
+    const ss = fGaussian(f.value, vec(xBack.value - s.x, s.y))
+    const tt = fGaussian(f.value, vec(xBack.value - t.x, t.y))
+    return { s: vec(xFront.value - ss.x, ss.y), t: vec(xFront.value - tt.x, tt.y) }
 })
 
 // Angle of view
 const aov = computed(() => {
-    const lensTop = vec(lens.value.x, -re.value)
+    const lensTop = vec(xFront.value, -re.value)
+    const lensBottom = vec(xFront.value, re.value)
 
-    const focalPlaneTop = vec(focal.value.x, -focal.value.d)
-    const focalPlaneBottom = vec(focal.value.x, focal.value.d)
+    const focalPlaneTop = focal.value.t
+    const focalPlaneBottom = focal.value.s
 
     // Lens to focal plane
-    let middleOuter = focalPlaneTop.sub(lensTop)
-    let middleInner = focalPlaneBottom.sub(lensTop)
+    let middleOuterTop = focalPlaneTop.sub(lensTop)
+    let middleOuterBottom = focalPlaneBottom.sub(lensBottom)
+    let middleInnerTop = focalPlaneBottom.sub(lensTop)
+    let middleInnerBottom = focalPlaneTop.sub(lensBottom)
     // For over infinity modification
-    if (lens.value.x + lens.value.f > sensor.value.x) {
-        middleOuter = middleOuter.minus().normalize().mul(infR.value)
-        middleInner = middleInner.minus().normalize().mul(infR.value)
+    if (xBack.value + f.value > sensorMiddle.value.x) {
+        middleOuterTop = middleOuterTop.minus().normalize().mul(infR.value)
+        middleOuterBottom = middleOuterBottom.minus().normalize().mul(infR.value)
+        middleInnerTop = middleInnerTop.minus().normalize().mul(infR.value)
+        middleInnerBottom = middleInnerBottom.minus().normalize().mul(infR.value)
     }
-    if (lens.value.x + lens.value.f === sensor.value.x) {
-        middleOuter = vec(lens.value.x - sensor.value.x, -sensor.value.r).normalize().mul(infR.value)
-        middleInner = vec(lens.value.x - sensor.value.x, sensor.value.r).normalize().mul(infR.value)
+    if (xBack.value + f.value === sensorMiddle.value.x) {
+        // middleOuterTop = vec(x.value - sensorMiddle.value.x, -sensor.value.r).normalize().mul(infR.value)
+        // middleInnerTop = vec(x.value - sensorMiddle.value.x, sensor.value.r).normalize().mul(infR.value)
     }
 
     // Focal plane to infinity
-    const inner = middleOuter.normalize().mul(infR.value)
-    const outer = middleInner.normalize().mul(infR.value)
+    const innerTop = middleOuterTop.normalize().mul(infR.value)
+    const innerBottom = middleOuterBottom.normalize().mul(infR.value)
+    const outerTop = middleInnerTop.normalize().mul(infR.value)
+    const outerBottom = middleInnerBottom.normalize().mul(infR.value)
 
-    return { middleInner, middleOuter, inner, outer }
+    return { middleInnerTop, middleInnerBottom, middleOuterTop, middleOuterBottom, innerTop, innerBottom, outerTop, outerBottom }
 })
 
 // Depth of field
 const dof = computed(() => {
-    const f = lens.value.f
     const r = re.value
-    const delta = lens.value.circleOfConfusion
+    const st = sensor.value.t.sub(sensor.value.s)
+    const sensorSize = st.length()
+    const c = sensor.value.circleOfConfusion
+    const v = st.normalize()
+    const s = sensor.value.s.add(vec(-xBack.value, 0))
 
-    const bx = sensor.value.x - lens.value.x
-    const by = sensor.value.r // Unused
-    const a = fGaussian(f, bx, by)
+    let inner = ""
+    let outer = ""
+    const d = (sensorSize + c) / 100
+    for (let t = -c; t < sensorSize + d / 2; t += d) {
+        const a = s.add(v.mul(t))
+        const b = s.add(v.mul(t + c))
 
-    // Image space
-    const bFront = bx / (1 + delta / (2 * r)) // Lens side
-    const bBack = bx / (1 - delta / (2 * r))
+        const px = 2 * r * a.x * b.x / (a.x * b.y - b.x * a.y + (a.x + b.x) * r)
+        const py = (a.y - r) / a.x * px + r
 
-    // Object space
-    const aFront = 1 / (1 / f - 1 / bFront)
-    const aBack = 1 / (1 / f - 1 / bBack) // Lens side
+        const p = fGaussian(f.value, vec(-px, py))
+        p.x = xFront.value - p.x
+        p.y = p.y
+        if (inner === "") {
+            inner += `M ${p.x} ${p.y} `
+        } else {
+            inner += `L ${p.x} ${p.y} `
+        }
+    }
+    for (let t = -c; t < sensorSize + d / 2; t += d) {
+        const a = s.add(v.mul(t + c))
+        const b = s.add(v.mul(t))
 
-    // Radius of planes
-    const c = a.x * (re.value / (re.value + focal.value.d))
-    const dFront = re.value / c * (aFront - c)
-    const dBack = focal.value.d * (aBack / a.x) + re.value * (1 - aBack / a.x) // Lens side
+        const px = 2 * r * a.x * b.x / (a.x * b.y - b.x * a.y + (a.x + b.x) * r)
+        const py = (a.y - r) / a.x * px + r
 
-    const inner = { x: aBack, d: dBack } // Lens side
-    const outer = { x: aFront, d: dFront }
+        const p = fGaussian(f.value, vec(-px, py))
+        p.x = xFront.value - p.x
+        p.y = p.y
+        if (outer === "") {
+            outer += `M ${p.x} ${p.y} `
+        } else {
+            outer += `L ${p.x} ${p.y} `
+        }
+    }
     return { inner, outer }
 })
 
 </script>
 
 <template>
-    <!-- Inside camera -->
-    <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="re" class="dotted-bg"></line>
-    <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-re" class="dotted-bg"></line>
-    <line :x1="sensor.x" :y1="sensor.r" :x2="lens.x" :y2="re" class="dotted"></line>
-    <line :x1="sensor.x" :y1="-sensor.r" :x2="lens.x" :y2="-re" class="dotted"></line>
-    <g v-if="lens.x !== sensor.x">
-        <!-- Lens to focal plane (outer) -->
-        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted-bg">
-        </line>
-        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted-bg">
-        </line>
-        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleOuter.x" :y2="-re + aov.middleOuter.y" class="dotted">
-        </line>
-        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleOuter.x" :y2="re - aov.middleOuter.y" class="dotted"></line>
-        <!-- Lens to focal plane (inner) -->
-        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleInner.x" :y2="-re + aov.middleInner.y"
-            class="dotted-thick-bg">
-        </line>
-        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleInner.x" :y2="re - aov.middleInner.y"
-            class="dotted-thick-bg">
-        </line>
-        <line :x1="lens.x" :y1="-re" :x2="lens.x + aov.middleInner.x" :y2="-re + aov.middleInner.y"
-            class="dotted-thick">
-        </line>
-        <line :x1="lens.x" :y1="re" :x2="lens.x + aov.middleInner.x" :y2="re - aov.middleInner.y" class="dotted-thick">
-        </line>
-    </g>
-    <!-- Non over infinity -->
-    <g v-if="lens.x + lens.f < sensor.x">
-        <!-- Focal plane -->
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x" :y2="focal.d" class="dotted-bg"></line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x" :y2="focal.d" class="dotted"></line>
-        <!-- Focal plane to inf (outer) -->
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.outer.x" :y2="focal.d + aov.outer.y" class="dotted-bg">
-        </line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.outer.x" :y2="-focal.d - aov.outer.y" class="dotted-bg">
-        </line>
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.outer.x" :y2="focal.d + aov.outer.y" class="dotted"></line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.outer.x" :y2="-focal.d - aov.outer.y" class="dotted">
-        </line>
-        <!-- Focal plane to inf (inner) -->
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.inner.x" :y2="focal.d - aov.inner.y"
-            class="dotted-thick-bg">
-        </line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.inner.x" :y2="-focal.d + aov.inner.y"
-            class="dotted-thick-bg"></line>
-        <line :x1="focal.x" :y1="focal.d" :x2="focal.x + aov.inner.x" :y2="focal.d - aov.inner.y" class="dotted-thick">
-        </line>
-        <line :x1="focal.x" :y1="-focal.d" :x2="focal.x + aov.inner.x" :y2="-focal.d + aov.inner.y"
-            class="dotted-thick">
-        </line>
-
-        <!-- Depth of field -->
-        <g v-if="options.circleOfConfusion && options.depthOfField">
-            <line :x1="lens.x - dof.inner.x" :y1="-dof.inner.d" :x2="lens.x - dof.inner.x" :y2="dof.inner.d"
-                class="dotted-thick-bg"></line>
-            <line :x1="lens.x - dof.outer.x" :y1="-dof.outer.d" :x2="lens.x - dof.outer.x" :y2="dof.outer.d"
-                class="dotted-thick-bg"></line>
-            <line :x1="lens.x - dof.inner.x" :y1="-dof.inner.d" :x2="lens.x - dof.inner.x" :y2="dof.inner.d"
-                class="dotted-thick"></line>
-            <line :x1="lens.x - dof.outer.x" :y1="-dof.outer.d" :x2="lens.x - dof.outer.x" :y2="dof.outer.d"
-                class="dotted-thick"></line>
+    <WithBackground>
+        <g class="stroke-white">
+            <!-- Inside camera -->
+            <g class="thick">
+                <line :x1="sensorTop.x" :y1="sensorTop.y" :x2="xBack" :y2="-re"></line>
+                <line :x1="sensorBottom.x" :y1="sensorBottom.y" :x2="xBack" :y2="re"></line>
+            </g>
+            <g v-if="xBack !== sensorMiddle.x">
+                <!-- Lens to focal plane (outer) -->
+                <g class="thick">
+                    <line :x1="xFront" :y1="-re" :x2="xFront + aov.middleOuterTop.x" :y2="-re + aov.middleOuterTop.y"></line>
+                    <line :x1="xFront" :y1="re" :x2="xFront + aov.middleOuterBottom.x" :y2="re + aov.middleOuterBottom.y"></line>
+                </g>
+                <!-- Lens to focal plane (inner) -->
+                <g class="thicker">
+                    <line :x1="xFront" :y1="-re" :x2="xFront + aov.middleInnerTop.x" :y2="-re + aov.middleInnerTop.y"></line>
+                    <line :x1="xFront" :y1="re" :x2="xFront + aov.middleInnerBottom.x" :y2="re + aov.middleInnerBottom.y"></line>
+                </g>
+            </g>
+            <!-- Non over infinity -->
+            <g v-if="xBack + f < sensorMiddle.x">
+                <!-- Focal plane -->
+                <line :x1="focal.s.x" :y1="focal.s.y" :x2="focal.t.x" :y2="focal.t.y" class="thick"></line>
+                <!-- Focal plane to inf (outer) -->
+                <g class="thick">
+                    <line :x1="focal.s.x" :y1="focal.s.y" :x2="focal.s.x + aov.outerTop.x"
+                        :y2="focal.s.y + aov.outerTop.y"></line>
+                    <line :x1="focal.t.x" :y1="focal.t.y" :x2="focal.t.x + aov.outerBottom.x"
+                        :y2="focal.t.y + aov.outerBottom.y"></line>
+                </g>
+                <!-- Focal plane to inf (inner) -->
+                <g class="thicker">
+                    <line :x1="focal.t.x" :y1="focal.t.y" :x2="focal.t.x + aov.innerTop.x"
+                        :y2="focal.t.y + aov.innerTop.y"></line>
+                    <line :x1="focal.s.x" :y1="focal.s.y" :x2="focal.s.x + aov.innerBottom.x"
+                        :y2="focal.s.y + aov.innerBottom.y"></line>
+                </g>
+                <!-- Depth of focus -->
+                <g class="thicker fill-none">
+                    <path :d="dof.inner"></path>
+                    <path :d="dof.outer"></path>
+                </g>
+            </g>
         </g>
-
-    </g>
-    <!-- Over infinity -->
-    <g v-else>
-    </g>
+    </WithBackground>
 </template>

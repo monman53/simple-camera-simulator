@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lights, lens, sensor, appleProps, options, style, lensD, lensR, fNumber } from './globals'
+import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
+
+const createSensor = (d: number) => {
+    const xm = (sensor.value.s.x + sensor.value.t.x) / 2
+    sensor.value.s.x = xm
+    sensor.value.s.y = -d / 2
+    sensor.value.t.x = xm
+    sensor.value.t.y = d / 2
+}
 
 </script>
 
@@ -35,13 +43,25 @@ const nRays = computed(() => {
         <tr>
             <td>New light color</td>
             <td>
-                <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
+                <label>
+                    <input type="checkbox" v-model="state.newLightColorComposite">
+                    Composite
+                </label>
                 <br>
-                <button @click="state.newLightColor = 0">Red</button>
-                <button @click="state.newLightColor = 120">Green</button>
-                <button @click="state.newLightColor = 240">Blue</button>
+                <template v-if="!state.newLightColorComposite">
+                    <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
+                    <br>
+                    <button @click="state.newLightColor = 0">Red</button>
+                    <button @click="state.newLightColor = 120">Green</button>
+                    <button @click="state.newLightColor = 240">Blue</button>
+                </template>
+                <template v-if="state.newLightColorComposite">
+                    <input type="range" min="0" max="16" v-model="state.newLightColorCompositeN">
+                </template>
             </td>
-            <td :style="`background-color: hsl(${state.newLightColor}, 100%, 50%)`"></td>
+            <td v-if="!state.newLightColorComposite"
+                :style="`background-color: hsl(${state.newLightColor}, 100%, 50%)`"></td>
+            <td v-if="state.newLightColorComposite">{{ state.newLightColorCompositeN }}</td>
         </tr>
         <tr>
             <td>New light type</td>
@@ -79,22 +99,30 @@ const nRays = computed(() => {
             <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
         </tr> -->
         <template v-if="options.lens">
+            <tr>
+                <td><label><input type="checkbox" v-model="options.lensIdeal"> Ideal lens</label></td>
+            </tr>
             <template v-if="options.advanced">
                 <tr>
                     <td><label><input type="checkbox" v-model="options.curvature"> Curvature</label></td>
                     <td></td>
-                    <td>{{ humanReadable(lensR) }}</td>
+                    <!-- <td>{{ humanReadable(lensR) }}</td> -->
                 </tr>
                 <tr>
-                    <td><label><input type="checkbox" v-model="options.lensIdeal"> Ideal lens</label></td>
+                    <td>
+                        <button @click="lensGroups.push({ lenses: [defaultConvexLens(0)], selected: false })">Add convex
+                            lens</button>
+                        <button @click="lensGroups.push({ lenses: [defaultConcaveLens(0)], selected: false })">Add
+                            concave lens</button>
+                    </td>
                 </tr>
-                <tr>
+                <!-- <tr>
                     <td>Refractive index</td>
                     <td><input type="range" min="1.01" max="3" step="0.001" v-model.number="lens.n"></td>
                     <td>{{ humanReadable(lens.n) }}</td>
-                </tr>
+                </tr> -->
             </template>
-            <tr>
+            <!-- <tr>
                 <td>Focal Length</td>
                 <td></td>
                 <td>{{ humanReadable(lens.f) }}</td>
@@ -103,8 +131,8 @@ const nRays = computed(() => {
                 <td>F-number</td>
                 <td></td>
                 <td>{{ humanReadable(fNumber) }}</td>
-            </tr>
-            <template v-if="options.advanced">
+            </tr> -->
+            <!-- <template v-if="options.advanced">
                 <tr>
                     <td>Position</td>
                     <td></td>
@@ -118,9 +146,9 @@ const nRays = computed(() => {
                 <tr>
                     <td>Thickness</td>
                     <td></td>
-                    <td>{{ humanReadable(lensD) }}</td>
+                    <td>{{ humanReadable(lens.d) }}</td>
                 </tr>
-            </template>
+            </template> -->
         </template>
         <!-- Screen -->
         <tr>
@@ -139,15 +167,15 @@ const nRays = computed(() => {
                 <tr>
                     <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
                     <template v-if="options.circleOfConfusion">
-                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="lens.circleOfConfusion">
+                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="sensor.circleOfConfusion">
                         </td>
-                        <td>{{ humanReadable(lens.circleOfConfusion) }}</td>
+                        <td>{{ humanReadable(sensor.circleOfConfusion) }}</td>
                     </template>
                 </tr>
                 <tr>
                     <td>Diameter</td>
                     <td></td>
-                    <td>{{ humanReadable(sensor.r * 2) }}<br></td>
+                    <td>{{ humanReadable(sensor.t.sub(sensor.s).length()) }}<br></td>
                 </tr>
             </template>
         </template>
@@ -158,13 +186,16 @@ const nRays = computed(() => {
             </th>
         </tr>
         <tr>
-            <td><label><input type="checkbox" v-model="options.body"> Wall</label></td>
+            <td><label><input type="checkbox" v-model="options.body"> Body</label></td>
         </tr>
         <tr v-if="options.lens && options.sensor">
             <td><label><input type="checkbox" v-model="options.angleOfView"> Guide lines</label></td>
         </tr>
         <tr>
             <td><label><input type="checkbox" v-model="options.advanced"> Advanced mode</label></td>
+        </tr>
+        <tr>
+            <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
         </tr>
         <template v-if="options.advanced">
             <tr v-if="options.lens && options.sensor && options.circleOfConfusion">
@@ -185,6 +216,9 @@ const nRays = computed(() => {
             <tr>
                 <td>UI stroke width</td>
                 <td><input type="range" min="0" max="3" step="0.01" v-model.number="style.widthUI"></td>
+            </tr>
+            <tr>
+                <td><label><input type="checkbox" v-model="options.wavelength"> Wavelength</label></td>
             </tr>
         </template>
         <!-- Field -->
@@ -227,7 +261,7 @@ const nRays = computed(() => {
                     <hr>Templates
                 </th>
             </tr>
-            <tr>
+            <!-- <tr>
                 <td>Focal length</td>
                 <td>
                     <button @click="lens.f = 12">12</button>
@@ -240,19 +274,19 @@ const nRays = computed(() => {
                     <button @click="lens.f = 200">200</button>
                 </td>
                 <td></td>
-            </tr>
+            </tr> -->
             <tr>
                 <td>Sensor height</td>
                 <td>
-                    <button @click="sensor.r = 24 / 2">Full frame</button>
+                    <button @click="createSensor(24)">Full frame</button>
                     <br>
-                    <button @click="sensor.r = 15.6 / 2">APS-C</button>
+                    <button @click="createSensor(15.6)">APS-C</button>
                     <br>
-                    <button @click="sensor.r = 14.9 / 2">APS-C (Canon)</button>
+                    <button @click="createSensor(14.9)">APS-C (Canon)</button>
                     <br>
-                    <button @click="sensor.r = 13 / 2">Four thirds</button>
+                    <button @click="createSensor(13)">Four thirds</button>
                     <br>
-                    <button @click="sensor.r = 8.8 / 2">1"</button>
+                    <button @click="createSensor(8.8)">1"</button>
                 </td>
                 <td></td>
             </tr>

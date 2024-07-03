@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { watch, onMounted, ref } from 'vue'
+import { watch, onMounted, ref, computed } from 'vue'
 
-import { state, sensor, sensorData, options, style, memoryCanvasCtx, lens } from './globals'
+import { state, sensor, sensorData, options, style, memoryCanvasCtx } from './globals'
 
 // Reference to the canvas
 const canvas = ref()
@@ -15,9 +15,13 @@ if (!ctx) {
   throw new Error()
 }
 
+const d = computed(() => {
+  return sensor.value.t.sub(sensor.value.s).length()
+})
+
 const draw = () => {
   const height = state.value.height
-  const scale = height / (sensor.value.r * 2)
+  const scale = height / d.value
   ctx.reset()
   ctx.transform(scale * 2, 0, 0, scale, 100 * 0.5, height * 0.5);
   ctx.globalCompositeOperation = 'lighten';
@@ -26,7 +30,7 @@ const draw = () => {
   for (const p of sensorData.value) {
     ctx.beginPath()
     ctx.fillStyle = `hsl(${p.color}, 100%, 50%, ${style.value.rayIntensity})`;
-    ctx.rect(-10, p.y - style.value.rayWidth / 2, 20, style.value.rayWidth)
+    ctx.rect(-10, (p.y - d.value / 2) - style.value.rayWidth / 2, 20, style.value.rayWidth)
     ctx.fill()
     ctx.stroke();
   }
@@ -35,8 +39,8 @@ const draw = () => {
   if (options.value.circleOfConfusion) {
     ctx.beginPath();
     ctx.fillStyle = 'white'
-    const width = 0.01 * sensor.value.r
-    ctx.rect(-width / 2, -lens.value.circleOfConfusion / 2, width, lens.value.circleOfConfusion);
+    const width = 0.005 * d.value
+    ctx.rect(-width / 2, -sensor.value.circleOfConfusion / 2, width, sensor.value.circleOfConfusion);
     ctx.fill()
     ctx.stroke();
   }

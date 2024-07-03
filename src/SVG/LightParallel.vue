@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { state, infR, rUI } from '../globals'
-import { vec, Vec } from '../math'
+import { computed } from 'vue'
+import { lights, rUI, minLensX } from '../globals'
+import { Vec } from '../math'
 import * as h from '../handlers'
+import WithBackground from './WithBackground.vue';
+import {Light} from '../type'
+import CircleUI from './CircleUI.vue';
 
 const props = defineProps(['light', 'idx'])
 
@@ -22,17 +25,52 @@ const points = computed(() => {
     return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
 })
 
+const parallelLightNodeMoveStartHandler = (e: any, idx: number, node: Vec) => {
+    h.preventDefaultAndStopPropagation(e)
+    // Last touched light is always front
+    const light = lights.value[idx];
+    const newLights = lights.value.filter((light, i) => {
+        return i !== idx
+    })
+    newLights.push(light)
+    lights.value = newLights
+
+    if (light.type === Light.Parallel) {
+        const m0 = h.getPositionOnSvg(e);
+        const p0 = node.copy()
+        const p = node
+        h.setMoveHandler((e_: any) => {
+            const d = h.getPositionDiffOnSvgApp(e_, m0)
+            if (p0.x + d.x > minLensX.value) {
+                p.x = minLensX.value
+            } else {
+                p.x = p0.x + d.x
+            }
+            p.y = p0.y + d.y
+        })
+    }
+}
+
+const fill = computed(()=>{
+    if (props.light.colors.length > 1) {
+        return `hsl(0, 100%, 100%, 0.5)`
+    } else {
+        return `hsl(${props.light.colors[0]}, 100%, 50%, 0.5)`
+    }
+})
+
 </script>
 
 <template>
     <g>
-        <polygon :points :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></polygon>
-        <polygon :points class="ui-bg"></polygon>
-        <polygon :points class="ui" @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)"></polygon>
+        <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)">
+            <polygon :points :fill></polygon>
+            <WithBackground>
+                <polygon :points class="stroke-white normal fill-none"></polygon>
+            </WithBackground>
+        </g>
 
-        <circle :cx="light.s.x" :cy="light.s.y" :r="rUI"
-            @mousedown="h.parallelLightNodeMoveStartHandler($event, idx, 's')" class="ui-hidden"></circle>
-        <circle :cx="light.t.x" :cy="light.t.y" :r="rUI"
-            @mousedown="h.parallelLightNodeMoveStartHandler($event, idx, 't')" class="ui-hidden"></circle>
+        <CircleUI :c="light.s" @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.s)"></CircleUI>
+        <CircleUI :c="light.t" @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.t)"></CircleUI>
     </g>
 </template>

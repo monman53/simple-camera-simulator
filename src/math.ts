@@ -1,3 +1,5 @@
+import type { Lens } from "./type"
+
 //================================
 // Liner algebra
 //================================
@@ -169,7 +171,7 @@ const isIntersectedSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
 const intersectionLL = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
     const a = a2.sub(a1)
     const b = b2.sub(b1)
-    return a1.add(a.mul(cross(b, b1.sub(a1))).div(cross(b, a)))
+    return a1.add(a.mul(cross(b, b1.sub(a1))).inplaceDiv(cross(b, a)))
 }
 
 export const intersectionSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
@@ -180,30 +182,71 @@ export const intersectionSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
     }
 }
 
-//================================
-// Support functions
-//================================
-
-export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */, select: boolean) => {
-    const n = v.normalize()
-
-    const a = 1;
-    const b = 2 * ((s.x - cl.x) * n.x + (s.y - cl.y) * n.y);
-    const c = Math.pow(s.x - cl.x, 2) + Math.pow(s.y - cl.y, 2) - R * R;
-    const cond = b * b - 4 * a * c;
-    if (cond < 0) {
-        return null
+export const intersectCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
+    // Swap
+    if (r1 < r2) {
+        const cTmp = c1.copy()
+        c1 = c2
+        c2 = cTmp
+        const rTmp = r1
+        r1 = r2
+        r2 = rTmp
     }
-    // NOTICE: Use smaller r
-    const d1 = (-b - Math.sqrt(cond)) / (2 * a);
-    const d2 = (-b + Math.sqrt(cond)) / (2 * a);
-    const d = select ? d1 : d2;
-    const tx = s.x + d * n.x;
-    const ty = s.y + d * n.y;
-    if (Math.abs(ty) > r || d < 0) {
-        return null
+    const dc = c2.sub(c1).length();
+    // Separated
+    if (dc > r1 + r2) {
+        return false
+    }
+    // Connotation
+    if (dc + r2 < r1) {
+        return false
+    }
+    return true
+}
+
+export const intersectionCC = (c1: Vec, r1: number, c2: Vec, r2: number) => {
+    // Swap
+    if (r1 < r2) {
+        const cTmp = c1.copy()
+        c1 = c2
+        c2 = cTmp
+        const rTmp = r1
+        r1 = r2
+        r2 = rTmp
+    }
+    const d = c2.sub(c1).length()
+    const n = c2.sub(c1).inplaceNormalize()
+    const theta = Math.acos((d * d + r1 * r1 - r2 * r2) / (2.0 * d * r1));
+    return [c1.add(n.rotate(theta).inplaceMul(r1)), c1.add(n.rotate(-theta).inplaceMul(r1))]
+}
+
+export const intersectionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: number) => {
+    v = v.normalize()
+    const d = (x - s.x) / v.x
+    if (!isFinite(d) || d < 0) {
+        return { p: null, d }
     } else {
-        return vec(tx, ty)
+        const p = s.add(v.inplaceMul(d))
+        if (p.y < yMin || p.y > yMax) {
+            return { p: null, d }
+        } else {
+            return { p, d }
+        }
+    }
+}
+
+export const intersectionX = (s: Vec, v: Vec, y: number, xMin: number, xMax: number) => {
+    v = v.normalize()
+    const d = (y - s.y) / v.y
+    if (!isFinite(d) || d < 0) {
+        return { p: null, d }
+    } else {
+        const p = s.add(v.inplaceMul(d))
+        if (p.x < xMin || p.x > xMax) {
+            return { p: null, d }
+        } else {
+            return { p, d }
+        }
     }
 }
 
@@ -211,52 +254,104 @@ export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens d
 // Lens
 //================================
 
-export const fGaussian = (f: number, px: number, py: number) => {
-    const qx = f * px / (px - f)
-    const qy = py * (qx / px)
-    return vec(qx, qy)
+export const getIntersectionLens = (s: Vec, v: Vec, cl: Vec, r: number /* lens diameter */, R: number /* lens curvature radius */) => {
+    const absR = Math.abs(R)
+    const n = v.normalize()
+    const a = 1;
+    const b = 2 * ((s.x - cl.x) * n.x + (s.y - cl.y) * n.y);
+    const c = Math.pow(s.x - cl.x, 2) + Math.pow(s.y - cl.y, 2) - absR * absR;
+    const cond = b * b - 4 * a * c;
+    if (cond < 0) {
+        return { p: null, d: 0 }
+    }
+    const d1 = (-b - Math.sqrt(cond)) / (2 * a);
+    const d2 = (-b + Math.sqrt(cond)) / (2 * a);
+    const d = R > 0 ? d1 : d2;
+    const tx = s.x + d * n.x;
+    const ty = s.y + d * n.y;
+    // TODO: Workarounds
+    if (Math.abs(ty) > r || d < 0) {
+        return { p: null, d }
+    }
+    if (R >= 0 && tx >= cl.x) {
+        return { p: null, d }
+    }
+    if (R < 0 && tx < cl.x) {
+        return { p: null, d }
+    }
+    return { p: vec(tx, ty), d }
 }
 
-export const calcLensR = (n: number, f: number, r: number) => {
-    // This formula is made from lens-maker's formula and d = 2(R-sqrt(R^2-r^2))
-    const func = (R: number) => {
-        let res = 0;
-        res += n * n * Math.pow(R, 4);
-        res += - 4 * n * (n - 1) * f * Math.pow(R, 3);
-        res += 4 * (n - 1) * (n - 1) * f * f * (1 - (n - 1) * (n - 1)) * R * R;
-        res += 4 * Math.pow(n - 1, 4) * f * f * r * r;
+export const fGaussian = (f: number, a: Vec) => {
+    const bx = f * a.x / (a.x + f)
+    const by = a.y * (bx / a.x)
+    return vec(bx, by)
+}
 
-        return res;
-    };
+// export const calcLensF = (lens: Lens) => {
+//     const d = lens.x2 - lens.x1
+//     const R1 = lens.R1
+//     const R2 = lens.R2
+//     const n = lens.n
+//     const inv = (n - 1) * (1 / R1 - 1 / R2) + (d / n) * ((n - 1) * (n - 1) / (R1 * R2))
+//     return 1 / inv
+// }
 
-    // Derivative of func
-    const funcc = (R: number) => {
-        let res = 0;
-        res += 4 * n * n * Math.pow(R, 3);
-        res += - 12 * n * (n - 1) * f * Math.pow(R, 2);
-        res += 8 * (n - 1) * (n - 1) * f * f * (1 - (n - 1) * (n - 1)) * R;
-        return res;
-    };
-
-    // Solve func(R) = 0 by Newton' method
-    let R = 100 * n; // NOTICE: Very heuristic
-    for (let i = 0; i < 100; i++) {
-        // console.log(R, func(R), funcc(R))
-        R = R - func(R) / funcc(R);
-
-        // Validation R with desired focal length
-        // Calculate focal length by lens maker's formula
-        const d = 2 * (R - Math.sqrt(R * R - r * r));
-        const desiredLensF = f;
-        const actualLensF = 1.0 / (2 * (n - 1) / R - (n - 1) * (n - 1) * d / (n * R * R));
-
-        const absError = Math.abs(desiredLensF - actualLensF);
-        const relError = absError / desiredLensF;
-        if (relError < 1e-8) {
-            return R;
+export const calcRMax = (lens: Lens) => {
+    const R1 = Math.abs(lens.R1)
+    const R2 = Math.abs(lens.R2)
+    const c1 = vec(lens.x1 + lens.R1, 0)
+    const c2 = vec(lens.x2 + lens.R2, 0)
+    const minR = Math.min(R1, R2)
+    if (intersectCC(c1, R1, c2, R2)) {
+        const [p1, p2] = intersectionCC(c1, R1, c2, R2)
+        const l1 = Math.min(lens.x1, c1.x)
+        const r1 = Math.max(lens.x1, c1.x)
+        const l2 = Math.min(lens.x2, c2.x)
+        const r2 = Math.max(lens.x2, c2.x)
+        if ((l1 < p1.x && p1.x < r1) && (l2 < p1.x && p1.x < r2)) {
+            return Math.abs(p1.y)
+        } else {
+            return minR
         }
+    } else {
+        return minR
+    }
+}
+
+export const calcLensR = (lens: Lens) => {
+    const rMax = calcRMax(lens)
+    return Math.min(rMax, lens.r)
+}
+
+// TODO: merge with calcLensBack
+export const calcLensFront = (lens: Lens) => {
+    const x = lens.x1
+    const R1 = lens.R1
+    const r = calcLensR(lens)
+    const d = Math.abs(R1) - Math.sqrt(R1 * R1 - r * r)
+    if (R1 > 0) {
+        return x + d
+    } else {
+        return x - d
+    }
+}
+
+export const calcLensBack = (lens: Lens) => {
+    const x = lens.x2
+    const R2 = lens.R2
+    const r = calcLensR(lens)
+    const d = Math.abs(R2) - Math.sqrt(R2 * R2 - r * r)
+    if (R2 > 0) {
+        return x + d
+    } else {
+        return x - d
     }
 
-    // Failed
-    return -1.0;
+}
+
+// Just for demo
+export const calcLensNWavelength = (n: number, color: number) => {
+    const d = (color - (360 / 2)) * 0.0002 + 1.0
+    return d * n
 }

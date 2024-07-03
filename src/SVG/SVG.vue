@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lens, sensor, style, apple, options, lensR, lensD, infR, fNumber, rUI } from '../globals'
+import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
+import { vec } from '../math'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
 import LightParallel from './LightParallel.vue'
+import LensGroup from './LensGroup.vue'
+import WithBackground from './WithBackground.vue'
+import Aperture from './Aperture.vue'
+import Body from './Body.vue'
+import Point from './Point.vue'
+import Sensor from './Sensor.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -43,166 +50,85 @@ const strokeWidth = computed(() => {
   }
 })
 
-const lineBgColor = "#000a"
-
-const strokeDashArray = computed(() => {
-  const scale = 1 / state.value.scale
-  return 4 * scale;
-})
+// const strokeDashArray = computed(() => {
+//   const scale = 1 / state.value.scale
+//   return 4 * scale;
+// })
 
 </script>
 
 <template>
-  <svg id="main-svg" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
+  <svg id="main-svg" class="move" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
     @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
-    @mouseleave="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="h.addLight">
+    @wheel="h.svgScaleHandler" @dblclick="h.addLight">
 
     <!-- Optical axis -->
     <g v-if="options.opticalAxis">
-      <line :x1="-infR" y1="0" :x2="infR" y2="0" stroke="white" class="thick"></line>
+      <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thick"></line>
     </g>
 
     <!-- Grid -->
     <Grid v-if="options.grid"></Grid>
 
-    <!-- Curvature -->
-    <g v-if="options.lens && options.curvature">
-      <circle :cx="lens.x + lensD / 2 - lensR" :cy="0" :r="lensR" class="dotted"></circle>
-      <circle :cx="lens.x - lensD / 2 + lensR" :cy="0" :r="lensR" class="dotted"></circle>
-      <!-- center point -->
-      <circle :cx="lens.x + lensD / 2 - lensR" cy="0" :r="rUI / 2" class="white"></circle>
-      <circle :cx="lens.x - lensD / 2 + lensR" cy="0" :r="rUI / 2" class="white"></circle>
-    </g>
+    <!-- Body -->
+
+    <Body v-if="options.body"></Body>
 
     <!-- Guidelines -->
-    <Guideline v-if="options.lens && options.sensor && options.angleOfView"></Guideline>
+    <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView"></Guideline>
 
-    <!-- Hyperfocal point -->
-    <g
-      v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
-      <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2 * 1.2"
-        :fill="lineBgColor"></circle>
-      <circle :cx="lens.x - lens.f - lens.f * lens.f / (lens.circleOfConfusion * fNumber)" cy="0" :r="rUI / 2"
-        class="white"></circle>
+    <!-- Global focal point -->
+    <g v-if="options.lensFocalPoints && lensExist">
+      <WithBackground>
+        <g class="stroke-white thicker">
+          <line :x1="globalLensRe.forward.H" :y1="-globalLensRe.forward.re" :x2="globalLensRe.forward.H"
+            :y2="globalLensRe.forward.re"></line>
+          <line :x1="globalLensRe.backward.H" :y1="-globalLensRe.backward.re" :x2="globalLensRe.backward.H"
+            :y2="globalLensRe.backward.re"></line>
+        </g>
+      </WithBackground>
+      <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)"></Point>
+      <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f, 0)"></Point>
     </g>
 
-    <!-- Lens and Sensor move dummy element-->
-    <g v-if="options.lens && options.sensor" class="hover-parent">
-      <!-- lens -->
-      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
-      <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`" class="hover-child fill-none" />
-      <!-- sensor -->
-      <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
-      <!-- dummy for ui -->
-      <rect class="ui-transparent" :x="lens.x" :y="-Math.max(lens.r, sensor.r)" :width="sensor.x - lens.x"
-        :height="2 * Math.max(lens.r, sensor.r)" @mousedown="h.cameraMoveStartHandler" />
-    </g>
-
-    <!-- Lens -->
+    <!-- Items -->
     <g v-if="options.lens">
-      <g class="hover-parent">
-        <!-- left half background -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`"
-          class="hover-child-bg fill-none" />
-        <!-- right half background -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`"
-          class="hover-child-bg fill-none" />
-        <!-- left half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 0 ${lens.x} ${lens.r}`"
-          class="hover-child fill-none" />
-        <!-- right half -->
-        <path :d="`M ${lens.x} ${-lens.r} A ${lensR} ${lensR} 0 0 1 ${lens.x} ${lens.r}`"
-          class="hover-child fill-none" />
-        <!-- dummy for ui -->
-        <rect class='ui-transparent' :x="lens.x - lensD / 2" :y="-lens.r" :width="lensD" :height="2 * lens.r"
-          @mousedown="h.lensMoveStartHandler" />
+      <g v-for="(lensGroup, idx) in lensGroups">
+        <LensGroup :lensGroup :idx></LensGroup>
       </g>
-      <!-- Focal points -->
-      <g v-if="options.lensFocalPoints">
-        <!-- left hand -->
-        <g>
-          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="lineBgColor"></circle>
-          <circle :cx="lens.x - lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-          <!-- UI -->
-          <circle :cx="lens.x - lens.f" cy="0" :r="rUI" @mousedown="h.focalPointMoveStartHandler" class="ui-hidden">
-          </circle>
-        </g>
-        <!-- right hand -->
-        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2 * 1.2" :fill="lineBgColor"></circle>
-        <circle :cx="lens.x + lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-
-        <!-- Double focal points -->
-        <g v-if="options.lensDoubleFocalPoints">
-          <circle :cx="lens.x - 2 * lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-          <circle :cx="lens.x + 2 * lens.f" cy="0" :r="rUI / 2" class="white"></circle>
-        </g>
-      </g>
-      <!-- Lens size change UI-->
-      <circle :cx="lens.x" :cy="-lens.r" :r="rUI" class="ui-hidden" @mousedown="h.lensSizeChangeStartHandler">
-      </circle>
     </g>
 
     <!-- Aperture -->
-    <g v-if="options.aperture">
-      <!-- Lines -->
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
-        class="hover-sibling-bg no-pointer-events">
-      </line>
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture"
-        class="hover-sibling-bg no-pointer-events">
-      </line>
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-lens.r * lens.aperture"
-        class="hover-sibling no-pointer-events">
-      </line>
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="lens.r * lens.aperture" class="hover-sibling no-pointer-events">
-      </line>
-      <!-- UI -->
-      <circle :cx="lens.x" :cy="lens.r * lens.aperture" :r="rUI" @mousedown="h.apertureSizeChangeStartHandler"
-        class="hover-sibling-master ui-hidden"></circle>
-    </g>
+    <Aperture v-if="options.aperture"></Aperture>
 
     <!-- Apple -->
     <g v-if="options.apple">
       <g v-for="(light, idx) of apple">
+        <WithBackground>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+        </WithBackground>
         <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui-bg"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui"></circle>
       </g>
     </g>
 
     <!-- Lights -->
     <g v-for="(light, idx) of lights">
       <g v-if="light.type === Light.Point">
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="ui-bg"></circle>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" @dblclick="h.deleteLight($event, idx)"
-          @mousedown="h.lightMoveStartHandler($event, idx)" class="ui">
-        </circle>
+        <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)" class="grab">
+          <WithBackground>
+            <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+          </WithBackground>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
+            :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 50 : 100}%, 0.5)`"></circle>
+        </g>
       </g>
       <g v-if="light.type === Light.Parallel">
-        <LightParallel :light :idx></LightParallel>
+        <LightParallel :light :idx class="grab"></LightParallel>
       </g>
-    </g>
-
-    <!-- Body -->
-    <g v-if="options.body">
-      <line :x1="lens.x" :y1="lens.r" :x2="lens.x" :y2="infR" class="white thick" />
-      <line :x1="lens.x" :y1="-lens.r" :x2="lens.x" :y2="-infR" class="white thick" />
     </g>
 
     <!-- Sensor -->
-    <g v-if="options.sensor">
-      <g class="hover-parent">
-        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child-bg" />
-        <line :x1="sensor.x" :y1="-sensor.r" :x2="sensor.x" :y2="sensor.r" class="hover-child" />
-        <!-- dummy for ui -->
-        <rect :x="sensor.x - rUI" :y="-sensor.r" :width="rUI * 2" :height="2 * sensor.r"
-          @mousedown="h.sensorMoveStartHandler" class='ui-transparent' />
-      </g>
-
-      <circle :cx="sensor.x" :cy="-sensor.r" :r="rUI" class="ui-hidden" @mousedown="h.sensorSizeChangeStartHandler">
-      </circle>
-    </g>
+    <Sensor v-if="options.sensor"></Sensor>
   </svg>
 </template>
 
@@ -212,88 +138,58 @@ svg {
   display: block;
 }
 
-.hover-child {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.normal');
+.no-pointer-events {
+  pointer-events: none;
 }
 
-.hover-child-bg {
-  stroke: v-bind('lineBgColor');
-  stroke-width: v-bind('strokeWidth.normalBg');
+.ui-stroke {
+  stroke-width: v-bind((2 * rUI));
+  pointer-events: stroke;
+}
+
+.hover-hidden-child,
+.hover-hidden {
+  stroke: transparent;
+  fill: transparent;
+}
+
+.hover-hidden-parent:hover .hover-hidden-child,
+.hover-hidden:hover {
+  stroke: inherit;
+  fill: inherit;
+}
+
+.transparent {
+  fill: transparent;
+  color: transparent;
+  stroke: transparent;
+}
+
+.fill-transparent {
+  fill: transparent;
 }
 
 .fill-none {
   fill: none;
 }
 
-.no-pointer-events {
-  pointer-events: none;
-}
-
-.hover-sibling {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.normal');
-}
-
-.hover-sibling-bg {
-  stroke: v-bind('lineBgColor');
-  stroke-width: v-bind('strokeWidth.normalBg');
-}
-
-.hover-sibling-master:hover~.hover-sibling,
-.hover-parent:hover .hover-child,
-.hover-parent:hover .hidden-hover-child {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.bold');
-}
-
-.hover-sibling-master:hover~.hover-sibling-bg,
-.hover-parent:hover .hover-child-bg,
-.hover-parent:hover .hidden-hover-child-bg {
-  stroke: v-bind('lineBgColor');
-  stroke-width: v-bind('strokeWidth.boldBg');
-}
-
-.ui {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.normal');
-  fill: transparent
-}
-
-.ui-bg {
-  stroke: v-bind('lineBgColor');
-  stroke-width: v-bind('strokeWidth.normalBg');
-  fill: transparent
-}
-
-.ui-transparent,
-.ui-hidden {
-  stroke: none;
-  fill: transparent;
-}
-
-.ui:hover,
-.ui-hidden:hover {
-  stroke: white;
-  stroke-width: v-bind('strokeWidth.bold');
-}
-
-.white {
+.fill-white {
   fill: white;
 }
 
-.thicker {
+.stroke-white {
   stroke: white;
+}
+
+.thicker {
   stroke-width: v-bind('strokeWidth.thicker');
 }
 
 .thick {
-  stroke: white;
   stroke-width: v-bind('strokeWidth.thick');
 }
 
 .normal {
-  stroke: white;
   stroke-width: v-bind('strokeWidth.normal');
 }
 
@@ -301,35 +197,47 @@ svg {
   stroke-width: v-bind('strokeWidth.bold');
 }
 
-.dotted {
-  stroke: white;
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thick');
-  fill: none;
+.background {
+  .fill-white {
+    fill: v-bind('style.lineBgColor');
+  }
+
+  .stroke-white {
+    stroke: v-bind('style.lineBgColor');
+  }
+
+  .thicker {
+    stroke-width: v-bind('strokeWidth.thickerBg');
+  }
+
+  .thick {
+    stroke-width: v-bind('strokeWidth.thickBg');
+  }
+
+  .normal {
+    stroke-width: v-bind('strokeWidth.normalBg');
+  }
+
+  .bold {
+    stroke-width: v-bind('strokeWidth.boldBg');
+  }
 }
 
-.dotted-thick {
-  stroke: white;
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thicker');
-  fill: none;
-}
+.ui {
+  .fill-white {
+    fill: transparent;
+  }
 
-.dotted-bg {
-  stroke: v-bind('lineBgColor');
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thickBg');
-  fill: none;
-}
+  .stroke-white {
+    stroke: transparent;
+  }
 
-.dotted-thick-bg {
-  stroke: v-bind('lineBgColor');
-  /* dasharray is disabled for performance issue when close-up */
-  /* stroke-dasharray: v-bind(strokeDashArray); */
-  stroke-width: v-bind('strokeWidth.thickerBg');
-  fill: none;
+  .thicker,
+  .thick,
+  .normal,
+  .bold {
+    stroke-width: v-bind((2 * rUI));
+    pointer-events: stroke;
+  }
 }
 </style>
