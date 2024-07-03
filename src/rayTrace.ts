@@ -1,4 +1,5 @@
-import { cross, crossAngle, dot, fGaussian, intersectionCL, intersectionY, vec, vecRad, type Vec } from "./math";
+import { infR, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
+import { cross, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionY, vec, vecRad, type Vec } from "./math";
 
 export const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: number, no: number) => {
     v = v.normalize()
@@ -69,12 +70,104 @@ export const collisionAperture = (s: Vec, v: Vec, x: number, rMin: number, rMax:
                 p: pa.p,
                 d: pa.d,
             }
-        } else {
-            return null
         }
+    }
+    return null
+}
+
+const collisionSensor = (s: Vec, v: Vec) => {
+    const ps = intersectionSS(s, s.add(v.mul(infR.value)), sensor.value.s, sensor.value.t)
+    if (ps !== null) {
+        return {
+            p: ps,
+            d: ps.sub(s).length(),
+            isSensor: true,
+        }
+    } else {
+        return null
     }
 }
 
 const collisionAll = (s: Vec, v: Vec) => {
+    //--------------------------------
+    // Collisions
+    //--------------------------------
 
+    let ps: ({ p: Vec, d: number, isSensor?: boolean, vn?: () => Vec } | null)[] = []
+    lensesSorted.value.forEach((lens, i) => {
+        // Lenses
+        const h = lensRs.value[i]
+        const f = lensFs.value[i]
+        const n = lens.n
+        const xm = (lens.x1 + lens.x2) / 2
+        if (options.value.lensIdeal) {
+            ps.push(collisionIdealLens(s, v, xm, h, f))
+        } else {
+            {
+                const ni = lens.R1 > 0 ? n : 1
+                const no = lens.R1 > 0 ? 1 : n
+                ps.push(collisionLens(s, v, lens.x1 + lens.R1, lens.R1, h, ni, no))
+            }
+            {
+                const ni = lens.R2 > 0 ? 1 : n
+                const no = lens.R2 > 0 ? n : 1
+                ps.push(collisionLens(s, v, lens.x2 + lens.R2, lens.R2, h, ni, no))
+            }
+        }
+
+        // Lens aperture
+        // ps.push(collisionAperture(s, v, xm, h * lens.aperture, h))
+
+        // Lens to body
+        // TODO
+    })
+
+    // Sensor
+    if (options.value.sensor) {
+        ps.push(collisionSensor(s, v))
+    }
+
+    //--------------------------------
+    // Find nearest collision
+    //--------------------------------
+    ps = ps.filter((p) => p !== null && p.d > eps)
+    ps.sort((a, b) => {
+        if (a !== null && b !== null) {
+            return a.d - b.d
+        } else {
+            return 0
+        }
+    })
+
+    if (ps.length > 0) {
+        return ps[0]
+    } else {
+        return null
+    }
+}
+
+export const rayTrace = (s: Vec, v: Vec) => {
+    const ps = []
+    while (true) {
+        // for (let i = 0; i < 100; i++) {
+        const c = collisionAll(s, v)
+
+        if (c === null) {
+            ps.push(s.add(v.mul(infR.value)))
+            break
+        }
+
+        if (c.isSensor) {
+            ps.push(c.p)
+            break
+        }
+
+        ps.push(c.p)
+        s = c.p
+        if (c.vn) {
+            v = c.vn()
+        }
+    }
+
+    return ps
 }

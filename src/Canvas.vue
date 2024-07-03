@@ -5,7 +5,7 @@ import { state, lights, lensGroups, sensor, sensorData, apple, options, style, i
 import { Vec, vec, vecRad, getIntersectionLens, crossAngle, fGaussian, intersectionSS, intersectionX, intersectionY, calcLensNWavelength } from './math'
 
 import { Light } from './type'
-import { collisionIdealLens, collisionLens } from './rayTrace';
+import { collisionIdealLens, collisionLens, rayTrace } from './rayTrace';
 
 // Reference to the canvas
 const canvas = ref()
@@ -19,13 +19,13 @@ if (!ctx) {
   throw new Error()
 }
 
-const drawSegment = (p: Vec, v: Vec, length: number) => {
-  const q = p.add(v.normalize().mul(length))
+const drawSegment = (p: Vec, q: Vec) => {
+  // const q = p.add(v.normalize().mul(length))
   ctx.beginPath();
   ctx.moveTo(p.x, p.y);
   ctx.lineTo(q.x, q.y);
   ctx.stroke();
-  return q
+  // return q
 };
 
 const intersectionBody = (s: Vec, v: Vec) => {
@@ -86,6 +86,13 @@ const intersectionBody = (s: Vec, v: Vec) => {
 }
 
 const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
+  const ps = rayTrace(s.copy(), v.copy())
+  ps.forEach((p) => {
+    drawSegment(s, p)
+    s = p
+  })
+  return
+  /*
   // Multiple lens
   for (let lensIdx = 0; lensIdx < lensesSorted.value.length; lensIdx++) {
     const lens = lensesSorted.value[lensIdx]
@@ -205,6 +212,7 @@ const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
   // to infinity
   drawSegment(s, v, infR.value)
   return
+  */
 }
 
 const draw = () => {

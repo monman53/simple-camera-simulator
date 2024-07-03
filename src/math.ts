@@ -150,7 +150,7 @@ export const crossAngle = (p: Vec, q: Vec) => {
 // Geometry
 //================================
 
-const eps = 1e-9
+export const eps = 1e-9
 
 // ccw
 const ccw = (a: Vec, b: Vec, c: Vec) => {
