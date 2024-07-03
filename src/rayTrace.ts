@@ -44,21 +44,17 @@ export const collisionIdealLens = (s: Vec, v: Vec, x: number, h: number, f: numb
             p: pl.p,
             d: pl.d,
             vn: () => {
-                const ss = fGaussian(f, vec(s.x - x, s.y))
+                const ff = x - s.x > 0 ? f : -f
+                const ss = fGaussian(ff, vec(s.x - x, s.y))
                 ss.x += x
-                if (s.x > x - f) {
-                    if (f > 0) {
-                        return ss.sub(pl.p).normalize().minus()
-                    } else {
-                        return ss.sub(pl.p).normalize()
-                    }
-                } else {
-                    if (f > 0) {
-                        return ss.sub(pl.p).normalize()
-                    } else {
-                        return ss.sub(pl.p).normalize().minus()
-                    }
+                ss.inplaceSub(pl.p).inplaceNormalize()
+                if (Math.abs(x - s.x) < f) {
+                    ss.inplaceMinus()
                 }
+                if (f < 0) {
+                    ss.inplaceMinus()
+                }
+                return ss
             }
         }
     }
