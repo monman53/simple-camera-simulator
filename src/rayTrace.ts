@@ -7,16 +7,15 @@ const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: num
     if (pls.length === 0) {
         return null
     }
-    const lx = Math.sqrt(r * r - h * h)
-    const e1 = r > 0 ? vec(-lx, h) : vec(lx, h)
-    const e2 = r > 0 ? vec(-lx, -h) : vec(lx, -h)
     for (const pl of pls) {
-        const n = vec(pl.p.x - cx, pl.p.y)
-        if (cross(n, e1) * cross(n, e2) < 0 && dot(n, e1) > 0 && dot(n, e2) > 0) {
+        // TODO: Find better condition
+        const collision = (r > 0 ? pl.p.x < cx : pl.p.x > cx) && Math.abs(pl.p.y) < h
+        if (collision) {
             return {
                 p: pl.p,
                 d: pl.d,
                 vn: () => {
+                    const n = vec(pl.p.x - cx, pl.p.y)
                     if (dot(n, v) < 0) {
                         // Outside to inside
                         const phi1 = crossAngle(v, n)
@@ -137,7 +136,7 @@ const collisionAll = (s: Vec, v: Vec) => {
         if (options.value.lensIdeal) {
             ps.push(collisionIdealLens(s, v, xm, h * lens.aperture, f))
         } else {
-            lens.planes.forEach(p=>{
+            lens.planes.forEach(p => {
                 const ni = p.r > 0 ? p.nb : p.na
                 const no = p.r > 0 ? p.na : p.nb
                 ps.push(collisionLens(s, v, p.x + p.r, p.r, p.h, ni, no))
