@@ -68,7 +68,7 @@ export const svgMoveHandler = (e: any) => {
         preventDefaultAndStopPropagation(e)
         moveHandler(e)
     }
-    if (moveHandlerWithM0 !== null){
+    if (moveHandlerWithM0 !== null) {
         preventDefaultAndStopPropagation(e)
         const d = getPositionDiffOnSvgApp(e, m0)
         moveHandlerWithM0(e, d)
@@ -102,11 +102,7 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
         const c0 = light.c.copy()
         moveHandler = (e_: any) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
-            // if (c0.x + d.x > minLensX.value) {
-            //     light.c.x = minLensX.value
-            // } else {
-                light.c.x = c0.x + d.x
-            // }
+            light.c.x = c0.x + d.x
             light.c.y = c0.y + d.y
         }
     }
@@ -117,13 +113,6 @@ export const lightMoveStartHandler = (e: any, idx: number) => {
             const d = getPositionDiffOnSvgApp(e_, m0)
             const sn = s0.add(d)
             const tn = t0.add(d)
-            if (s0.x >= t0.x && sn.x > minLensX.value) {
-                sn.x = minLensX.value
-                tn.x = minLensX.value + (t0.x - s0.x)
-            } else if (t0.x > s0.x && tn.x > minLensX.value) {
-                sn.x = minLensX.value + (s0.x - t0.x)
-                tn.x = minLensX.value
-            }
             light.s = sn
             light.t = tn
         }

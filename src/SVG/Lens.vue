@@ -146,7 +146,6 @@ const apertureSizeChangeStartHandler = (e: any) => {
             </WithBackground>
             <!-- Center Point -->
             <template v-for="plane of lens.planes">
-                <circle :cx="plane.x + plane.r" :cy="0" :r="Math.abs(plane.r)"></circle>
                 <Point :c="vec(plane.x + plane.r, 0)"></Point>
             </template>
         </g>

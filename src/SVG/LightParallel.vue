@@ -4,7 +4,7 @@ import { lights, rUI, minLensX } from '../globals'
 import { Vec } from '../math'
 import * as h from '../handlers'
 import WithBackground from './WithBackground.vue';
-import {Light} from '../type'
+import { Light } from '../type'
 import CircleUI from './CircleUI.vue';
 
 const props = defineProps(['light', 'idx'])
@@ -41,17 +41,13 @@ const parallelLightNodeMoveStartHandler = (e: any, idx: number, node: Vec) => {
         const p = node
         h.setMoveHandler((e_: any) => {
             const d = h.getPositionDiffOnSvgApp(e_, m0)
-            if (p0.x + d.x > minLensX.value) {
-                p.x = minLensX.value
-            } else {
-                p.x = p0.x + d.x
-            }
+            p.x = p0.x + d.x
             p.y = p0.y + d.y
         })
     }
 }
 
-const fill = computed(()=>{
+const fill = computed(() => {
     if (props.light.colors.length > 1) {
         return `hsl(0, 100%, 100%, 0.5)`
     } else {
