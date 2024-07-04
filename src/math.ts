@@ -285,7 +285,7 @@ export const fGaussian = (f: number, a: Vec) => {
 export const calcLensXCOG = (lens: Lens) => {
     let x = 0
     lens.planes.forEach((p) => {
-        x += p.x
+        x += calcLensPlaneEdge(p)
     })
     return x / lens.planes.length
 }
