@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { state, lights, sensor, minLensX, maxLensX, releaseAllLenses, aperture } from "./globals";
+import { state, lights, releaseAllLenses } from "./globals";
 import { Light } from './type'
 import { vec, Vec } from './math'
 

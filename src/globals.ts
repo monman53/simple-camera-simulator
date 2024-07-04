@@ -435,32 +435,6 @@ export const calcLensInfo = (lenses: Lens[]) => {
                 nb: p.nb,
             })
         })
-
-        // // Left-side
-        // {
-        //     let d = lens.x2 - lens.x1
-        //     if (options.value.lensIdeal) {
-        //         d = 0
-        //     }
-        //     const r = lens.R1
-        //     const n = 1
-        //     const nn = lens.n
-        //     ll.push({ d, r, n, nn })
-        // }
-        // // Right-side
-        // {
-        //     let d = 0
-        //     if (idx < lenses.length - 1) {
-        //         d = lenses[idx + 1].x1 - lens.x2
-        //         if (options.value.lensIdeal) {
-        //             d = (lenses[idx + 1].x1 + lenses[idx + 1].x2) / 2 - (lens.x1 + lens.x2) / 2
-        //         }
-        //     }
-        //     const r = lens.R2
-        //     const n = lens.n
-        //     const nn = 1
-        //     ll.push({ d, r, n, nn })
-        // }
     })
 
     const ls: number[] = []
@@ -627,10 +601,6 @@ const test = () => {
         { planes: [{x: 8.2, r: 44.5, na: 1, nb: SK6, h: 10}, {x: 27.2, r: 70, na: SK6, nb: 1, h: 10}], aperture: 1 },
         { planes: [{x: 31.7, r: -135, na: 1, nb: SF1, h: 10}, {x: 33.7, r: 34.3, na: SF1, nb: 1, h: 10}], aperture: 1 },
         { planes: [{x: 52.7, r: 146, na: 1, nb: SK6, h: 10}, {x: 60.7, r: -46.8, na: SK6, nb: 1, h: 10}], aperture: 1 },
-        // { x1: 0, x2: 7.7, R1: 85.4, R2: -500, n: SK6, r: 10, aperture: 1 },
-        // { x1: 8.2, x2: 27.2, R1: 44.5, R2: 70, n: SK6, r: 10, aperture: 1 },
-        // { x1: 31.7, x2: 33.7, R1: -135, R2: 34.3, n: SF1, r: 10, aperture: 1 },
-        // { x1: 52.7, x2: 60.7, R1: 146, R2: -46.8, n: SK6, r: 10, aperture: 1 },
     ]
     const info = calcLensInfo(lenses)
     console.log(info.f, 99.78672652)

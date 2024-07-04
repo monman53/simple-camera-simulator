@@ -23,9 +23,6 @@ const move = () => {
     return (e: any, d: Vec) => {
         let xn = x0 + d.x
         const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
-        if (xn > sensorMinX) {
-            xn = sensorMinX
-        }
         aperture.value.x = xn
     }
 }

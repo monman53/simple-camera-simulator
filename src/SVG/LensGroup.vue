@@ -5,7 +5,6 @@ import { type LensGroup } from '../type'
 
 import Lens from './Lens.vue'
 
-// const props = defineProps(['lens', 'idx'])
 const props = defineProps<{
     lensGroup: LensGroup
     idx: number

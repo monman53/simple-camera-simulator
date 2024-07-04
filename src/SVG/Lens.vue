@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { options } from '../globals'
-import { vec, calcLensFront, calcLensBack, calcLensXCOG, calcLensPlaneEdge, calcLensH } from '../math'
+import { vec, calcLensXCOG, calcLensPlaneEdge, calcLensH } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens, LensPlane } from '../type'
 import WithBackground from './WithBackground.vue'
@@ -19,14 +19,6 @@ const xm = computed(() => {
 
 const r = computed(() => {
     return calcLensH(props.lens)
-})
-
-const frontEdge = computed(() => {
-    return calcLensFront(props.lens)
-})
-
-const backEdge = computed(() => {
-    return calcLensBack(props.lens)
 })
 
 const path = computed(() => {
