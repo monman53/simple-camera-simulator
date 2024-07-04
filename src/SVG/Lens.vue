@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { sensor, options, calcLensInfo } from '../globals'
+import { options } from '../globals'
 import { vec, calcLensFront, calcLensBack, calcLensXCOG, calcLensPlaneEdge, calcLensH } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import type { Lens, LensPlane } from '../type'
@@ -16,10 +16,6 @@ const props = defineProps<{
 const xm = computed(() => {
     return calcLensXCOG(props.lens)
 })
-
-// const rMax = computed(() => {
-//     return calcRMax(props.lens)
-// })
 
 const r = computed(() => {
     return calcLensH(props.lens)
@@ -162,6 +158,9 @@ const apertureSizeChangeStartHandler = (e: any) => {
             </g>
         </WithBackground>
 
+        <!-- dummy for ui -->
+        <path :d="path" class='transparent grab' stroke-width="0" />
+
         <!-- Thickness and change UI -->
         <g class="ui-stroke transparent horizontal-resize">
             <template v-for="(plane, idx) of lens.planes">
@@ -174,9 +173,6 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <CircleUI :c="vec(calcLensPlaneEdge(plane), -plane.h)" @mousedown="hChangeStartHandler($event, plane)" class="vertical-resize">
             </CircleUI>
         </template>
-
-        <!-- dummy for ui -->
-        <path :d="path" class='transparent grab' stroke-width="0" />
 
         <!-- Curvature change UI -->
         <g class="horizontal-resize">

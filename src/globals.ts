@@ -44,25 +44,27 @@ export const lights = ref(lights0())
 // Lenses
 //--------------------------------
 
+export const defaultDoubletLens = (x: number) => {
+    const d = 10
+    const R = 70
+    return {
+        planes: [
+            { x: x - d / 2, r: R, h: 20, na: 1, nb: 1.5 },
+            { x: x + d / 2, r: -R, h: 20, na: 1.5, nb: 1.8 },
+            { x: x + 2 *d / 2, r: -R, h: 20, na: 1.8, nb: 1 },
+        ],
+        aperture: 1,
+        selected: false
+    }
+}
+
 export const defaultConvexLens = (x: number) => {
     const d = 10
     const R = 70
     return {
         planes: [
-            {
-                x: x - d / 2,
-                r: R,
-                h: 20,
-                na: 1,
-                nb: 1.5
-            },
-            {
-                x: x + d / 2,
-                r: -R,
-                h: 20,
-                na: 1.5,
-                nb: 1
-            },
+            { x: x - d / 2, r: R, h: 20, na: 1, nb: 1.5 },
+            { x: x + d / 2, r: -R, h: 20, na: 1.5, nb: 1 },
         ],
         aperture: 1,
         selected: false

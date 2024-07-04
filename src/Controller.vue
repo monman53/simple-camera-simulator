@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style } from './globals'
+import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
 
@@ -95,9 +95,6 @@ const createSensor = (d: number) => {
                 </td>
             </tr>
         </template>
-        <!-- <tr>
-            <td><label><input type="checkbox" v-model="options.aperture"> Aperture</label></td>
-        </tr> -->
         <template v-if="options.lens">
             <tr>
                 <td><label><input type="checkbox" v-model="options.lensIdeal"> Ideal lens</label></td>
@@ -109,11 +106,16 @@ const createSensor = (d: number) => {
                     <!-- <td>{{ humanReadable(lensR) }}</td> -->
                 </tr>
                 <tr>
+                    <td>Add Lens</td>
                     <td>
-                        <button @click="lensGroups.push({ lenses: [defaultConvexLens(0)], selected: false })">Add convex
-                            lens</button>
-                        <button @click="lensGroups.push({ lenses: [defaultConcaveLens(0)], selected: false })">Add
-                            concave lens</button>
+                        <button
+                            @click="lensGroups.push({ lenses: [defaultConvexLens(0)], selected: false })">Convex</button>
+                        <br>
+                        <button
+                            @click="lensGroups.push({ lenses: [defaultConcaveLens(0)], selected: false })">Concave</button>
+                        <br>
+                        <button
+                            @click="lensGroups.push({ lenses: [defaultDoubletLens(0)], selected: false })">Doublet</button>
                     </td>
                 </tr>
                 <!-- <tr>
