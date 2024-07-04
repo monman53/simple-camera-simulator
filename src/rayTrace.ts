@@ -1,5 +1,5 @@
-import { aperture, body, infR, lensBacks, lensCOGs, lensFronts, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
-import { calcLensPlaneEdge, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
+import { aperture, body, infR, lensBacks, lensCOGs, lensFronts, lensFs, lensPlaneEdges, lensRs, lensesSorted, options, sensor } from "./globals";
+import { crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
 
 const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: number, no: number) => {
     v = v.normalize()
@@ -76,8 +76,8 @@ const collisionAperture = (s: Vec, v: Vec, x: number, rMin: number, rMax: number
 }
 
 const collisionSensor = (s: Vec, v: Vec) => {
-    const ps = intersectionSS(s, s.add(v.mul(infR.value)), sensor.value.s, sensor.value.t)
-    if (ps !== null) {
+    const ps = intersectionLS(s, v, sensor.value.s, sensor.value.t)
+    if (ps !== null && dot(ps.sub(s), v) > 0) {
         return {
             p: ps,
             d: ps.sub(s).length(),
@@ -120,6 +120,7 @@ const collisionAll = (s: Vec, v: Vec): ({ p: Vec, d: number, isSensor?: boolean,
             return
         }
         if (p.d <= eps) {
+            // Ray-tracing technique
             return
         }
         if (pMin === null) {
@@ -153,14 +154,14 @@ const collisionAll = (s: Vec, v: Vec): ({ p: Vec, d: number, isSensor?: boolean,
         if (options.value.lensIdeal) {
             updateMin(collisionIdealLens(s, v, xm, h * lens.aperture, f))
         } else {
-            lens.planes.forEach(p => {
+            lens.planes.forEach((p, j) => {
                 const ni = p.r > 0 ? p.nb : p.na
                 const no = p.r > 0 ? p.na : p.nb
                 // Plane
                 updateMin(collisionLens(s, v, p.x + p.r, p.r, p.h, ni, no))
 
                 // Plane outside
-                updateMin(collisionAperture(s, v, calcLensPlaneEdge(p), p.h, h))
+                updateMin(collisionAperture(s, v, lensPlaneEdges.value[i][j], p.h, h))
             })
         }
 
@@ -189,24 +190,6 @@ const collisionAll = (s: Vec, v: Vec): ({ p: Vec, d: number, isSensor?: boolean,
     }
 
     return pMin
-
-    //--------------------------------
-    // Find nearest collision
-    //--------------------------------
-    // ps = ps.filter((p) => p !== null && p.d > eps)
-    // ps.sort((a, b) => {
-    //     if (a !== null && b !== null) {
-    //         return a.d - b.d
-    //     } else {
-    //         return 0
-    //     }
-    // })
-
-    // if (ps.length > 0) {
-    //     return ps[0]
-    // } else {
-    //     return null
-    // }
 }
 
 export const rayTrace = (s: Vec, v: Vec) => {

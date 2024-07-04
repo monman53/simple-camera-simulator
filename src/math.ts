@@ -70,7 +70,7 @@ export class Vec {
     }
 
     inplaceNormalize() {
-        return this.div(this.length())
+        return this.inplaceDiv(this.length())
     }
 
     add(v: Vec) {
@@ -153,30 +153,29 @@ export const crossAngle = (p: Vec, q: Vec) => {
 export const eps = 1e-9
 
 // ccw
-const ccw = (a: Vec, b: Vec, c: Vec) => {
-    b = b.sub(a)
-    c = c.sub(a)
-    if (cross(b, c) > eps) return +1 // counter clockwise
-    if (cross(b, c) < -eps) return -1 // clockwise
-    if (dot(b, c) < 0) return +2 // cab (back)
-    if (b.length() < c.length()) return -2 // abc (front)
-    return 0                        // acb (on segment)
-}
+// const ccw = (a: Vec, b: Vec, c: Vec) => {
+//     b = b.sub(a)
+//     c = c.sub(a)
+//     if (cross(b, c) > eps) return +1 // counter clockwise
+//     if (cross(b, c) < -eps) return -1 // clockwise
+//     if (dot(b, c) < 0) return +2 // cab (back)
+//     if (b.length() < c.length()) return -2 // abc (front)
+//     return 0                        // acb (on segment)
+// }
 
-const isIntersectedSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
-    return ccw(a1, a2, b1) * ccw(a1, a2, b2) <= 0 &&
-        ccw(b1, b2, a1) * ccw(b1, b2, a2) <= 0
-}
+// const isIntersectedSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
+//     return ccw(a1, a2, b1) * ccw(a1, a2, b2) <= 0 &&
+//         ccw(b1, b2, a1) * ccw(b1, b2, a2) <= 0
+// }
 
-const intersectionLL = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
+const intersectionLL = (s: Vec, v: Vec, a1: Vec, a2: Vec) => {
     const a = a2.sub(a1)
-    const b = b2.sub(b1)
-    return a1.add(a.mul(cross(b, b1.sub(a1))).inplaceDiv(cross(b, a)))
+    return s.add(v.mul(cross(a, a1.sub(s))).inplaceDiv(cross(a, v)))
 }
 
-export const intersectionSS = (a1: Vec, a2: Vec, b1: Vec, b2: Vec) => {
-    if (isIntersectedSS(a1, a2, b1, b2)) {
-        return intersectionLL(a1, a2, b1, b2)
+export const intersectionLS = (s: Vec, v: Vec, a1: Vec, a2: Vec) => {
+    if (cross(v, a1.sub(s)) * cross(v, a2.sub(s)) < 0) {
+        return intersectionLL(s, v, a1, a2)
     } else {
         return null
     }

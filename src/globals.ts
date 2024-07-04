@@ -1,5 +1,5 @@
 import { ref, computed, watch } from "vue"
-import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX } from "./math"
+import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge } from "./math"
 import { type Lens, type LensGroup, Light } from "./type"
 
 //================================
@@ -142,6 +142,14 @@ export const lensBacks = computed(() => {
 export const lensCOGs = computed(() => {
     return lensesSorted.value.map((lens) => {
         return calcLensXCOG(lens)
+    })
+})
+
+export const lensPlaneEdges = computed(() => {
+    return lensesSorted.value.map((lens) => {
+        return lens.planes.map(p=>{
+            return calcLensPlaneEdge(p)
+        })
     })
 })
 

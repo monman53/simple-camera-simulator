@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens } from './globals'
+import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights } from './globals'
 import { humanReadable } from './utils';
 import { Light } from "./type"
 
@@ -116,6 +116,16 @@ const createSensor = (d: number) => {
                         <br>
                         <button
                             @click="lensGroups.push({ lenses: [defaultDoubletLens(0)], selected: false })">Doublet</button>
+                        <br>
+                        <button @click="() => {
+                            lensGroups = []
+                            lensGroups.push({ lenses: [defaultConvexLens(40)], selected: false })
+                            lensGroups.push({ lenses: [defaultConvexLens(20)], selected: false })
+                            lensGroups.push({ lenses: [defaultDoubletLens(0)], selected: false })
+                            lensGroups.push({ lenses: [defaultConvexLens(-20)], selected: false })
+                            options.body = true
+                            lights = []
+                        }">Bench</button>
                     </td>
                 </tr>
                 <!-- <tr>
