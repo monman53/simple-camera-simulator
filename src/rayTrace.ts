@@ -1,5 +1,5 @@
 import { aperture, body, infR, lensBacks, lensFronts, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
-import { cross, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
+import { calcLensXCOG, cross, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
 
 const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: number, no: number) => {
     v = v.normalize()
@@ -133,21 +133,25 @@ const collisionAll = (s: Vec, v: Vec) => {
         // Lense
         const h = lensRs.value[i]
         const f = lensFs.value[i]
-        const n = lens.n
-        const xm = (lens.x1 + lens.x2) / 2
+        const xm = calcLensXCOG(lens)
         if (options.value.lensIdeal) {
             ps.push(collisionIdealLens(s, v, xm, h * lens.aperture, f))
         } else {
-            {
-                const ni = lens.R1 > 0 ? n : 1
-                const no = lens.R1 > 0 ? 1 : n
-                ps.push(collisionLens(s, v, lens.x1 + lens.R1, lens.R1, h, ni, no))
-            }
-            {
-                const ni = lens.R2 > 0 ? 1 : n
-                const no = lens.R2 > 0 ? n : 1
-                ps.push(collisionLens(s, v, lens.x2 + lens.R2, lens.R2, h, ni, no))
-            }
+            lens.planes.forEach(p=>{
+                const ni = p.r > 0 ? p.nb : p.na
+                const no = p.r > 0 ? p.na : p.nb
+                ps.push(collisionLens(s, v, p.x + p.r, p.r, p.h, ni, no))
+            })
+            // {
+            //     const ni = lens.R1 > 0 ? n : 1
+            //     const no = lens.R1 > 0 ? 1 : n
+            //     ps.push(collisionLens(s, v, lens.x1 + lens.R1, lens.R1, h, ni, no))
+            // }
+            // {
+            //     const ni = lens.R2 > 0 ? 1 : n
+            //     const no = lens.R2 > 0 ? n : 1
+            //     ps.push(collisionLens(s, v, lens.x2 + lens.R2, lens.R2, h, ni, no))
+            // }
         }
 
         // Lens aperture

@@ -1,4 +1,4 @@
-import type { Lens } from "./type"
+import type { Lens, LensPlane } from "./type"
 
 //================================
 // Liner algebra
@@ -282,65 +282,49 @@ export const fGaussian = (f: number, a: Vec) => {
     return vec(bx, by)
 }
 
-// export const calcLensF = (lens: Lens) => {
-//     const d = lens.x2 - lens.x1
-//     const R1 = lens.R1
-//     const R2 = lens.R2
-//     const n = lens.n
-//     const inv = (n - 1) * (1 / R1 - 1 / R2) + (d / n) * ((n - 1) * (n - 1) / (R1 * R2))
-//     return 1 / inv
-// }
-
-export const calcRMax = (lens: Lens) => {
-    const R1 = Math.abs(lens.R1)
-    const R2 = Math.abs(lens.R2)
-    const c1 = vec(lens.x1 + lens.R1, 0)
-    const c2 = vec(lens.x2 + lens.R2, 0)
-    const minR = Math.min(R1, R2)
-    if (intersectCC(c1, R1, c2, R2)) {
-        const [p1, p2] = intersectionCC(c1, R1, c2, R2)
-        const l1 = Math.min(lens.x1, c1.x)
-        const r1 = Math.max(lens.x1, c1.x)
-        const l2 = Math.min(lens.x2, c2.x)
-        const r2 = Math.max(lens.x2, c2.x)
-        if ((l1 < p1.x && p1.x < r1) && (l2 < p1.x && p1.x < r2)) {
-            return Math.abs(p1.y)
-        } else {
-            return minR
-        }
-    } else {
-        return minR
-    }
+export const calcLensXCOG = (lens: Lens) => {
+    let x = 0
+    lens.planes.forEach((p) => {
+        x += p.x
+    })
+    return x / lens.planes.length
 }
 
 export const calcLensR = (lens: Lens) => {
-    const rMax = calcRMax(lens)
-    return Math.min(rMax, lens.r)
+    const hs = lens.planes.map((p) => p.h)
+    return Math.max(...hs)
+}
+
+export const calcLensMaxX = (lens: Lens) => {
+    return lens.planes[lens.planes.length - 1].x
+}
+
+export const calcLensPlaneEdge = (plane: LensPlane) => {
+    const x = plane.x
+    const r = plane.r
+    const h = plane.h
+    const d = Math.abs(r) - Math.sqrt(r * r - h * h)
+    if (r > 0) {
+        return x + d
+    } else {
+        return x - d
+    }
+}
+
+export const calcLensH = (lens: Lens) => {
+    const hs = lens.planes.map(p => p.h)
+    // Find max h
+    hs.sort((a, b) => b - a)
+    return hs[0]
 }
 
 // TODO: merge with calcLensBack
 export const calcLensFront = (lens: Lens) => {
-    const x = lens.x1
-    const R1 = lens.R1
-    const r = calcLensR(lens)
-    const d = Math.abs(R1) - Math.sqrt(R1 * R1 - r * r)
-    if (R1 > 0) {
-        return x + d
-    } else {
-        return x - d
-    }
+    return calcLensPlaneEdge(lens.planes[0])
 }
 
 export const calcLensBack = (lens: Lens) => {
-    const x = lens.x2
-    const R2 = lens.R2
-    const r = calcLensR(lens)
-    const d = Math.abs(R2) - Math.sqrt(R2 * R2 - r * r)
-    if (R2 > 0) {
-        return x + d
-    } else {
-        return x - d
-    }
+    return calcLensPlaneEdge(lens.planes[lens.planes.length - 1])
 
 }
 

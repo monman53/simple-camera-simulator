@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { sensor, options, calcLensInfo } from '../globals'
-import { vec, calcRMax, calcLensFront, calcLensBack } from '../math'
+import { vec, calcLensFront, calcLensBack, calcLensXCOG, calcLensPlaneEdge, calcLensH } from '../math'
 import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
-import type { Lens } from '../type'
+import type { Lens, LensPlane } from '../type'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 import Point from './Point.vue'
@@ -13,181 +13,111 @@ const props = defineProps<{
     selected: boolean,
 }>()
 
-const f = computed(() => {
-    return calcLensInfo([props.lens]).f
-})
-
-const H = computed(() => {
-    return xm.value - f.value - f.value * f.value / (sensor.value.circleOfConfusion * fNumber.value)
-})
-
 const xm = computed(() => {
-    return (props.lens.x1 + props.lens.x2) / 2
+    return calcLensXCOG(props.lens)
 })
 
-const fNumber = computed(() => {
-    if (options.value.aperture) {
-        return f.value / (2 * props.lens.r * props.lens.aperture)
-    } else {
-        return f.value / (2 * props.lens.r)
-    }
-})
-
-const rMax = computed(() => {
-    return calcRMax(props.lens)
-})
+// const rMax = computed(() => {
+//     return calcRMax(props.lens)
+// })
 
 const r = computed(() => {
-    return Math.min(rMax.value, props.lens.r)
+    return calcLensH(props.lens)
 })
 
-const leftX = computed(() => {
+const frontEdge = computed(() => {
     return calcLensFront(props.lens)
 })
 
-const rightX = computed(() => {
+const backEdge = computed(() => {
     return calcLensBack(props.lens)
 })
 
 const path = computed(() => {
     let d = ""
-    d += `M ${leftX.value} ${-r.value} `
-    const absR1 = Math.abs(props.lens.R1)
-    const sweep1 = props.lens.R1 > 0 ? 0 : 1
-    d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${leftX.value} ${r.value} `
-    d += `L ${rightX.value} ${r.value}`
-    const absR2 = Math.abs(props.lens.R2)
-    const sweep2 = props.lens.R2 > 0 ? 1 : 0
-    d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${rightX.value} ${-r.value} `
-    d += `Z`
+    // Planes
+    const planes = props.lens.planes
+    for (let i = 0; i < planes.length - 1; i++) {
+        const p1 = planes[i] // left
+        const p2 = planes[i + 1] //right
+        const edge1 = calcLensPlaneEdge(p1)
+        const edge2 = calcLensPlaneEdge(p2)
+        const absR1 = Math.abs(p1.r)
+        const absR2 = Math.abs(p2.r)
+        const sweep1 = p1.r > 0 ? 0 : 1
+        const sweep2 = p2.r > 0 ? 1 : 0
+
+        // left
+        d += `M ${edge1} ${-r.value} `
+        d += `L ${edge1} ${-p1.h} `
+        d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${edge1} ${p1.h} `
+        d += `L ${edge1} ${r.value} `
+
+        // right
+        d += `L ${edge2} ${r.value} `
+        d += `L ${edge2} ${p2.h} `
+        d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${edge2} ${-p2.h} `
+        d += `L ${edge2} ${-r.value} `
+
+        // Close
+        d += `Z `
+
+    }
     return d
 })
 
-const path1 = computed(() => {
-    const absR1 = Math.abs(props.lens.R1)
-    const sweep = props.lens.R1 > 0 ? 0 : 1
-    return `M ${leftX.value} ${-r.value} A ${absR1} ${absR1} 0 0 ${sweep} ${leftX.value} ${r.value}`
+const paths = computed(() => {
+    return props.lens.planes.map(p => {
+        const absR = Math.abs(p.r)
+        const sweep = p.r > 0 ? 0 : 1
+        const edge = calcLensPlaneEdge(p)
+        return `M ${edge} ${-p.h} A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h} `
+    })
 })
 
-const path2 = computed(() => {
-    const absR2 = Math.abs(props.lens.R2)
-    const sweep = props.lens.R2 > 0 ? 0 : 1
-    return `M ${rightX.value} ${-r.value} A ${absR2} ${absR2} 0 0 ${sweep} ${rightX.value} ${r.value}`
-})
-
-const x1MoveStartHandler = (e: any) => {
+const planeMoveStartHandler = (e: any, plane: LensPlane) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
-    const lens = props.lens
-    const x10 = lens.x1;
+    const x0 = plane.x;
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        if (x10 + d.x > props.lens.x2) {
-            lens.x1 = props.lens.x2
-        } else {
-            lens.x1 = x10 + d.x
-        }
+        // TODO
+        plane.x = x0 + d.x
     })
 }
 
-const x2MoveStartHandler = (e: any) => {
+const rMoveStartHandler = (e: any, plane: LensPlane) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
-    const lens = props.lens
-    const x20 = lens.x2
+    const h0 = plane.h
+    const x0 = plane.x
+    const edge0 = calcLensPlaneEdge(plane)
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
-        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
-        if (x20 + d.x < props.lens.x1) {
-            lens.x2 = props.lens.x1
-        } else if (x20 + d.x > sensorMinX) {
-            lens.x2 = sensorMinX
-        } else {
-            lens.x2 = x20 + d.x
-        }
+        let xn = x0 + d.x
+        const a = xn - edge0
+        const rn = (-h0 * h0 - a * a) / (2 * a)
+        plane.r = rn
+        plane.x = xn
     })
 }
 
-const r1MoveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const lens = props.lens
-    const r0 = r.value
-    const x10 = lens.x1
-    const leftX0 = leftX.value
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        let x1n = x10 + d.x
-        if (x1n > props.lens.x2) {
-            x1n = props.lens.x2
-        }
-        if (leftX0 - x1n > r0) {
-            lens.R1 = r0
-            lens.x1 = x1n
-            return
-        }
-        if (x1n - leftX0 > r0) {
-            lens.R1 = -r0
-            lens.x1 = x1n
-            return
-        }
-        const a = x1n - leftX0
-        const R1n = (-r0 * r0 - a * a) / (2 * a)
-        lens.R1 = R1n
-        lens.x1 = x1n
-    })
-}
-
-const r2MoveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const lens = props.lens
-    const r0 = r.value
-    const x20 = lens.x2
-    const rightX0 = rightX.value
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        let x2n = x20 + d.x
-        if (x2n < props.lens.x1) {
-            x2n = props.lens.x1
-        }
-        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
-        if (x2n > sensorMinX) {
-            x2n = sensorMinX
-        }
-        if (x2n - rightX0 > r0) {
-            lens.R2 = -r0
-            lens.x2 = x2n
-            return
-        }
-        if (rightX0 - x2n > r0) {
-            lens.R2 = r0
-            lens.x2 = x2n
-            return
-        }
-        const a = x2n - rightX0
-        const R2n = (-r0 * r0 - a * a) / (2 * a)
-        lens.R2 = R2n
-        lens.x2 = x2n
-    })
-}
-
-const lensSizeChangeStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const lens = props.lens
-    const r0 = props.lens.r;
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        if (r0 - d.y < 0.1) {
-            lens.r = 0.1
-        } else if (r0 - d.y > rMax.value) {
-            lens.r = rMax.value
-        } else {
-            lens.r = r0 - d.y
-        }
-    })
-}
+// const lensSizeChangeStartHandler = (e: any) => {
+//     preventDefaultAndStopPropagation(e)
+//     const m0 = getPositionOnSvg(e);
+//     const lens = props.lens
+//     const r0 = props.lens.r;
+//     setMoveHandler((e_: any) => {
+//         const d = getPositionDiffOnSvgApp(e_, m0)
+//         if (r0 - d.y < 0.1) {
+//             lens.r = 0.1
+//         } else if (r0 - d.y > rMax.value) {
+//             lens.r = rMax.value
+//         } else {
+//             lens.r = r0 - d.y
+//         }
+//     })
+// }
 
 const apertureSizeChangeStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
@@ -216,19 +146,16 @@ const apertureSizeChangeStartHandler = (e: any) => {
             <!-- Circle -->
             <WithBackground>
                 <g class="stroke-white thicker fill-none">
-                    <circle :cx="lens.x1 + lens.R1" :cy="0" :r="Math.abs(lens.R1)"></circle>
-                    <circle :cx="lens.x2 + lens.R2" :cy="0" :r="Math.abs(lens.R2)"></circle>
+                    <template v-for="plane of lens.planes">
+                        <circle :cx="plane.x + plane.r" :cy="0" :r="Math.abs(plane.r)"></circle>
+                    </template>
                 </g>
             </WithBackground>
-            <!-- Center Pointg -->
-            <Point :c="vec(lens.x1 + lens.R1, 0)"></Point>
-            <Point :c="vec(lens.x2 + lens.R2, 0)"></Point>
-        </g>
-
-        <!-- Hyperfocal point -->
-        <g
-            v-if="options.lens && options.sensor && options.circleOfConfusion && options.angleOfView && options.depthOfField && options.hyperfocalPoint">
-            <Point :c="vec(H, 0)"></Point>
+            <!-- Center Point -->
+            <template v-for="plane of lens.planes">
+                <circle :cx="plane.x + plane.r" :cy="0" :r="Math.abs(plane.r)"></circle>
+                <Point :c="vec(plane.x + plane.r, 0)"></Point>
+            </template>
         </g>
 
         <!-- Lens -->
@@ -240,35 +167,24 @@ const apertureSizeChangeStartHandler = (e: any) => {
 
         <!-- Thickness change UI -->
         <g class="ui-stroke transparent horizontal-resize">
-            <!-- left -->
-            <path :d="path1" @mousedown="x1MoveStartHandler" />
-            <!-- right -->
-            <path :d="path2" @mousedown="x2MoveStartHandler" />
+            <template v-for="(plane, idx) of lens.planes">
+                <path :d="paths[idx]" @mousedown="planeMoveStartHandler($event, plane)"></path>
+            </template>
         </g>
 
         <!-- Lens size change UI-->
-        <g class="ui-stroke transparent vertical-resize" @mousedown="lensSizeChangeStartHandler">
-            <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r" stroke-linecap="round"></line>
-        </g>
+        <!-- <g class="ui-stroke transparent vertical-resize" @mousedown="lensSizeChangeStartHandler"> -->
+        <!-- <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r" stroke-linecap="round"></line> -->
+        <!-- </g> -->
 
         <!-- dummy for ui -->
         <path :d="path" class='transparent grab' stroke-width="0" />
 
         <!-- Curvature change UI -->
         <g class="horizontal-resize">
-            <CircleUI :c="vec(lens.x1, 0)" @mousedown="r1MoveStartHandler"></CircleUI>
-            <CircleUI :c="vec(lens.x2, 0)" @mousedown="r2MoveStartHandler"></CircleUI>
-        </g>
-
-        <!-- Focal points -->
-        <g v-if="options.lensFocalPoints">
-            <!-- <Point :c="vec(xm - f, 0)"></Point> -->
-            <!-- <Point :c="vec(xm + f, 0)"></Point> -->
-            <!-- Double focal points -->
-            <g v-if="options.lensDoubleFocalPoints">
-                <!-- <Point :c="vec(xm - 2 * f, 0)"></Point> -->
-                <!-- <Point :c="vec(xm + 2 * f, 0)"></Point> -->
-            </g>
+            <template v-for="plane of lens.planes">
+                <CircleUI :c="vec(plane.x, 0)" @mousedown="rMoveStartHandler($event, plane)"></CircleUI>
+            </template>
         </g>
 
         <!-- Aperture -->

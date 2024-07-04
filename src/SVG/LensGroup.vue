@@ -20,33 +20,36 @@ const moveStartHandler = (e: any) => {
     props.lensGroup.selected = true
 
     const m0 = getPositionOnSvg(e);
-    const x10s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x1))
-    const x20s = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x2))
+    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
     setMoveHandler((e_: any) => {
         const d = getPositionDiffOnSvgApp(e_, m0)
         // Fix d.x within maxLightX < d.x < sensor.x
+        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
         for (let i = 0; i < lensGroups.value.length; i++) {
             const lensGroup = lensGroups.value[i];
             if (!lensGroup.selected) {
                 continue
             }
             for (let j = 0; j < lensGroup.lenses.length; j++) {
-        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
-                if (x20s[i][j] + d.x > sensorMinX) {
-                    if (Math.abs(sensorMinX - x20s[i][j]) < Math.abs(d.x)) {
-                        d.x = sensorMinX - x20s[i][j]
+                const lens = lensGroup.lenses[j]
+                for (let k = 0; k < lens.planes.length; k++) {
+                    if (x0s[i][j][k] + d.x > sensorMinX) {
+                        if (Math.abs(sensorMinX - x0s[i][j][k]) < Math.abs(d.x)) {
+                            d.x = sensorMinX - x0s[i][j][k]
+                        }
                     }
                 }
             }
         }
-        // Update x1 and x2
+        // Update position
         lensGroups.value.forEach((lensGroup, i) => {
             if (!lensGroup.selected) {
                 return
             }
             lensGroup.lenses.forEach((lens, j) => {
-                lens.x1 = x10s[i][j] + d.x
-                lens.x2 = x20s[i][j] + d.x
+                lens.planes.forEach((p, k) => {
+                    p.x = x0s[i][j][k] + d.x
+                })
             })
         })
     })

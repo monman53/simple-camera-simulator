@@ -1,5 +1,5 @@
 import { ref, computed, watch } from "vue"
-import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian } from "./math"
+import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX } from "./math"
 import { type Lens, type LensGroup, Light } from "./type"
 
 //================================
@@ -47,12 +47,51 @@ export const lights = ref(lights0())
 export const defaultConvexLens = (x: number) => {
     const d = 10
     const R = 70
-    return { x1: x - d / 2, x2: x + d / 2, R1: R, R2: -R, r: 20, n: 1.5, aperture: 1, selected: false }
+    return {
+        planes: [
+            {
+                x: x - d / 2,
+                r: R,
+                h: 20,
+                na: 1,
+                nb: 1.5
+            },
+            {
+                x: x + d / 2,
+                r: -R,
+                h: 20,
+                na: 1.5,
+                nb: 1
+            },
+        ],
+        aperture: 1,
+        selected: false
+    }
 }
 
 export const defaultConcaveLens = (x: number) => {
     const R = 30
-    return { x1: x - 2, x2: x + 2, R1: -R, R2: R, r: 10, n: 1.5, aperture: 1, selected: false }
+    const d = 4
+    return {
+        planes: [
+            {
+                x: x - d / 2,
+                r: -R,
+                h: 10,
+                na: 1,
+                nb: 1.5
+            },
+            {
+                x: x + d / 2,
+                r: R,
+                h: 10,
+                na: 1.5,
+                nb: 1
+            },
+        ],
+        aperture: 1,
+        selected: false
+    }
 }
 
 export const lensGroups0 = (): LensGroup[] => {
@@ -65,9 +104,9 @@ export const lensGroups = ref(lensGroups0())
 const lensSort = (lenses: Lens[]) => {
     lenses.sort((a, b) => {
         if (options.value.lensIdeal) {
-            return (a.x1 + a.x2) / 2 - (b.x1 + b.x2) / 2
+            return calcLensXCOG(a) - calcLensXCOG(b)
         } else {
-            return a.x1 - b.x2
+            return a.planes[0].x - b.planes[0].x
         }
     })
 }
@@ -105,7 +144,7 @@ export const releaseAllLenses = () => {
 }
 
 //--------------------------------
-// Sensor
+// Aperture
 //--------------------------------
 
 export const aperture0 = () => {
@@ -214,7 +253,7 @@ export const options0 = () => {
         sensor: true,
         sensorPreview: true,
         sensorMemory: false,
-        body: true,
+        body: false,
         aperture: false,
         grid: false,
         opticalAxis: false,
@@ -278,8 +317,7 @@ export const minLensX = computed(() => {
     let minX = infR.value
     for (const lensGroup of lensGroups.value) {
         for (const lens of lensGroup.lenses) {
-            const left = Math.min(lens.x1, lens.x1)
-            minX = Math.min(minX, left)
+            minX = Math.min(minX, lens.planes[0].x)
         }
     }
     return minX
@@ -289,7 +327,7 @@ export const maxLensX = computed(() => {
     let maxX = -infR.value
     for (const lensGroup of lensGroups.value) {
         for (const lens of lensGroup.lenses) {
-            maxX = Math.max(maxX, lens.x2)
+            maxX = Math.max(maxX, lens.planes[lens.planes.length - 1].x)
         }
     }
     return maxX
@@ -306,10 +344,7 @@ export const body = computed(() => {
 
     let rs: number[] = []
     if (options.value.lens) {
-        rs = lensGroups.value.reduce((acc: number[], lensGroup) => {
-            const rs = lensGroup.lenses.map((lens) => lens.r + padding)
-            return acc.concat(rs)
-        }, [])
+        rs.push(...lensesSorted.value.map((lens, i) => { return lensRs.value[i] + padding }))
     }
     if (options.value.aperture) {
         rs.push(aperture.value.r)
@@ -326,18 +361,18 @@ export const body = computed(() => {
 
     let front = null
     if (lensExist) {
-        const xm = (lensesSorted.value[0].x1 + lensesSorted.value[0].x2) / 2
+        const xm = calcLensXCOG(lensesSorted.value[0])
         if (options.value.aperture) {
             if (options.value.lensIdeal) {
                 front = Math.min(aperture.value.x, xm)
             } else {
-                front = Math.min(aperture.value.x, calcLensFront(lensesSorted.value[0]))
+                front = Math.min(aperture.value.x, lensFronts.value[0])
             }
         } else {
             if (options.value.lensIdeal) {
                 front = xm
             } else {
-                front = calcLensFront(lensesSorted.value[0])
+                front = lensFronts.value[0]
             }
         }
     } else {
@@ -371,33 +406,59 @@ export const calcLensInfo = (lenses: Lens[]) => {
     if (lenses.length > 0) {
         lensSort(lenses)
     }
-    const ll: { d: number, r: number, n: number, nn: number }[] = []
+    const ll: { d: number, r: number, na: number, nb: number }[] = []
     lenses.forEach((lens, idx) => {
-        // Left-side
-        {
-            let d = lens.x2 - lens.x1
-            if (options.value.lensIdeal) {
-                d = 0
-            }
-            const r = lens.R1
-            const n = 1
-            const nn = lens.n
-            ll.push({ d, r, n, nn })
-        }
-        // Right-side
-        {
+        lens.planes.forEach((p, j) => {
             let d = 0
-            if (idx < lenses.length - 1) {
-                d = lenses[idx + 1].x1 - lens.x2
-                if (options.value.lensIdeal) {
-                    d = (lenses[idx + 1].x1 + lenses[idx + 1].x2) / 2 - (lens.x1 + lens.x2) / 2
+            if (options.value.lensIdeal) {
+                if (j === lens.planes.length - 1) {
+                    if (idx !== lenses.length - 1) {
+                        d = calcLensXCOG(lenses[idx + 1]) - calcLensXCOG(lens)
+                    }
+                }
+            } else {
+                if (j === lens.planes.length - 1) {
+                    if (idx !== lenses.length - 1) {
+                        d = lenses[idx + 1].planes[0].x - p.x
+                    }
+                } else {
+                    d = lens.planes[j + 1].x - p.x
                 }
             }
-            const r = lens.R2
-            const n = lens.n
-            const nn = 1
-            ll.push({ d, r, n, nn })
-        }
+
+            ll.push({
+                r: p.r,
+                d,
+                na: p.na,
+                nb: p.nb,
+            })
+        })
+
+        // // Left-side
+        // {
+        //     let d = lens.x2 - lens.x1
+        //     if (options.value.lensIdeal) {
+        //         d = 0
+        //     }
+        //     const r = lens.R1
+        //     const n = 1
+        //     const nn = lens.n
+        //     ll.push({ d, r, n, nn })
+        // }
+        // // Right-side
+        // {
+        //     let d = 0
+        //     if (idx < lenses.length - 1) {
+        //         d = lenses[idx + 1].x1 - lens.x2
+        //         if (options.value.lensIdeal) {
+        //             d = (lenses[idx + 1].x1 + lenses[idx + 1].x2) / 2 - (lens.x1 + lens.x2) / 2
+        //         }
+        //     }
+        //     const r = lens.R2
+        //     const n = lens.n
+        //     const nn = 1
+        //     ll.push({ d, r, n, nn })
+        // }
     })
 
     const ls: number[] = []
@@ -407,20 +468,20 @@ export const calcLensInfo = (lenses: Lens[]) => {
         if (i === 0) {
             //ls[i] = Infinity
             // lss[i] = 1 / (l.n / l.nn / ls[i] + 1 / l.r * (1 - l.n / l.nn))
-            lss[i] = 1 / (1 / l.r * (1 - l.n / l.nn))
+            lss[i] = 1 / (1 / l.r * (1 - l.na / l.nb))
             f *= lss[i]
         } else {
             ls[i] = lss[i - 1] - ll[i - 1].d
-            lss[i] = 1 / (l.n / l.nn / ls[i] + 1 / l.r * (1 - l.n / l.nn))
+            lss[i] = 1 / (l.na / l.nb / ls[i] + 1 / l.r * (1 - l.na / l.nb))
             f *= lss[i] / ls[i]
         }
     })
     let H = 0
     if (lenses.length > 0) {
         if (options.value.lensIdeal) {
-            H = (lenses[lenses.length - 1].x1 + lenses[lenses.length - 1].x2) / 2 + lss[lss.length - 1] - f
+            H = calcLensXCOG(lenses[lenses.length - 1]) + lss[lss.length - 1] - f
         } else {
-            H = lenses[lenses.length - 1].x2 + lss[lss.length - 1] - f
+            H = calcLensMaxX(lenses[lenses.length - 1]) + lss[lss.length - 1] - f
         }
     }
     return { f, H }
@@ -440,7 +501,7 @@ const calcLensRe = (lenses: Lens[], apertures: { r: number, x: number }[]) => {
         const info = calcLensInfo([lens])
         const f = info.f
         const r = calcLensR(lens) * lens.aperture
-        const x = options.value.lensIdeal ? (lens.x1 + lens.x2) / 2 : info.H
+        const x = options.value.lensIdeal ? calcLensXCOG(lens) : info.H
         params.push({ f, r, x })
 
         if (!options.value.lensIdeal) {
@@ -511,24 +572,30 @@ export const globalLensRe = computed(() => {
     }
     const fwdLenses = lensesSorted.value.map((lens) => {
         return {
-            x1: lens.x1,
-            x2: lens.x2,
-            R1: lens.R1,
-            R2: lens.R2,
-            r: lens.r,
+            planes: lens.planes.map((p) => {
+                return {
+                    x: p.x,
+                    r: p.r,
+                    na: p.na,
+                    nb: p.nb,
+                    h: p.h,
+                }
+            }),
             aperture: lens.aperture,
-            n: lens.n
         }
     })
     const bwdLenses = lensesSorted.value.map((lens) => {
         return {
-            x1: -lens.x2,
-            x2: -lens.x1,
-            R1: -lens.R2,
-            R2: -lens.R1,
-            r: lens.r,
+            planes: lens.planes.map((p) => {
+                return {
+                    x: -p.x,
+                    r: -p.r,
+                    na: p.nb,
+                    nb: p.na,
+                    h: p.h,
+                }
+            }),
             aperture: lens.aperture,
-            n: lens.n
         }
     })
     // console.log(calcLensInfo(fwdLenses), calcLensInfo(bwdLenses))
@@ -554,10 +621,14 @@ const test = () => {
     const SK6 = 1.61375
     const SF1 = 1.71736
     const lenses = [
-        { x1: 0, x2: 7.7, R1: 85.4, R2: -500, n: SK6, r: 10, aperture: 1 },
-        { x1: 8.2, x2: 27.2, R1: 44.5, R2: 70, n: SK6, r: 10, aperture: 1 },
-        { x1: 31.7, x2: 33.7, R1: -135, R2: 34.3, n: SF1, r: 10, aperture: 1 },
-        { x1: 52.7, x2: 60.7, R1: 146, R2: -46.8, n: SK6, r: 10, aperture: 1 },
+        { planes: [{x: 0, r: 85.4, na: 1, nb: SK6, h: 10}, {x: 7.7, r: -500, na: SK6, nb: 1, h: 10}], aperture: 1 },
+        { planes: [{x: 8.2, r: 44.5, na: 1, nb: SK6, h: 10}, {x: 27.2, r: 70, na: SK6, nb: 1, h: 10}], aperture: 1 },
+        { planes: [{x: 31.7, r: -135, na: 1, nb: SF1, h: 10}, {x: 33.7, r: 34.3, na: SF1, nb: 1, h: 10}], aperture: 1 },
+        { planes: [{x: 52.7, r: 146, na: 1, nb: SK6, h: 10}, {x: 60.7, r: -46.8, na: SK6, nb: 1, h: 10}], aperture: 1 },
+        // { x1: 0, x2: 7.7, R1: 85.4, R2: -500, n: SK6, r: 10, aperture: 1 },
+        // { x1: 8.2, x2: 27.2, R1: 44.5, R2: 70, n: SK6, r: 10, aperture: 1 },
+        // { x1: 31.7, x2: 33.7, R1: -135, R2: 34.3, n: SF1, r: 10, aperture: 1 },
+        // { x1: 52.7, x2: 60.7, R1: 146, R2: -46.8, n: SK6, r: 10, aperture: 1 },
     ]
     const info = calcLensInfo(lenses)
     console.log(info.f, 99.78672652)

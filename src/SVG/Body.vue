@@ -2,29 +2,22 @@
 import { aperture, body, lensesSorted, lensFronts, lensGroups, lensRs, options, sensor } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import * as h from '../handlers'
+import { calcLensXCOG } from '@/math';
 
 const move = (e: any) => {
     h.preventDefaultAndStopPropagation(e)
     const m0 = h.getPositionOnSvg(e)
-    const x10 = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x1))
-    const x20 = lensGroups.value.map((lensGroup) => lensGroup.lenses.map((lens) => lens.x2))
+    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
     const sensorS0 = sensor.value.s.copy()
     const sensorT0 = sensor.value.t.copy()
     const apertureX0 = aperture.value.x
     h.setMoveHandler((e_: any) => {
         const d = h.getPositionDiffOnSvgApp(e_, m0)
-        let minX = Math.min(sensorS0.x, sensorT0.x, apertureX0)
-        x10.forEach((g) => [
-            g.forEach((x1) => {
-                minX = Math.min(minX, x1)
-            })
-        ])
-
-        // Update
         lensGroups.value.forEach((lensGroup, i) => {
             lensGroup.lenses.forEach((lens, j) => {
-                lens.x1 = x10[i][j] + d.x
-                lens.x2 = x20[i][j] + d.x
+                lens.planes.forEach((plane, k) => {
+                    plane.x = x0s[i][j][k] + d.x
+                })
             })
         })
         sensor.value.s.x = sensorS0.x + d.x
@@ -48,12 +41,8 @@ const move = (e: any) => {
                 <g v-if="options.lens">
                     <g v-for="(lens, idx) of lensesSorted">
                         <g v-if="options.lensIdeal">
-                            <line :x1="(lens.x1 + lens.x2) / 2" :y1="-body.r" :x2="(lens.x1 + lens.x2) / 2"
-                                :y2="-lensRs[idx]">
-                            </line>
-                            <line :x1="(lens.x1 + lens.x2) / 2" :y1="body.r" :x2="(lens.x1 + lens.x2) / 2"
-                                :y2="lensRs[idx]">
-                            </line>
+                            <line :x1="calcLensXCOG(lens)" :y1="-body.r" :x2="calcLensXCOG(lens)" :y2="-lensRs[idx]" />
+                            <line :x1="calcLensXCOG(lens)" :y1="body.r" :x2="calcLensXCOG(lens)" :y2="lensRs[idx]" />
                         </g>
                         <g v-else>
                             <line :x1="lensFronts[idx]" :y1="-body.r" :x2="lensFronts[idx]" :y2="-lensRs[idx]"></line>

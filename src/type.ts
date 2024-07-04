@@ -5,13 +5,16 @@ export enum Light {
     Parallel
 }
 
-export type Lens = {
-    x1: number,
-    x2: number,
-    R1: number,
-    R2: number,
+export type LensPlane = {
+    x: number,
     r: number,
-    n: number,
+    h: number,
+    na: number,
+    nb: number,
+}
+
+export type Lens = {
+    planes: LensPlane[]
     aperture: number,
 }
 
