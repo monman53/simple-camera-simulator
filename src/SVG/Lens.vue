@@ -102,22 +102,19 @@ const rMoveStartHandler = (e: any, plane: LensPlane) => {
     })
 }
 
-// const lensSizeChangeStartHandler = (e: any) => {
-//     preventDefaultAndStopPropagation(e)
-//     const m0 = getPositionOnSvg(e);
-//     const lens = props.lens
-//     const r0 = props.lens.r;
-//     setMoveHandler((e_: any) => {
-//         const d = getPositionDiffOnSvgApp(e_, m0)
-//         if (r0 - d.y < 0.1) {
-//             lens.r = 0.1
-//         } else if (r0 - d.y > rMax.value) {
-//             lens.r = rMax.value
-//         } else {
-//             lens.r = r0 - d.y
-//         }
-//     })
-// }
+const hChangeStartHandler = (e: any, plane: LensPlane) => {
+    preventDefaultAndStopPropagation(e)
+    const m0 = getPositionOnSvg(e);
+    const h0 = plane.h;
+    setMoveHandler((e_: any) => {
+        const d = getPositionDiffOnSvgApp(e_, m0)
+        if (h0 - d.y > Math.abs(plane.r)) {
+            plane.h = Math.abs(plane.r)
+        } else {
+            plane.h = h0 - d.y
+        }
+    })
+}
 
 const apertureSizeChangeStartHandler = (e: any) => {
     preventDefaultAndStopPropagation(e)
@@ -165,17 +162,18 @@ const apertureSizeChangeStartHandler = (e: any) => {
             </g>
         </WithBackground>
 
-        <!-- Thickness change UI -->
+        <!-- Thickness and change UI -->
         <g class="ui-stroke transparent horizontal-resize">
             <template v-for="(plane, idx) of lens.planes">
                 <path :d="paths[idx]" @mousedown="planeMoveStartHandler($event, plane)"></path>
             </template>
         </g>
 
-        <!-- Lens size change UI-->
-        <!-- <g class="ui-stroke transparent vertical-resize" @mousedown="lensSizeChangeStartHandler"> -->
-        <!-- <line :x1="leftX" :y1="-r" :x2="rightX" :y2="-r" stroke-linecap="round"></line> -->
-        <!-- </g> -->
+        <!-- Size change UI -->
+        <template v-for="(plane, idx) of lens.planes">
+            <CircleUI :c="vec(calcLensPlaneEdge(plane), -plane.h)" @mousedown="hChangeStartHandler($event, plane)" class="vertical-resize">
+            </CircleUI>
+        </template>
 
         <!-- dummy for ui -->
         <path :d="path" class='transparent grab' stroke-width="0" />
