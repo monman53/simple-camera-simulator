@@ -1,3 +1,5 @@
+import type { Vec } from "./math"
+
 // TODO: "Light" -> "LightType"
 export enum Light {
     White,
@@ -21,4 +23,11 @@ export type Lens = {
 export type LensGroup = {
     lenses: Lens[],
     selected: boolean,
+}
+
+export type Ray = {
+    s: Vec,
+    v: Vec,
+    color: number,
+    idx: number,
 }

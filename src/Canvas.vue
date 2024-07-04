@@ -4,7 +4,7 @@ import { watch, onMounted, ref } from 'vue'
 import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, body, lensFronts, aperture, lensBacks } from './globals'
 import { Vec, vec, vecRad } from './math'
 
-import { Light } from './type'
+import { Light, type Ray } from './type'
 import { rayTrace } from './rayTrace';
 
 // Reference to the canvas
@@ -26,17 +26,21 @@ const drawSegment = (p: Vec, q: Vec) => {
   ctx.stroke();
 };
 
-const drawRay = (s: Vec, v: Vec, color: number, sensorDataTmp: any[]) => {
-  const ps = rayTrace(s.copy(), v.copy())
-  ps.forEach((p) => {
-    drawSegment(s, p.p)
-    if (p.isSensor) {
-      sensorDataTmp.push({ y: p.p.sub(sensor.value.s).length(), color })
-      return
-    }
-    s = p.p
+const drawRay = (rays: Ray[], sensorDataTmp: any[]) => {
+  const segments = rayTrace(rays)
+  segments.forEach((raySegments, i) => {
+    const color = rays[i].color
+    ctx.strokeStyle = `hsl(${color}, 100%, 50%, ${style.value.rayIntensity})`
+    raySegments.forEach(segment => {
+      const s = segment.s
+      const t = segment.t
+      drawSegment(s, t)
+      if (segment.isSensor) {
+        sensorDataTmp.push({ y: t.sub(sensor.value.s).length(), color })
+        return
+      }
+    })
   })
-  return
 }
 
 const draw = () => {
@@ -54,9 +58,12 @@ const draw = () => {
   // Light path drawing
   //================================
 
+  ctx.lineWidth = style.value.rayWidth
+
+  const rays: Ray[] = []
+
   // Light sources
   for (const light of lights.value) {
-    ctx.lineWidth = style.value.rayWidth
     // Point light source
     if (light.type === Light.Point) {
       // Draw 2^nRaysLog rays from light center
@@ -67,8 +74,7 @@ const draw = () => {
         const theta = 2 * Math.PI * i / nRays
         const v = vecRad(theta)
         for (let color of light.colors) {
-          ctx.strokeStyle = `hsl(${color}, 100%, 50%, ${style.value.rayIntensity})`
-          drawRay(s, v, color, sensorDataTmp)
+          rays.push({ s, v, color, idx: rays.length })
         }
       }
     }
@@ -84,8 +90,7 @@ const draw = () => {
         const s = light.s.add(ln.mul(i / nRays * length))
         const v = l.rotate(-Math.PI / 2).normalize()
         for (let color of light.colors) {
-          ctx.strokeStyle = `hsl(${color}, 100%, 50%, ${style.value.rayIntensity})`
-          drawRay(s, v, color, sensorDataTmp)
+          rays.push({ s, v, color, idx: rays.length })
         }
       }
     }
@@ -94,8 +99,6 @@ const draw = () => {
   // Apple
   if (options.value.apple) {
     for (const light of apple.value) {
-      ctx.strokeStyle = `hsl(${light.color}, 100%, 50%, ${style.value.rayIntensity})`
-      ctx.lineWidth = style.value.rayWidth
       // Draw 2^nRaysLog rays from light center
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
@@ -103,10 +106,12 @@ const draw = () => {
         const s = vec(light.c.x, light.c.y)
         const theta = 2 * Math.PI * i / nRays
         const v = vecRad(theta)
-        drawRay(s, v, light.color, sensorDataTmp)
+        rays.push({ s, v, color: light.color, idx: rays.length })
       }
     }
   }
+
+  drawRay(rays, sensorDataTmp)
 
   sensorData.value = sensorDataTmp
 
