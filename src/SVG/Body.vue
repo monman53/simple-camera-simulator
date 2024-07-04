@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { aperture, body, lensesSorted, lensFronts, lensGroups, lensRs, options, sensor } from '@/globals';
+import { aperture, body, lensCOGs, lensesSorted, lensFronts, lensGroups, lensRs, options, sensor } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import * as h from '../handlers'
-import { calcLensXCOG } from '@/math';
 
 const move = (e: any) => {
     h.preventDefaultAndStopPropagation(e)
@@ -41,8 +40,8 @@ const move = (e: any) => {
                 <g v-if="options.lens">
                     <g v-for="(lens, idx) of lensesSorted">
                         <g v-if="options.lensIdeal">
-                            <line :x1="calcLensXCOG(lens)" :y1="-body.r" :x2="calcLensXCOG(lens)" :y2="-lensRs[idx]" />
-                            <line :x1="calcLensXCOG(lens)" :y1="body.r" :x2="calcLensXCOG(lens)" :y2="lensRs[idx]" />
+                            <line :x1="lensCOGs[idx]" :y1="-body.r" :x2="lensCOGs[idx]" :y2="-lensRs[idx]" />
+                            <line :x1="lensCOGs[idx]" :y1="body.r" :x2="lensCOGs[idx]" :y2="lensRs[idx]" />
                         </g>
                         <g v-else>
                             <line :x1="lensFronts[idx]" :y1="-body.r" :x2="lensFronts[idx]" :y2="-lensRs[idx]"></line>

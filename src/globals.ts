@@ -139,6 +139,12 @@ export const lensBacks = computed(() => {
     })
 })
 
+export const lensCOGs = computed(() => {
+    return lensesSorted.value.map((lens) => {
+        return calcLensXCOG(lens)
+    })
+})
+
 export const releaseAllLenses = () => {
     for (const lensGroup of lensGroups.value) {
         lensGroup.selected = false
@@ -315,26 +321,6 @@ export const infR = computed(() => {
     return (screen + distanceMax) * 3 /* 3 for safety */;
 })
 
-export const minLensX = computed(() => {
-    let minX = infR.value
-    for (const lensGroup of lensGroups.value) {
-        for (const lens of lensGroup.lenses) {
-            minX = Math.min(minX, lens.planes[0].x)
-        }
-    }
-    return minX
-})
-
-export const maxLensX = computed(() => {
-    let maxX = -infR.value
-    for (const lensGroup of lensGroups.value) {
-        for (const lens of lensGroup.lenses) {
-            maxX = Math.max(maxX, lens.planes[lens.planes.length - 1].x)
-        }
-    }
-    return maxX
-})
-
 export const rUI = computed(() => {
     const scale = 1 / state.value.scale
     return 8 * scale;
@@ -415,7 +401,7 @@ export const calcLensInfo = (lenses: Lens[]) => {
             if (options.value.lensIdeal) {
                 if (j === lens.planes.length - 1) {
                     if (idx !== lenses.length - 1) {
-                        d = calcLensXCOG(lenses[idx + 1]) - calcLensXCOG(lens)
+                        d = lensCOGs.value[idx+1] - lensCOGs.value[idx]
                     }
                 }
             } else {

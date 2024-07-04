@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { lights, rUI, minLensX } from '../globals'
+import { lights, rUI } from '../globals'
 import { Vec } from '../math'
 import * as h from '../handlers'
 import WithBackground from './WithBackground.vue';

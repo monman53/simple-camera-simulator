@@ -1,5 +1,5 @@
-import { aperture, body, infR, lensBacks, lensFronts, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
-import { calcLensPlaneEdge, calcLensXCOG, cross, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
+import { aperture, body, infR, lensBacks, lensCOGs, lensFronts, lensFs, lensRs, lensesSorted, options, sensor } from "./globals";
+import { calcLensPlaneEdge, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionSS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
 
 const collisionLens = (s: Vec, v: Vec, cx: number, r: number, h: number, ni: number, no: number) => {
     v = v.normalize()
@@ -112,18 +112,35 @@ const collisionY = (s: Vec, v: Vec, x: number, yMin: number, yMax: number) => {
     return null
 }
 
-const collisionAll = (s: Vec, v: Vec) => {
+const collisionAll = (s: Vec, v: Vec): ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null) => {
+    // Closest collision
+    let pMin: ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null) = null
+    const updateMin = (p: any) => {
+        if (p === null) {
+            return
+        }
+        if (p.d <= eps) {
+            return
+        }
+        if (pMin === null) {
+            pMin = p
+            return
+        }
+        if (p.d < pMin.d) {
+            pMin = p
+        }
+    }
+
     //--------------------------------
     // Collisions
     //--------------------------------
-    let ps: ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null)[] = []
 
     // Body outline
     if (options.value.body && body.value.r && body.value.front && body.value.back) {
-        ps.push(collisionX(s, v, -body.value.r, body.value.front, body.value.back))
-        ps.push(collisionX(s, v, body.value.r, body.value.front, body.value.back))
+        updateMin(collisionX(s, v, -body.value.r, body.value.front, body.value.back))
+        updateMin(collisionX(s, v, body.value.r, body.value.front, body.value.back))
         if (options.value.sensor) {
-            ps.push(collisionY(s, v, body.value.back, -body.value.r, body.value.r))
+            updateMin(collisionY(s, v, body.value.back, -body.value.r, body.value.r))
         }
     }
 
@@ -132,62 +149,64 @@ const collisionAll = (s: Vec, v: Vec) => {
         // Lens
         const h = lensRs.value[i]
         const f = lensFs.value[i]
-        const xm = calcLensXCOG(lens)
+        const xm = lensCOGs.value[i]
         if (options.value.lensIdeal) {
-            ps.push(collisionIdealLens(s, v, xm, h * lens.aperture, f))
+            updateMin(collisionIdealLens(s, v, xm, h * lens.aperture, f))
         } else {
             lens.planes.forEach(p => {
                 const ni = p.r > 0 ? p.nb : p.na
                 const no = p.r > 0 ? p.na : p.nb
                 // Plane
-                ps.push(collisionLens(s, v, p.x + p.r, p.r, p.h, ni, no))
+                updateMin(collisionLens(s, v, p.x + p.r, p.r, p.h, ni, no))
 
                 // Plane outside
-                ps.push(collisionAperture(s, v, calcLensPlaneEdge(p), p.h, h))
+                updateMin(collisionAperture(s, v, calcLensPlaneEdge(p), p.h, h))
             })
         }
 
         // Lens aperture
-        ps.push(collisionAperture(s, v, xm, h * lens.aperture, h))
+        updateMin(collisionAperture(s, v, xm, h * lens.aperture, h))
 
         // Lens to body
         if (options.value.body && body.value.r !== null) {
             const x = options.value.lensIdeal ? xm : lensFronts.value[i]
-            ps.push(collisionAperture(s, v, x, h, body.value.r))
+            updateMin(collisionAperture(s, v, x, h, body.value.r))
         }
 
         // Lens upper and bottom
-        ps.push(collisionX(s, v, -h, lensFronts.value[i], lensBacks.value[i]))
-        ps.push(collisionX(s, v, h, lensFronts.value[i], lensBacks.value[i]))
+        updateMin(collisionX(s, v, -h, lensFronts.value[i], lensBacks.value[i]))
+        updateMin(collisionX(s, v, h, lensFronts.value[i], lensBacks.value[i]))
     })
 
     // Aperture
     if (options.value.aperture && body.value.r) {
-        ps.push(collisionAperture(s, v, aperture.value.x, aperture.value.r, body.value.r))
+        updateMin(collisionAperture(s, v, aperture.value.x, aperture.value.r, body.value.r))
     }
 
     // Sensor
     if (options.value.sensor) {
-        ps.push(collisionSensor(s, v))
+        updateMin(collisionSensor(s, v))
     }
+
+    return pMin
 
     //--------------------------------
     // Find nearest collision
     //--------------------------------
-    ps = ps.filter((p) => p !== null && p.d > eps)
-    ps.sort((a, b) => {
-        if (a !== null && b !== null) {
-            return a.d - b.d
-        } else {
-            return 0
-        }
-    })
+    // ps = ps.filter((p) => p !== null && p.d > eps)
+    // ps.sort((a, b) => {
+    //     if (a !== null && b !== null) {
+    //         return a.d - b.d
+    //     } else {
+    //         return 0
+    //     }
+    // })
 
-    if (ps.length > 0) {
-        return ps[0]
-    } else {
-        return null
-    }
+    // if (ps.length > 0) {
+    //     return ps[0]
+    // } else {
+    //     return null
+    // }
 }
 
 export const rayTrace = (s: Vec, v: Vec) => {
