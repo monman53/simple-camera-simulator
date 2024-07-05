@@ -64,7 +64,7 @@ const strokeWidth = computed(() => {
 
     <!-- Optical axis -->
     <g v-if="options.opticalAxis">
-      <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thick"></line>
+      <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thicker"></line>
     </g>
 
     <!-- Grid -->
