@@ -4,7 +4,7 @@ import { watch, onMounted, ref } from 'vue'
 import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, body, lensFronts, aperture, lensBacks } from './globals'
 import { Vec, vec, vecRad } from './math'
 
-import { Light, type Ray } from './type'
+import { type Ray } from './type'
 import { rayTrace } from './rayTrace';
 
 // Reference to the canvas
@@ -65,7 +65,7 @@ const draw = () => {
   // Light sources
   for (const light of lights.value) {
     // Point light source
-    if (light.type === Light.Point) {
+    if (light.type === 'Point') {
       // Draw 2^nRaysLog rays from light center
       const nRays = (1 << params.nRaysLog);
       for (let i = 0; i < nRays; i++) {
@@ -80,7 +80,7 @@ const draw = () => {
     }
 
     // Parallel light source
-    if (light.type === Light.Parallel) {
+    if (light.type === 'Parallel') {
       const l = Vec.sub(light.t, light.s)
       const ln = l.normalize()
       const length = l.length()

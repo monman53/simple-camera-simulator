@@ -1,6 +1,5 @@
 import type { Ref } from "vue";
 import { state, lights } from "./globals";
-import { Light } from './type'
 import { vec, Vec } from './math'
 
 //================================

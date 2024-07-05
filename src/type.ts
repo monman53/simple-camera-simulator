@@ -1,11 +1,8 @@
 import type { Vec } from "./math"
 
-// TODO: "Light" -> "LightType"
-export enum Light {
-    White,
-    Point,
-    Parallel
-}
+export type LightPoint = { type: "Point", c: Vec, colors: number[] }
+export type LightParallel = { type: "Parallel", s: Vec, t: Vec, colors: number[] }
+export type LightType = LightPoint | LightParallel
 
 export type LensPlane = {
     x: number,

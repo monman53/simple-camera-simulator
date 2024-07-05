@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights, globalLensInfo } from './globals'
 import { humanReadable } from './utils';
-import { Light, type Lens, type LensPlane } from "./type"
+import { type Lens, type LensPlane } from "./type"
 import { lenses } from './collection/lense';
 
 const nRays = computed(() => {
@@ -100,12 +100,12 @@ const setLens = (lens: any) => {
             <td>New light type</td>
             <td>
                 <label>
-                    <input type="radio" :value="Light.Point" v-model="state.newLightType">
+                    <input type="radio" :value="'Point'" v-model="state.newLightType">
                     Point
                 </label>
                 <br>
                 <label>
-                    <input type="radio" :value="Light.Parallel" v-model="state.newLightType">
+                    <input type="radio" :value="'Parallel'" v-model="state.newLightType">
                     Parallel
                 </label>
             </td>

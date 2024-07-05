@@ -5,7 +5,7 @@ import { Vec } from '../math'
 import WithBackground from './WithBackground.vue';
 import CircleUI from './CircleUI.vue';
 import MoveUI from './MoveUI.vue';
-import { Light } from '@/type';
+import type { LightParallel } from '@/type';
 
 const props = defineProps(['light', 'idx'])
 
@@ -25,22 +25,28 @@ const points = computed(() => {
     return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
 })
 
-const parallelLightNodeMoveStartHandler = (idx: number, node: Vec) => {
+const parallelLightNodeMoveStartHandler = (idx: number, light: LightParallel) => {
     return () => {
         // Last touched light is always front
-        const light = lights.value[idx];
-        const newLights = lights.value.filter((light, i) => {
-            return i !== idx
-        })
-        newLights.push(light)
-        lights.value = newLights
+        {
+            const light = lights.value[idx];
+            const newLights = lights.value.filter((light, i) => {
+                return i !== idx
+            })
+            newLights.push(light)
+            lights.value = newLights
+        }
 
-        const p0 = node.copy()
-        const p = node
+        const s0 = light.s.copy()
+        const m0 = light.s.add(light.t).div(2)
 
         return (e: any, d: Vec) => {
-            p.x = p0.x + d.x
-            p.y = p0.y + d.y
+            const ns = s0.add(d)
+            if (e.shiftKey) {
+                ns.x = m0.x
+            }
+            light.s = ns
+            light.t = m0.add(m0.sub(ns))
         }
     }
 }
@@ -55,11 +61,17 @@ const move = (idx: number) => {
         newLights.push(light)
         lights.value = newLights
 
-        if (light.type === Light.Parallel) {
-            const [s0, t0] = [light.s.copy(), light.t.copy()];
+        if (light.type === "Parallel") {
+            const s0 = light.s.copy()
+            const t0 = light.t.copy()
+            const m0 = s0.add(t0).div(2)
             return (e: any, d: Vec) => {
                 const sn = s0.add(d)
                 const tn = t0.add(d)
+                if (e.shiftKey) {
+                    sn.y = s0.y - m0.y
+                    tn.y = t0.y - m0.y
+                }
                 light.s = sn
                 light.t = tn
             }
@@ -91,7 +103,7 @@ const deleteLight = (e: any, idx: number) => {
 
 <template>
     <g>
-        <g v-if="light.type === Light.Point">
+        <g v-if="light.type === 'Point'">
             <MoveUI :handler-creator="move(idx)">
                 <g @dblclick="deleteLight($event, idx)" class="grab">
                     <WithBackground>
@@ -102,7 +114,7 @@ const deleteLight = (e: any, idx: number) => {
                 </g>
             </MoveUI>
         </g>
-        <g v-if="light.type === Light.Parallel">
+        <g v-if="light.type === 'Parallel'">
             <MoveUI :handler-creator="move(idx)">
                 <g @dblclick="deleteLight($event, idx)">
                     <polygon :points :fill></polygon>
@@ -112,12 +124,12 @@ const deleteLight = (e: any, idx: number) => {
                 </g>
             </MoveUI>
 
-            <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.s)">
+            <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light)">
                 <CircleUI :c="light.s"></CircleUI>
             </MoveUI>
-            <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.t)">
+            <!-- <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.t)">
                 <CircleUI :c="light.t"></CircleUI>
-            </MoveUI>
+            </MoveUI> -->
         </g>
     </g>
 </template>

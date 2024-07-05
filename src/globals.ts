@@ -1,6 +1,6 @@
 import { ref, computed, watch } from "vue"
 import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge } from "./math"
-import { type Lens, type LensGroup, Light } from "./type"
+import { type Lens, type LensGroup, type LightType } from "./type"
 
 //================================
 // States
@@ -16,7 +16,7 @@ export const createInitialParams = () => {
         newLightColor: 120,
         newLightColorComposite: false,
         newLightColorCompositeN: 3,
-        newLightType: Light.Point,
+        newLightType: "Point",
     }
 }
 export const state = ref(createInitialParams())
@@ -26,16 +26,13 @@ export const state = ref(createInitialParams())
 //--------------------------------
 
 export const lights0 = ():
-    (
-        { type: Light.Point, c: Vec, colors: number[] } |
-        { type: Light.Parallel, s: Vec, t: Vec, colors: number[] }
-    )[] => {
+    LightType[] => {
     return [
         // { type: Light.Point, c: vec(-200, 20), color: 0 }, // red
         // { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
         // { type: Light.Point, c: vec(-120, -20), color: 240 }, // blue
         // { type: Light.White, c: vec(-200, -18) }, // white
-        { type: Light.Parallel, s: vec(-180, -30), t: vec(-180, 30), colors: [120] }, // green
+        { type: 'Parallel', s: vec(-180, -30), t: vec(-180, 30), colors: [120] }, // green
     ]
 }
 export const lights = ref(lights0())
@@ -231,7 +228,7 @@ export const apple = computed(() => {
             const c = vec(x, y)
             const color = 0 // red
             if (x >= cx) {
-                lights.push({ type: Light.Point, c, color })
+                lights.push({ c, color })
             }
         }
     }
@@ -247,7 +244,7 @@ export const apple = computed(() => {
             const c = vec(x, y)
             const color = 120 // green
             if (x >= cx) {
-                lights.push({ type: Light.Point, c, color })
+                lights.push({ c, color })
             }
         }
     }
@@ -315,11 +312,11 @@ export const infR = computed(() => {
     const c = vec((sensor.value.s.x + sensor.value.t.x) / 2, 0)
     let distanceMax = 0;
     for (const light of lights.value) {
-        if (light.type === Light.Point) {
+        if (light.type === 'Point') {
             const d = c.sub(light.c)
             distanceMax = Math.max(distanceMax, d.length());
         }
-        if (light.type === Light.Parallel) {
+        if (light.type === 'Parallel') {
             const ds = c.sub(light.s)
             const dt = c.sub(light.s)
             const d = Math.max(ds.length(), dt.length())

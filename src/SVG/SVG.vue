@@ -15,7 +15,6 @@ import Body from './Body.vue'
 import Point from './Point.vue'
 import Sensor from './Sensor.vue'
 import MoveUI from './MoveUI.vue'
-import { Light } from '@/type'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -76,11 +75,11 @@ const addLight = (e: any) => {
       colors.push(360 * i / n)
     }
   }
-  if (state.value.newLightType === Light.Point) {
-    lights.value.push({ type: Light.Point, c: m, colors })
+  if (state.value.newLightType === 'Point') {
+    lights.value.push({ type: 'Point', c: m, colors })
   }
-  if (state.value.newLightType === Light.Parallel) {
-    lights.value.push({ type: Light.Parallel, s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), colors })
+  if (state.value.newLightType === 'Parallel') {
+    lights.value.push({ type: 'Parallel', s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), colors })
   }
 }
 
@@ -142,7 +141,7 @@ const addLight = (e: any) => {
 
       <!-- Lights -->
       <g v-for="(light, idx) of lights">
-          <LightSVG :light :idx class="grab"></LightSVG>
+        <LightSVG :light :idx class="grab"></LightSVG>
       </g>
 
       <!-- Sensor -->
