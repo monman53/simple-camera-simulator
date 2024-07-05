@@ -4,35 +4,67 @@ import type { Ray } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
 
-const collisionLens = (rays: Ray[], cx: number, r: number, h: number, ni: number, no: number): CollisionResult[] => {
+const collisionLens = (rays: Ray[], x: number, r: number, h: number, ni: number, no: number): CollisionResult[] => {
     return rays.map(ray => {
         let v = ray.v
         let s = ray.s
         v = v.normalize()
-        const pls = intersectionCL(cx, r, s, v)
-        if (pls.length === 0) {
-            return null
-        }
-        for (const pl of pls) {
-            // TODO: Find better condition
-            const collision = (r > 0 ? pl.p.x < cx : pl.p.x > cx) && Math.abs(pl.p.y) < h
-            if (collision) {
+        if (isFinite(r)) {
+            const cx = x + r
+            const pls = intersectionCL(cx, r, s, v)
+            if (pls.length === 0) {
+                return null
+            }
+            for (const pl of pls) {
+                // TODO: Find better condition
+                const collision = (r > 0 ? pl.p.x < cx : pl.p.x > cx) && Math.abs(pl.p.y) < h
+                if (collision) {
+                    return {
+                        p: pl.p,
+                        d: pl.d,
+                        vn: () => {
+                            const n = vec(pl.p.x - cx, pl.p.y)
+                            if (dot(n, v) < 0) {
+                                // Outside to inside
+                                const phi1 = crossAngle(v, n)
+                                const phi2 = Math.asin(Math.sin(phi1) * no / ni)
+                                const theta = Math.atan2(n.y, n.x) + phi2 + Math.PI
+                                return vecRad(theta)
+                            } else {
+                                // Inside to outside
+                                const phi1 = crossAngle(v.minus(), n)
+                                const phi2 = Math.asin(Math.sin(phi1) * ni / no)
+                                const theta = Math.atan2(n.y, n.x) + phi2
+                                return vecRad(theta)
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            const pl = intersectionY(s, v, x, -h, h)
+            if (pl.p !== null) {
                 return {
                     p: pl.p,
                     d: pl.d,
                     vn: () => {
-                        const n = vec(pl.p.x - cx, pl.p.y)
+                        // const n = vec(Infinity, 0)
+                        const n = vec(-Math.sign(r), 0)
                         if (dot(n, v) < 0) {
                             // Outside to inside
                             const phi1 = crossAngle(v, n)
-                            const phi2 = Math.asin(Math.sin(phi1) * no / ni)
-                            const theta = Math.atan2(n.y, n.x) + phi2 + Math.PI
+                            let theta = Math.asin(Math.sin(phi1) * no / ni) + Math.PI
+                            if (r === Infinity) {
+                                theta += Math.PI
+                            }
                             return vecRad(theta)
                         } else {
                             // Inside to outside
                             const phi1 = crossAngle(v.minus(), n)
-                            const phi2 = Math.asin(Math.sin(phi1) * ni / no)
-                            const theta = Math.atan2(n.y, n.x) + phi2
+                            let theta = Math.asin(Math.sin(phi1) * ni / no)
+                            if (r === Infinity) {
+                                theta += Math.PI
+                            }
                             return vecRad(theta)
                         }
                     }
@@ -192,7 +224,7 @@ const collisionAll = (rays: Ray[]): CollisionResult[] => {
                 const ni = p.r > 0 ? p.nb : p.na
                 const no = p.r > 0 ? p.na : p.nb
                 // Plane
-                updateMin(collisionLens(rays, p.x + p.r, p.r, p.h, ni, no))
+                updateMin(collisionLens(rays, p.x, p.r, p.h, ni, no))
 
                 // Plane outside
                 updateMin(collisionAperture(rays, lensPlaneEdges.value[i][j], p.h, h))
@@ -241,7 +273,7 @@ export const rayTrace = (rays: Ray[]): Segment[][] => {
             const s = ray.s
             const c = cs[idx]
             if (c === null) {
-                segments[ray.idx].push({ s, t: ray.s.add(ray.v.mul(infR.value))})
+                segments[ray.idx].push({ s, t: ray.s.add(ray.v.mul(infR.value)) })
                 return
             }
 

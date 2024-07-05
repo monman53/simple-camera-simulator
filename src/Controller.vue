@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights } from './globals'
+import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights, globalLensInfo } from './globals'
 import { humanReadable } from './utils';
-import { Light } from "./type"
+import { Light, type Lens, type LensPlane } from "./type"
+import { lenses } from './collection/lense';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
@@ -15,6 +16,38 @@ const createSensor = (d: number) => {
     sensor.value.s.y = -d / 2
     sensor.value.t.x = xm
     sensor.value.t.y = d / 2
+}
+
+const setLens = (lens: any) => {
+    const nPlanes: LensPlane[] = []
+    let x = 0
+    let n = 1
+    lens.planes.forEach((plane: any) => {
+        nPlanes.push({
+            x: x,
+            r: plane.r,
+            h: plane.h,
+            na: n,
+            nb: plane.n
+        })
+        x += plane.d
+        n = plane.n
+    })
+    lensGroups.value = []
+    for(let i=0;i<nPlanes.length;i+=2){
+        lensGroups.value.push({
+            lenses: [
+                {
+                    planes: [
+                        nPlanes[i],
+                        nPlanes[i+1],
+                    ],
+                    aperture: 1,
+                }
+            ],
+            selected: false,
+        })
+    }
 }
 
 </script>
@@ -134,12 +167,12 @@ const createSensor = (d: number) => {
                     <td>{{ humanReadable(lens.n) }}</td>
                 </tr> -->
             </template>
-            <!-- <tr>
+            <tr>
                 <td>Focal Length</td>
                 <td></td>
-                <td>{{ humanReadable(lens.f) }}</td>
+                <td>{{ humanReadable(globalLensInfo.f) }}</td>
             </tr>
-            <tr>
+            <!-- <tr>
                 <td>F-number</td>
                 <td></td>
                 <td>{{ humanReadable(fNumber) }}</td>
@@ -287,6 +320,14 @@ const createSensor = (d: number) => {
                 </td>
                 <td></td>
             </tr> -->
+            <tr>
+                <td>Lens collection</td>
+                <td>
+                    <template v-for="lens of lenses">
+                        <button @click="setLens(lens)">{{ lens.name }}</button>
+                    </template>
+                </td>
+            </tr>
             <tr>
                 <td>Sensor height</td>
                 <td>

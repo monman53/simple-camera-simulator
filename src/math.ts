@@ -302,6 +302,9 @@ export const calcLensPlaneEdge = (plane: LensPlane) => {
     const x = plane.x
     const r = plane.r
     const h = plane.h
+    if (!isFinite(r)) {
+        return x
+    }
     const d = Math.abs(r) - Math.sqrt(r * r - h * h)
     if (r > 0) {
         return x + d

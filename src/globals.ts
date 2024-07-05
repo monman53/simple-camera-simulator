@@ -433,17 +433,20 @@ export const calcLensInfo = (lenses: Lens[]) => {
 
     const ls: number[] = []
     const lss: number[] = []
-    let f = 1
+    let f = Infinity
     ll.forEach((l, i) => {
         if (i === 0) {
-            //ls[i] = Infinity
-            // lss[i] = 1 / (l.n / l.nn / ls[i] + 1 / l.r * (1 - l.n / l.nn))
-            lss[i] = 1 / (1 / l.r * (1 - l.na / l.nb))
-            f *= lss[i]
+            ls.push(Infinity)
+            lss.push(1 / (1 / l.r * (1 - l.na / l.nb)))
+            f = lss[i]
         } else {
-            ls[i] = lss[i - 1] - ll[i - 1].d
-            lss[i] = 1 / (l.na / l.nb / ls[i] + 1 / l.r * (1 - l.na / l.nb))
-            f *= lss[i] / ls[i]
+            ls.push(lss[i - 1] - ll[i - 1].d)
+            lss.push(1 / (l.na / l.nb / ls[i] + 1 / l.r * (1 - l.na / l.nb)))
+            if (isFinite(f)) {
+                f *= lss[i] / ls[i]
+            } else {
+                f = lss[i]
+            }
         }
     })
     let H = 0

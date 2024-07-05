@@ -38,13 +38,21 @@ const path = computed(() => {
         // left
         d += `M ${edge1} ${-r.value} `
         d += `L ${edge1} ${-p1.h} `
-        d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${edge1} ${p1.h} `
+        if (isFinite(p1.r)) {
+            d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${edge1} ${p1.h} `
+        } else {
+            d += `L ${edge1} ${p1.h} `
+        }
         d += `L ${edge1} ${r.value} `
 
         // right
         d += `L ${edge2} ${r.value} `
         d += `L ${edge2} ${p2.h} `
-        d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${edge2} ${-p2.h} `
+        if (isFinite(p2.r)) {
+            d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${edge2} ${-p2.h} `
+        } else {
+            d += `L ${edge2} ${-p2.h} `
+        }
         d += `L ${edge2} ${-r.value} `
 
         // Close
@@ -62,7 +70,11 @@ const paths = computed(() => {
 
         let d = ""
         d += `M ${edge} ${-r.value} L ${edge} ${-p.h} `
-        d += `A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h} `
+        if (isFinite(p.r)) {
+            d += `A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h} `
+        } else {
+            d += `L ${edge} ${p.h}`
+        }
         d += `L ${edge} ${r.value}`
         return d
     })
