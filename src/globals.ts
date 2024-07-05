@@ -51,7 +51,7 @@ export const defaultDoubletLens = (x: number) => {
         planes: [
             { x: x - d / 2, r: R, h: 20, na: 1, nb: 1.5 },
             { x: x + d / 2, r: -R, h: 20, na: 1.5, nb: 1.8 },
-            { x: x + 2 *d / 2, r: -R, h: 20, na: 1.8, nb: 1 },
+            { x: x + 2 * d / 2, r: -R, h: 20, na: 1.8, nb: 1 },
         ],
         aperture: 1,
         selected: false
@@ -147,7 +147,7 @@ export const lensCOGs = computed(() => {
 
 export const lensPlaneEdges = computed(() => {
     return lensesSorted.value.map((lens) => {
-        return lens.planes.map(p=>{
+        return lens.planes.map(p => {
             return calcLensPlaneEdge(p)
         })
     })
@@ -409,7 +409,7 @@ export const calcLensInfo = (lenses: Lens[]) => {
             if (options.value.lensIdeal) {
                 if (j === lens.planes.length - 1) {
                     if (idx !== lenses.length - 1) {
-                        d = lensCOGs.value[idx+1] - lensCOGs.value[idx]
+                        d = calcLensXCOG(lenses[idx + 1]) - calcLensXCOG(lenses[idx])
                     }
                 }
             } else {
@@ -591,10 +591,10 @@ const test = () => {
     const SK6 = 1.61375
     const SF1 = 1.71736
     const lenses = [
-        { planes: [{x: 0, r: 85.4, na: 1, nb: SK6, h: 10}, {x: 7.7, r: -500, na: SK6, nb: 1, h: 10}], aperture: 1 },
-        { planes: [{x: 8.2, r: 44.5, na: 1, nb: SK6, h: 10}, {x: 27.2, r: 70, na: SK6, nb: 1, h: 10}], aperture: 1 },
-        { planes: [{x: 31.7, r: -135, na: 1, nb: SF1, h: 10}, {x: 33.7, r: 34.3, na: SF1, nb: 1, h: 10}], aperture: 1 },
-        { planes: [{x: 52.7, r: 146, na: 1, nb: SK6, h: 10}, {x: 60.7, r: -46.8, na: SK6, nb: 1, h: 10}], aperture: 1 },
+        { planes: [{ x: 0, r: 85.4, na: 1, nb: SK6, h: 10 }, { x: 7.7, r: -500, na: SK6, nb: 1, h: 10 }], aperture: 1 },
+        { planes: [{ x: 8.2, r: 44.5, na: 1, nb: SK6, h: 10 }, { x: 27.2, r: 70, na: SK6, nb: 1, h: 10 }], aperture: 1 },
+        { planes: [{ x: 31.7, r: -135, na: 1, nb: SF1, h: 10 }, { x: 33.7, r: 34.3, na: SF1, nb: 1, h: 10 }], aperture: 1 },
+        { planes: [{ x: 52.7, r: 146, na: 1, nb: SK6, h: 10 }, { x: 60.7, r: -46.8, na: SK6, nb: 1, h: 10 }], aperture: 1 },
     ]
     const info = calcLensInfo(lenses)
     console.log(info.f, 99.78672652)
