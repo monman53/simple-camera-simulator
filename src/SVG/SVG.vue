@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 
-import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted } from '../globals'
+import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted, releaseAllLenses } from '../globals'
 import * as h from '../handlers'
 import { Light } from '../type'
-import { vec } from '../math'
+import { Vec, vec } from '../math'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
@@ -15,6 +15,7 @@ import Aperture from './Aperture.vue'
 import Body from './Body.vue'
 import Point from './Point.vue'
 import Sensor from './Sensor.vue'
+import MoveUI from './MoveUI.vue'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -55,81 +56,142 @@ const strokeWidth = computed(() => {
 //   return 4 * scale;
 // })
 
+const move = () => {
+  const c0 = state.value.c.copy()
+  releaseAllLenses()
+  return (e: any, d: Vec) => {
+    state.value.c = c0.sub(d)
+  }
+}
+
+const lightMoveStartHandler = (idx: number) => {
+  return () => {
+    // Last touched light is always front
+    const light = lights.value[idx];
+    const newLights = lights.value.filter((light, i) => {
+      return i !== idx
+    })
+    newLights.push(light)
+    lights.value = newLights
+
+    if (light.type === Light.Point) {
+      const c0 = light.c.copy()
+      return (e: any, d: Vec) => {
+        light.c.x = c0.x + d.x
+        light.c.y = c0.y + d.y
+      }
+    } else {
+      console.error('Unexpected: This handler is for Point Lights.')
+      return (e: any, d: Vec) => {
+      }
+    }
+  }
+}
+
+const addLight = (e: any) => {
+  e.preventDefault()
+  e.stopPropagation()
+  const m = h.getPositionOnSvgApp(e);
+  let colors = [state.value.newLightColor]
+  if (state.value.newLightColorComposite) {
+    const n = state.value.newLightColorCompositeN
+    colors = []
+    for (let i = 0; i < n; i++) {
+      colors.push(360 * i / n)
+    }
+  }
+  if (state.value.newLightType === Light.Point) {
+    lights.value.push({ type: Light.Point, c: m, colors })
+  }
+  if (state.value.newLightType === Light.Parallel) {
+    lights.value.push({ type: Light.Parallel, s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), colors })
+  }
+}
+
+const deleteLight = (e: any, idx: number) => {
+  e.preventDefault()
+  e.stopPropagation()
+  lights.value.splice(idx, 1)
+}
+
 </script>
 
 <template>
-  <svg id="main-svg" class="move" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
-    @mousedown="h.svgMoveStartHandler" @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler"
-    @wheel="h.svgScaleHandler" @dblclick="h.addLight">
+  <MoveUI :handler-creator="move">
+    <svg id="main-svg" class="move" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
+      @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="addLight">
 
-    <!-- Optical axis -->
-    <g v-if="options.opticalAxis">
-      <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thicker"></line>
-    </g>
-
-    <!-- Grid -->
-    <Grid v-if="options.grid"></Grid>
-
-    <!-- Body -->
-
-    <Body v-if="options.body"></Body>
-
-    <!-- Guidelines -->
-    <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView"></Guideline>
-
-    <!-- Global focal point -->
-    <g v-if="options.lensFocalPoints && lensExist">
-      <WithBackground>
-        <g class="stroke-white thicker">
-          <line :x1="globalLensRe.forward.H" :y1="-globalLensRe.forward.re" :x2="globalLensRe.forward.H"
-            :y2="globalLensRe.forward.re"></line>
-          <line :x1="globalLensRe.backward.H" :y1="-globalLensRe.backward.re" :x2="globalLensRe.backward.H"
-            :y2="globalLensRe.backward.re"></line>
-        </g>
-      </WithBackground>
-      <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)"></Point>
-      <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f, 0)"></Point>
-    </g>
-
-    <!-- Items -->
-    <g v-if="options.lens">
-      <g v-for="(lensGroup, idx) in lensGroups">
-        <LensGroup :lensGroup :idx></LensGroup>
+      <!-- Optical axis -->
+      <g v-if="options.opticalAxis">
+        <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thicker"></line>
       </g>
-    </g>
 
-    <!-- Aperture -->
-    <Aperture v-if="options.aperture"></Aperture>
+      <!-- Grid -->
+      <Grid v-if="options.grid"></Grid>
 
-    <!-- Apple -->
-    <g v-if="options.apple">
-      <g v-for="(light, idx) of apple">
+      <!-- Body -->
+
+      <Body v-if="options.body"></Body>
+
+      <!-- Guidelines -->
+      <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView"></Guideline>
+
+      <!-- Global focal point -->
+      <g v-if="options.lensFocalPoints && lensExist">
         <WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+          <g class="stroke-white thicker">
+            <line :x1="globalLensRe.forward.H" :y1="-globalLensRe.forward.re" :x2="globalLensRe.forward.H"
+              :y2="globalLensRe.forward.re"></line>
+            <line :x1="globalLensRe.backward.H" :y1="-globalLensRe.backward.re" :x2="globalLensRe.backward.H"
+              :y2="globalLensRe.backward.re"></line>
+          </g>
         </WithBackground>
-        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
+        <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)"></Point>
+        <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f, 0)"></Point>
       </g>
-    </g>
 
-    <!-- Lights -->
-    <g v-for="(light, idx) of lights">
-      <g v-if="light.type === Light.Point">
-        <g @mousedown="h.lightMoveStartHandler($event, idx)" @dblclick="h.deleteLight($event, idx)" class="grab">
+      <!-- Items -->
+      <g v-if="options.lens">
+        <g v-for="(lensGroup, idx) in lensGroups">
+          <LensGroup :lensGroup :idx></LensGroup>
+        </g>
+      </g>
+
+      <!-- Aperture -->
+      <Aperture v-if="options.aperture"></Aperture>
+
+      <!-- Apple -->
+      <g v-if="options.apple">
+        <g v-for="(light, idx) of apple">
           <WithBackground>
             <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
           </WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
-            :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 50 : 100}%, 0.5)`"></circle>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
         </g>
       </g>
-      <g v-if="light.type === Light.Parallel">
-        <LightParallel :light :idx class="grab"></LightParallel>
-      </g>
-    </g>
 
-    <!-- Sensor -->
-    <Sensor v-if="options.sensor"></Sensor>
-  </svg>
+      <!-- Lights -->
+      <g v-for="(light, idx) of lights">
+        <g v-if="light.type === Light.Point">
+          <MoveUI :handler-creator="lightMoveStartHandler(idx)">
+            <g @dblclick="deleteLight($event, idx)" class="grab">
+              <WithBackground>
+                <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+              </WithBackground>
+              <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
+                :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 50 : 100}%, 0.5)`"></circle>
+            </g>
+          </MoveUI>
+        </g>
+        <g v-if="light.type === Light.Parallel">
+          <LightParallel :light :idx class="grab"></LightParallel>
+        </g>
+      </g>
+
+      <!-- Sensor -->
+      <Sensor v-if="options.sensor"></Sensor>
+    </svg>
+  </MoveUI>
 </template>
 
 <style>

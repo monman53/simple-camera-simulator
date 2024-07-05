@@ -1,27 +1,25 @@
 <script setup lang="ts">
+import type { Vec } from '@/math';
 import { lensGroups, releaseAllLenses, sensor } from '../globals'
-import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
 import { type LensGroup } from '../type'
 
 import Lens from './Lens.vue'
+import MoveUI from './MoveUI.vue';
 
 const props = defineProps<{
     lensGroup: LensGroup
     idx: number
 }>()
 
-const moveStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
+const move = (e: any) => {
     // Selection
     if (!e.shiftKey && !props.lensGroup.selected) {
         releaseAllLenses()
     }
     props.lensGroup.selected = true
 
-    const m0 = getPositionOnSvg(e);
     const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
+    return (e: any, d: Vec) => {
         // Fix d.x within maxLightX < d.x < sensor.x
         const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
         for (let i = 0; i < lensGroups.value.length; i++) {
@@ -51,18 +49,21 @@ const moveStartHandler = (e: any) => {
                 })
             })
         })
-    })
+    }
 }
 
 const deleteLensGroup = (e: any) => {
-    preventDefaultAndStopPropagation(e)
+    e.preventDefault()
+    e.stopPropagation()
     lensGroups.value.splice(props.idx, 1)
 }
 
 </script>
 
 <template>
-    <g v-for="(lens, idx) in lensGroup.lenses" @dblclick="deleteLensGroup" @mousedown="moveStartHandler">
-        <Lens :lens :selected="lensGroup.selected"></Lens>
-    </g>
+    <MoveUI :handler-creator="move">
+        <g v-for="(lens, idx) in lensGroup.lenses" @dblclick="deleteLensGroup">
+            <Lens :lens :selected="lensGroup.selected"></Lens>
+        </g>
+    </MoveUI>
 </template>

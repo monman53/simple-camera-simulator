@@ -9,7 +9,7 @@ const props = defineProps<{
 const moveStart = (e: any) => {
     preventDefaultAndStopPropagation(e)
     const m0 = getPositionOnSvg(e);
-    setMoveHandlerWithM0(props.handlerCreator(), m0)
+    setMoveHandlerWithM0(props.handlerCreator(e), m0)
 }
 </script>
 
