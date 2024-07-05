@@ -4,8 +4,8 @@ import { lights, rUI } from '../globals'
 import { Vec } from '../math'
 import * as h from '../handlers'
 import WithBackground from './WithBackground.vue';
-import { Light } from '../type'
 import CircleUI from './CircleUI.vue';
+import MoveUI from './MoveUI.vue';
 
 const props = defineProps(['light', 'idx'])
 
@@ -25,25 +25,23 @@ const points = computed(() => {
     return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
 })
 
-const parallelLightNodeMoveStartHandler = (e: any, idx: number, node: Vec) => {
-    h.preventDefaultAndStopPropagation(e)
-    // Last touched light is always front
-    const light = lights.value[idx];
-    const newLights = lights.value.filter((light, i) => {
-        return i !== idx
-    })
-    newLights.push(light)
-    lights.value = newLights
+const parallelLightNodeMoveStartHandler = (idx: number, node: Vec) => {
+    return () => {
+        // Last touched light is always front
+        const light = lights.value[idx];
+        const newLights = lights.value.filter((light, i) => {
+            return i !== idx
+        })
+        newLights.push(light)
+        lights.value = newLights
 
-    if (light.type === Light.Parallel) {
-        const m0 = h.getPositionOnSvg(e);
         const p0 = node.copy()
         const p = node
-        h.setMoveHandler((e_: any) => {
-            const d = h.getPositionDiffOnSvgApp(e_, m0)
+
+        return (e: any, d: Vec) => {
             p.x = p0.x + d.x
             p.y = p0.y + d.y
-        })
+        }
     }
 }
 
@@ -66,7 +64,11 @@ const fill = computed(() => {
             </WithBackground>
         </g>
 
-        <CircleUI :c="light.s" @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.s)"></CircleUI>
-        <CircleUI :c="light.t" @mousedown="parallelLightNodeMoveStartHandler($event, idx, light.t)"></CircleUI>
+        <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.s)">
+            <CircleUI :c="light.s"></CircleUI>
+        </MoveUI>
+        <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.t)">
+            <CircleUI :c="light.t"></CircleUI>
+        </MoveUI>
     </g>
 </template>
