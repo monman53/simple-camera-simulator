@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { options } from '../globals'
-import { vec, calcLensXCOG, calcLensPlaneEdge, calcLensH } from '../math'
-import { setMoveHandler, preventDefaultAndStopPropagation, getPositionOnSvg, getPositionDiffOnSvgApp } from '../handlers'
+import { vec, calcLensXCOG, calcLensPlaneEdge, calcLensH, Vec } from '../math'
 import type { Lens, LensPlane } from '../type'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 import Point from './Point.vue'
+import MoveUI from './MoveUI.vue'
 
 const props = defineProps<{
     lens: Lens,
@@ -59,58 +59,57 @@ const paths = computed(() => {
         const absR = Math.abs(p.r)
         const sweep = p.r > 0 ? 0 : 1
         const edge = calcLensPlaneEdge(p)
-        return `M ${edge} ${-p.h} A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h} `
+
+        let d = ""
+        d += `M ${edge} ${-r.value} L ${edge} ${-p.h} `
+        d += `A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h} `
+        d += `L ${edge} ${r.value}`
+        return d
     })
 })
 
-const planeMoveStartHandler = (e: any, plane: LensPlane) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const x0 = plane.x;
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        // TODO
-        plane.x = x0 + d.x
-    })
-}
-
-const rMoveStartHandler = (e: any, plane: LensPlane) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const h0 = plane.h
-    const x0 = plane.x
-    const edge0 = calcLensPlaneEdge(plane)
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        let xn = x0 + d.x
-        const a = xn - edge0
-        const rn = (-h0 * h0 - a * a) / (2 * a)
-        plane.r = rn
-        plane.x = xn
-    })
-}
-
-const hChangeStartHandler = (e: any, plane: LensPlane) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
-    const h0 = plane.h;
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
-        if (h0 - d.y > Math.abs(plane.r)) {
-            plane.h = Math.abs(plane.r)
-        } else {
-            plane.h = h0 - d.y
+const planeMoveStartHandler = (plane: LensPlane) => {
+    return () => {
+        const x0 = plane.x;
+        return (e: any, d: Vec) => {
+            // TODO
+            plane.x = x0 + d.x
         }
-    })
+    }
 }
 
-const apertureSizeChangeStartHandler = (e: any) => {
-    preventDefaultAndStopPropagation(e)
-    const m0 = getPositionOnSvg(e);
+const hChangeStartHandler = (plane: LensPlane) => {
+    return () => {
+        const h0 = plane.h;
+        return (e: any, d: Vec) => {
+            if (h0 - d.y > Math.abs(plane.r)) {
+                plane.h = Math.abs(plane.r)
+            } else {
+                plane.h = h0 - d.y
+            }
+        }
+    }
+}
+
+const rMoveStartHandler = (plane: LensPlane) => {
+    return () => {
+        const h0 = plane.h
+        const x0 = plane.x
+        const edge0 = calcLensPlaneEdge(plane)
+        return (e: any, d: Vec) => {
+            let xn = x0 + d.x
+            const a = xn - edge0
+            const rn = (-h0 * h0 - a * a) / (2 * a)
+            plane.r = rn
+            plane.x = xn
+        }
+    }
+}
+
+const apertureSizeChangeStartHandler = () => {
     const lens = props.lens
     const a0 = props.lens.aperture * r.value;
-    setMoveHandler((e_: any) => {
-        const d = getPositionDiffOnSvgApp(e_, m0)
+    return (e: any, d: Vec) => {
         const an = (a0 + d.y) / r.value;
         if (an < 0) {
             lens.aperture = 0;
@@ -119,7 +118,7 @@ const apertureSizeChangeStartHandler = (e: any) => {
         } else {
             lens.aperture = an;
         }
-    })
+    }
 }
 
 </script>
@@ -155,20 +154,25 @@ const apertureSizeChangeStartHandler = (e: any) => {
         <!-- Thickness and change UI -->
         <g class="ui-stroke transparent horizontal-resize">
             <template v-for="(plane, idx) of lens.planes">
-                <path :d="paths[idx]" @mousedown="planeMoveStartHandler($event, plane)"></path>
+                <MoveUI :handler-creator="planeMoveStartHandler(plane)">
+                    <path :d="paths[idx]"></path>
+                </MoveUI>
             </template>
         </g>
 
         <!-- Size change UI -->
         <template v-for="(plane, idx) of lens.planes">
-            <CircleUI :c="vec(calcLensPlaneEdge(plane), -plane.h)" @mousedown="hChangeStartHandler($event, plane)" class="vertical-resize">
-            </CircleUI>
+            <MoveUI :handler-creator="hChangeStartHandler(plane)">
+                <CircleUI :c="vec(calcLensPlaneEdge(plane), -plane.h)" class="vertical-resize"></CircleUI>
+            </MoveUI>
         </template>
 
         <!-- Curvature change UI -->
         <g class="horizontal-resize">
             <template v-for="plane of lens.planes">
-                <CircleUI :c="vec(plane.x, 0)" @mousedown="rMoveStartHandler($event, plane)"></CircleUI>
+                <MoveUI :handler-creator="rMoveStartHandler(plane)">
+                    <CircleUI :c="vec(plane.x, 0)"></CircleUI>
+                </MoveUI>
             </template>
         </g>
 
@@ -181,7 +185,9 @@ const apertureSizeChangeStartHandler = (e: any) => {
             </g>
         </WithBackground>
         <!-- UI -->
-        <CircleUI :c="vec(xm, r * lens.aperture)" @mousedown="apertureSizeChangeStartHandler" class="vertical-resize">
-        </CircleUI>
+        <MoveUI :handler-creator="apertureSizeChangeStartHandler">
+            <CircleUI :c="vec(xm, r * lens.aperture)" class="vertical-resize">
+            </CircleUI>
+        </MoveUI>
     </g>
 </template>
