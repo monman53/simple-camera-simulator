@@ -64,8 +64,10 @@ const move = (idx: number) => {
                 light.t = tn
             }
         } else {
-            console.error('Unexpected: This handler is for Parallel Lights.')
+            const c0 = light.c.copy()
             return (e: any, d: Vec) => {
+                light.c.x = c0.x + d.x
+                light.c.y = c0.y + d.y
             }
         }
     }
@@ -89,20 +91,33 @@ const deleteLight = (e: any, idx: number) => {
 
 <template>
     <g>
-        <MoveUI :handler-creator="move(idx)">
-            <g @dblclick="deleteLight($event, idx)">
-                <polygon :points :fill></polygon>
-                <WithBackground>
-                    <polygon :points class="stroke-white normal fill-none"></polygon>
-                </WithBackground>
-            </g>
-        </MoveUI>
+        <g v-if="light.type === Light.Point">
+            <MoveUI :handler-creator="move(idx)">
+                <g @dblclick="deleteLight($event, idx)" class="grab">
+                    <WithBackground>
+                        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+                    </WithBackground>
+                    <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
+                        :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 50 : 100}%, 0.5)`"></circle>
+                </g>
+            </MoveUI>
+        </g>
+        <g v-if="light.type === Light.Parallel">
+            <MoveUI :handler-creator="move(idx)">
+                <g @dblclick="deleteLight($event, idx)">
+                    <polygon :points :fill></polygon>
+                    <WithBackground>
+                        <polygon :points class="stroke-white normal fill-none"></polygon>
+                    </WithBackground>
+                </g>
+            </MoveUI>
 
-        <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.s)">
-            <CircleUI :c="light.s"></CircleUI>
-        </MoveUI>
-        <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.t)">
-            <CircleUI :c="light.t"></CircleUI>
-        </MoveUI>
+            <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.s)">
+                <CircleUI :c="light.s"></CircleUI>
+            </MoveUI>
+            <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.t)">
+                <CircleUI :c="light.t"></CircleUI>
+            </MoveUI>
+        </g>
     </g>
 </template>

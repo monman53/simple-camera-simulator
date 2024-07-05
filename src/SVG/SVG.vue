@@ -3,12 +3,11 @@ import { computed, ref, onMounted } from 'vue'
 
 import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted, releaseAllLenses } from '../globals'
 import * as h from '../handlers'
-import { Light } from '../type'
 import { Vec, vec } from '../math'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
-import LightParallel from './LightParallel.vue'
+import LightSVG from './Light.vue'
 import LensGroup from './LensGroup.vue'
 import WithBackground from './WithBackground.vue'
 import Aperture from './Aperture.vue'
@@ -16,6 +15,7 @@ import Body from './Body.vue'
 import Point from './Point.vue'
 import Sensor from './Sensor.vue'
 import MoveUI from './MoveUI.vue'
+import { Light } from '@/type'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -64,30 +64,6 @@ const move = () => {
   }
 }
 
-const lightMoveStartHandler = (idx: number) => {
-  return () => {
-    // Last touched light is always front
-    const light = lights.value[idx];
-    const newLights = lights.value.filter((light, i) => {
-      return i !== idx
-    })
-    newLights.push(light)
-    lights.value = newLights
-
-    if (light.type === Light.Point) {
-      const c0 = light.c.copy()
-      return (e: any, d: Vec) => {
-        light.c.x = c0.x + d.x
-        light.c.y = c0.y + d.y
-      }
-    } else {
-      console.error('Unexpected: This handler is for Point Lights.')
-      return (e: any, d: Vec) => {
-      }
-    }
-  }
-}
-
 const addLight = (e: any) => {
   e.preventDefault()
   e.stopPropagation()
@@ -106,12 +82,6 @@ const addLight = (e: any) => {
   if (state.value.newLightType === Light.Parallel) {
     lights.value.push({ type: Light.Parallel, s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), colors })
   }
-}
-
-const deleteLight = (e: any, idx: number) => {
-  e.preventDefault()
-  e.stopPropagation()
-  lights.value.splice(idx, 1)
 }
 
 </script>
@@ -172,20 +142,7 @@ const deleteLight = (e: any, idx: number) => {
 
       <!-- Lights -->
       <g v-for="(light, idx) of lights">
-        <g v-if="light.type === Light.Point">
-          <MoveUI :handler-creator="lightMoveStartHandler(idx)">
-            <g @dblclick="deleteLight($event, idx)" class="grab">
-              <WithBackground>
-                <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
-              </WithBackground>
-              <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
-                :fill="`hsl(${light.colors[0]}, 100%, ${light.colors.length > 0 ? 50 : 100}%, 0.5)`"></circle>
-            </g>
-          </MoveUI>
-        </g>
-        <g v-if="light.type === Light.Parallel">
-          <LightParallel :light :idx class="grab"></LightParallel>
-        </g>
+          <LightSVG :light :idx class="grab"></LightSVG>
       </g>
 
       <!-- Sensor -->
