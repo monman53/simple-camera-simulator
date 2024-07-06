@@ -3,8 +3,7 @@ import { computed } from 'vue'
 
 import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights, globalLensInfo } from './globals'
 import { humanReadable } from './utils';
-import { type Lens, type LensPlane } from "./type"
-import { lenses } from './collection/lense';
+import { createLensGroup, lenseData } from './collection/lense';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
@@ -16,38 +15,6 @@ const createSensor = (d: number) => {
     sensor.value.s.y = -d / 2
     sensor.value.t.x = xm
     sensor.value.t.y = d / 2
-}
-
-const setLens = (lens: any) => {
-    const nPlanes: LensPlane[] = []
-    let x = 0
-    let n = 1
-    lens.planes.forEach((plane: any) => {
-        nPlanes.push({
-            x: x,
-            r: plane.r,
-            h: plane.h,
-            na: n,
-            nb: plane.n
-        })
-        x += plane.d
-        n = plane.n
-    })
-    lensGroups.value = []
-    for(let i=0;i<nPlanes.length;i+=2){
-        lensGroups.value.push({
-            lenses: [
-                {
-                    planes: [
-                        nPlanes[i],
-                        nPlanes[i+1],
-                    ],
-                    aperture: 1,
-                }
-            ],
-            selected: false,
-        })
-    }
 }
 
 </script>
@@ -323,8 +290,8 @@ const setLens = (lens: any) => {
             <tr>
                 <td>Lens collection</td>
                 <td>
-                    <template v-for="lens of lenses">
-                        <button @click="setLens(lens)">{{ lens.name }}</button>
+                    <template v-for="lens of lenseData">
+                        <button @click="lensGroups = createLensGroup(lens)">{{ lens.name }}</button>
                     </template>
                 </td>
             </tr>
