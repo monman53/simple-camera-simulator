@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { options } from '../globals'
+import { infR, options } from '../globals'
 import { vec, calcLensXCOG, calcLensPlaneEdge, calcLensH, Vec } from '../math'
 import type { Lens, LensPlane } from '../type'
 import WithBackground from './WithBackground.vue'
@@ -143,13 +143,16 @@ const apertureSizeChangeStartHandler = () => {
             <WithBackground>
                 <g class="stroke-white thicker fill-none">
                     <template v-for="plane of lens.planes">
-                        <circle :cx="plane.x + plane.r" :cy="0" :r="Math.abs(plane.r)"></circle>
+                        <circle v-if="isFinite(plane.r)" :cx="plane.x + plane.r" :cy="0" :r="Math.abs(plane.r)">
+                        </circle>
+                        <!-- Infinity curvature -->
+                        <line v-if="!isFinite(plane.r)" :x1="plane.x" :y1="-infR" :x2="plane.x" :y2="infR"></line>
                     </template>
                 </g>
             </WithBackground>
             <!-- Center Point -->
             <template v-for="plane of lens.planes">
-                <Point :c="vec(plane.x + plane.r, 0)"></Point>
+                <Point v-if="isFinite(plane.r)" :c="vec(plane.x + plane.r, 0)"></Point>
             </template>
         </g>
 
