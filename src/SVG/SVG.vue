@@ -3,7 +3,7 @@ import { computed, ref, onMounted } from 'vue'
 
 import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted, releaseAllLenses } from '../globals'
 import * as h from '../handlers'
-import { Vec, vec } from '../math'
+import { Vec, vec, wavelengthToHue } from '../math'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
@@ -15,6 +15,7 @@ import Body from './Body.vue'
 import Point from './Point.vue'
 import Sensor from './Sensor.vue'
 import MoveUI from './MoveUI.vue'
+import { wavelength } from '@/collection/color'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -67,19 +68,19 @@ const addLight = (e: any) => {
   e.preventDefault()
   e.stopPropagation()
   const m = h.getPositionOnSvgApp(e);
-  let colors = [state.value.newLightColor]
+  let wavelengths = [state.value.newLightWavelength]
   if (state.value.newLightColorComposite) {
     const n = state.value.newLightColorCompositeN
-    colors = []
+    wavelengths = []
     for (let i = 0; i < n; i++) {
-      colors.push(360 * i / n)
+      wavelengths.push(wavelength.min * i / n + wavelength.max * (n - i) / n)
     }
   }
   if (state.value.newLightType === 'Point') {
-    lights.value.push({ type: 'Point', c: m, colors })
+    lights.value.push({ type: 'Point', c: m, wavelengths })
   }
   if (state.value.newLightType === 'Parallel') {
-    lights.value.push({ type: 'Parallel', s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), colors })
+    lights.value.push({ type: 'Parallel', s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), wavelengths })
   }
 }
 
@@ -135,7 +136,7 @@ const addLight = (e: any) => {
           <WithBackground>
             <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
           </WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${light.color}, 100%, 50%, 0.5)`"></circle>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${wavelengthToHue(light.wavelengths[0])}, 100%, 50%, 0.5)`"></circle>
         </g>
       </g>
 

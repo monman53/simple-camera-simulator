@@ -1,9 +1,11 @@
 import type { Lens, LensGroup, LensPlane } from "@/type"
+import { glasses, type Glass } from "./glasses"
 
 type PlaneData = {
     r: number, // Curvature
     d: number, // Distance to next plane
-    n?: number, // Index to next plane
+    n?: number, // Index of the glass to next plane
+    glass?: Glass,
     h: number, // height
     vd?: number,
 }
@@ -24,13 +26,13 @@ export const lenseData: LensData[] = [
         url: 'https://www.j-platpat.inpit.go.jp/c1801/PU/JP-S46-019818/12/ja',
         planes: [
             // Afocal
-            { r: 44.58, d: 4.5, n: 1.58913, vd: 61.2, h: 16 },
+            { r: 44.58, d: 4.5, h: 16, glass: glasses.get('589612'), n: 1.58913, vd: 61.2 },
             { r: Infinity, d: 3.7, h: 16 },
 
             { r: Infinity, d: 1.2, n: 1.62374, vd: 47.0, h: 10 },
             { r: 15.49, d: 24.3, h: 10 },
 
-            { r: 40.62, d: 2.4, n: 1.58913, vd: 61.2, h: 8 },
+            { r: 40.62, d: 2.4, glass: glasses.get('589612'), n: 1.58913, vd: 61.2, h: 8 },
             { r: -40.62, d: 1.2, h: 8 },
 
             { r: Infinity, d: 0.9, n: 1.62374, vd: 47.0, h: 4 },

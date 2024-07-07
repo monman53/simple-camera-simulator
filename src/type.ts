@@ -1,7 +1,7 @@
 import type { Vec } from "./math"
 
-export type LightPoint = { type: "Point", c: Vec, colors: number[] }
-export type LightParallel = { type: "Parallel", s: Vec, t: Vec, colors: number[] }
+export type LightPoint = { type: "Point", c: Vec, wavelengths: number[] }
+export type LightParallel = { type: "Parallel", s: Vec, t: Vec, wavelengths: number[] }
 export type LightType = LightPoint | LightParallel
 
 export type LensPlane = {
@@ -25,6 +25,6 @@ export type LensGroup = {
 export type Ray = {
     s: Vec,
     v: Vec,
-    color: number,
+    wavelength: number,
     idx: number,
 }

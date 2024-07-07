@@ -1,6 +1,7 @@
 import { ref, computed, watch } from "vue"
 import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge } from "./math"
-import { type Lens, type LensGroup, type LightType } from "./type"
+import { type Lens, type LensGroup, type LightPoint, type LightType } from "./type"
+import { wavelength } from "./collection/color"
 
 //================================
 // States
@@ -13,7 +14,7 @@ export const createInitialParams = () => {
         c: vec(-100, 0),
         scale: 4,
         nRaysLog: 10,
-        newLightColor: 120,
+        newLightWavelength: wavelength.green,
         newLightColorComposite: false,
         newLightColorCompositeN: 3,
         newLightType: "Point",
@@ -32,7 +33,7 @@ export const lights0 = ():
         // { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
         // { type: Light.Point, c: vec(-120, -20), color: 240 }, // blue
         // { type: Light.White, c: vec(-200, -18) }, // white
-        { type: 'Parallel', s: vec(-180, -30), t: vec(-180, 30), colors: [120] }, // green
+        { type: 'Parallel', s: vec(-180, -30), t: vec(-180, 30), wavelengths: [wavelength.yellow] }, // green
     ]
 }
 export const lights = ref(lights0())
@@ -216,7 +217,7 @@ export const apple = computed(() => {
     const cy = appleProps.value.c.y
     const r = appleProps.value.r
 
-    const lights = []
+    const lights: LightPoint[] = []
 
     // Main
     {
@@ -226,9 +227,8 @@ export const apple = computed(() => {
             const x = cx + r * Math.cos(theta)
             const y = cy + r * Math.sin(theta)
             const c = vec(x, y)
-            const color = 0 // red
             if (x >= cx) {
-                lights.push({ c, color })
+                lights.push({ type: 'Point', c, wavelengths: [wavelength.red] })
             }
         }
     }
@@ -242,9 +242,8 @@ export const apple = computed(() => {
             const x = cx + rLeaf * Math.cos(theta)
             const y = cy - (r + rLeaf) + rLeaf * Math.sin(theta)
             const c = vec(x, y)
-            const color = 120 // green
             if (x >= cx) {
-                lights.push({ c, color })
+                lights.push({ type: 'Point', c, wavelengths: [wavelength.green] })
             }
         }
     }

@@ -269,7 +269,6 @@ export const rayTrace = (rays: Ray[]): Segment[][] => {
 
         const nextRay: Ray[] = []
         rays.forEach((ray, idx) => {
-            const color = ray.color
             const s = ray.s
             const c = cs[idx]
             if (c === null) {
@@ -291,7 +290,7 @@ export const rayTrace = (rays: Ray[]): Segment[][] => {
 
             // Next ray
             if (c.vn) {
-                nextRay.push({ s: c.p, v: c.vn(), color, idx: ray.idx })
+                nextRay.push({ s: c.p, v: c.vn(), wavelength: ray.wavelength, idx: ray.idx })
             } else {
                 console.error('Unexpected: Method does not exit calculating next direction vector.')
             }

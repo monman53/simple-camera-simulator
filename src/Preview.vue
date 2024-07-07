@@ -2,6 +2,7 @@
 import { watch, onMounted, ref, computed } from 'vue'
 
 import { state, sensor, sensorData, options, style, memoryCanvasCtx } from './globals'
+import { wavelengthToHue } from './math';
 
 // Reference to the canvas
 const canvas = ref()
@@ -29,7 +30,7 @@ const draw = () => {
   // Lights
   for (const p of sensorData.value) {
     ctx.beginPath()
-    ctx.fillStyle = `hsl(${p.color}, 100%, 50%, ${style.value.rayIntensity})`;
+    ctx.fillStyle = `hsl(${wavelengthToHue(p.wavelength)}, 100%, 50%, ${style.value.rayIntensity})`;
     ctx.rect(-10, (p.y - d.value / 2) - style.value.rayWidth / 2, 20, style.value.rayWidth)
     ctx.fill()
     ctx.stroke();

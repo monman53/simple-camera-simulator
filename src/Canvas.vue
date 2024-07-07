@@ -2,7 +2,7 @@
 import { watch, onMounted, ref } from 'vue'
 
 import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, body, lensFronts, aperture, lensBacks } from './globals'
-import { Vec, vec, vecRad } from './math'
+import { Vec, vec, vecRad, wavelengthToHue } from './math'
 
 import { type Ray } from './type'
 import { rayTrace } from './rayTrace';
@@ -29,14 +29,14 @@ const drawSegment = (p: Vec, q: Vec) => {
 const drawRay = (rays: Ray[], sensorDataTmp: any[]) => {
   const segments = rayTrace(rays)
   segments.forEach((raySegments, i) => {
-    const color = rays[i].color
-    ctx.strokeStyle = `hsl(${color}, 100%, 50%, ${style.value.rayIntensity})`
+    const wavelength = rays[i].wavelength
+    ctx.strokeStyle = `hsl(${wavelengthToHue(wavelength)}, 100%, 50%, ${style.value.rayIntensity})`
     raySegments.forEach(segment => {
       const s = segment.s
       const t = segment.t
       drawSegment(s, t)
       if (segment.isSensor) {
-        sensorDataTmp.push({ y: t.sub(sensor.value.s).length(), color })
+        sensorDataTmp.push({ y: t.sub(sensor.value.s).length(), wavelength })
         return
       }
     })
@@ -73,8 +73,8 @@ const draw = () => {
         const s = light.c.copy()
         const theta = 2 * Math.PI * i / nRays
         const v = vecRad(theta)
-        for (let color of light.colors) {
-          rays.push({ s, v, color, idx: rays.length })
+        for (let wavelength of light.wavelengths) {
+          rays.push({ s, v, wavelength, idx: rays.length })
         }
       }
     }
@@ -89,8 +89,8 @@ const draw = () => {
       for (let i = 0; i < nRays; i++) {
         const s = light.s.add(ln.mul(i / nRays * length))
         const v = l.rotate(-Math.PI / 2).normalize()
-        for (let color of light.colors) {
-          rays.push({ s, v, color, idx: rays.length })
+        for (let wavelength of light.wavelengths) {
+          rays.push({ s, v, wavelength, idx: rays.length })
         }
       }
     }
@@ -106,7 +106,7 @@ const draw = () => {
         const s = vec(light.c.x, light.c.y)
         const theta = 2 * Math.PI * i / nRays
         const v = vecRad(theta)
-        rays.push({ s, v, color: light.color, idx: rays.length })
+        rays.push({ s, v, wavelength: light.wavelengths[0], idx: rays.length })
       }
     }
   }

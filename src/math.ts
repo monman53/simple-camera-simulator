@@ -1,3 +1,4 @@
+import { wavelength } from "./collection/color"
 import type { Lens, LensPlane } from "./type"
 
 //================================
@@ -334,4 +335,32 @@ export const calcLensBack = (lens: Lens) => {
 export const calcLensNWavelength = (n: number, color: number) => {
     const d = (color - (360 / 2)) * 0.0002 + 1.0
     return d * n
+}
+
+
+//================================
+// Miscellaneous
+//================================
+
+export const wavelengthToHue = (lambda: number) => {
+    const converts = [
+        { wavelength: 0, hue: 250 },
+        { wavelength: 380, hue: 250 },
+        { wavelength: 450, hue: 245 },
+        { wavelength: 500, hue: 143 },
+        { wavelength: 570, hue: 64 },
+        { wavelength: 590, hue: 60 },
+        { wavelength: 620, hue: 3 },
+        { wavelength: 750, hue: 0 },
+        { wavelength: Infinity, hue: 0 },
+    ]
+    for (let i = 1; i < converts.length; i++) {
+        const pre = converts[i - 1]
+        const cur = converts[i]
+        if (lambda < cur.wavelength) {
+            const r = (lambda - pre.wavelength) / (cur.wavelength - pre.wavelength)
+            const hue = (1 - r) * (pre.hue - cur.hue) + cur.hue
+            return hue
+        }
+    }
 }

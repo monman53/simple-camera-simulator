@@ -3,7 +3,9 @@ import { computed } from 'vue'
 
 import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights, globalLensInfo } from './globals'
 import { humanReadable } from './utils';
-import { createLensGroup, lenseData } from './collection/lense';
+import { createLensGroup, lenseData } from './collection/lens';
+import { wavelength } from './collection/color';
+import { wavelengthToHue } from './math';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
@@ -49,18 +51,20 @@ const createSensor = (d: number) => {
                 </label>
                 <br>
                 <template v-if="!state.newLightColorComposite">
-                    <input type="range" min="0" max="360" step="0.001" v-model="state.newLightColor">
+                    <input type="range" :min="wavelength.min" :max="wavelength.max" step="0.001"
+                        v-model="state.newLightWavelength">
                     <br>
-                    <button @click="state.newLightColor = 0">Red</button>
-                    <button @click="state.newLightColor = 120">Green</button>
-                    <button @click="state.newLightColor = 240">Blue</button>
+                    <button @click="state.newLightWavelength = wavelength.blue">Blue</button><br>
+                    <button @click="state.newLightWavelength = wavelength.green">Green</button><br>
+                    <button @click="state.newLightWavelength = wavelength.yellow">Yellow</button><br>
+                    <button @click="state.newLightWavelength = wavelength.red">Red</button>
                 </template>
                 <template v-if="state.newLightColorComposite">
                     <input type="range" min="0" max="16" v-model="state.newLightColorCompositeN">
                 </template>
             </td>
             <td v-if="!state.newLightColorComposite"
-                :style="`background-color: hsl(${state.newLightColor}, 100%, 50%)`"></td>
+                :style="`background-color: hsl(${wavelengthToHue(state.newLightWavelength)}, 100%, 50%)`"></td>
             <td v-if="state.newLightColorComposite">{{ state.newLightColorCompositeN }}</td>
         </tr>
         <tr>
