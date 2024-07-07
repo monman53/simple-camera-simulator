@@ -6,6 +6,7 @@ import WithBackground from './WithBackground.vue';
 import CircleUI from './CircleUI.vue';
 import MoveUI from './MoveUI.vue';
 import type { LightParallel, LightType } from '@/type';
+import { lightHSL } from '@/collection/color';
 
 const props = defineProps<{
     light: LightType
@@ -96,7 +97,7 @@ const fill = computed(() => {
     if (props.light.wavelengths.length > 1) {
         return `hsl(0, 100%, 100%, 0.5)`
     } else {
-        return `hsl(${wavelengthToHue(props.light.wavelengths[0])}, 100%, 50%, 0.5)`
+        return lightHSL(props.light.wavelengths[0], 0.5)
     }
 })
 
@@ -116,9 +117,7 @@ const deleteLight = (e: any, idx: number) => {
                     <WithBackground>
                         <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
                     </WithBackground>
-                    <circle :cx="light.c.x" :cy="light.c.y" :r="rUI"
-                        :fill="`hsl(${wavelengthToHue(light.wavelengths[0])}, 100%, ${light.wavelengths.length > 0 ? 50 : 100}%, 0.5)`">
-                    </circle>
+                    <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill></circle>
                 </g>
             </MoveUI>
         </g>

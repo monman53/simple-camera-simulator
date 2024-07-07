@@ -6,6 +6,7 @@ import { Vec, vec, vecRad, wavelengthToHue } from './math'
 
 import { type Ray } from './type'
 import { rayTrace } from './rayTrace';
+import { lightHSL } from './collection/color';
 
 // Reference to the canvas
 const canvas = ref()
@@ -30,7 +31,7 @@ const drawRay = (rays: Ray[], sensorDataTmp: any[]) => {
   const segments = rayTrace(rays)
   segments.forEach((raySegments, i) => {
     const wavelength = rays[i].wavelength
-    ctx.strokeStyle = `hsl(${wavelengthToHue(wavelength)}, 100%, 50%, ${style.value.rayIntensity})`
+    ctx.strokeStyle = lightHSL(wavelength, style.value.rayIntensity)
     raySegments.forEach(segment => {
       const s = segment.s
       const t = segment.t

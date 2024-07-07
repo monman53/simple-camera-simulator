@@ -15,7 +15,7 @@ import Body from './Body.vue'
 import Point from './Point.vue'
 import Sensor from './Sensor.vue'
 import MoveUI from './MoveUI.vue'
-import { wavelength } from '@/collection/color'
+import { lightHSL, wavelength } from '@/collection/color'
 
 // Reference to the svg element
 // This is needed for handles in handlers.ts
@@ -136,7 +136,7 @@ const addLight = (e: any) => {
           <WithBackground>
             <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
           </WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="`hsl(${wavelengthToHue(light.wavelengths[0])}, 100%, 50%, 0.5)`"></circle>
+          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="lightHSL(light.wavelengths[0], 0.5)"></circle>
         </g>
       </g>
 

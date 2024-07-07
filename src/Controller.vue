@@ -4,7 +4,7 @@ import { computed } from 'vue'
 import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights, globalLensInfo } from './globals'
 import { humanReadable } from './utils';
 import { createLensGroup, lenseData } from './collection/lens';
-import { wavelength } from './collection/color';
+import { lightHSL, wavelength } from './collection/color';
 import { wavelengthToHue } from './math';
 
 const nRays = computed(() => {
@@ -64,7 +64,7 @@ const createSensor = (d: number) => {
                 </template>
             </td>
             <td v-if="!state.newLightColorComposite"
-                :style="`background-color: hsl(${wavelengthToHue(state.newLightWavelength)}, 100%, 50%)`"></td>
+                :style="`background-color: ${lightHSL(state.newLightWavelength, style.rayIntensity)}`"></td>
             <td v-if="state.newLightColorComposite">{{ state.newLightColorCompositeN }}</td>
         </tr>
         <tr>
