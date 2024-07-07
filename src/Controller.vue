@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lensGroups, defaultConvexLens, defaultConcaveLens, sensor, appleProps, options, style, defaultDoubletLens, lights, globalLensInfo } from './globals'
+import { state, lensGroups, sensor, appleProps, options, style, globalLensInfo } from './globals'
 import { humanReadable } from './utils';
-import { createLensGroup, lenseData } from './collection/lens';
+import { createLensGroup, exampleConcaveLens, exampleConvexLens, exampleDoubletLens, lenseData } from './collection/lens';
 import { lightHSL, wavelength } from './collection/color';
-import { wavelengthToHue } from './math';
 
 const nRays = computed(() => {
     return 1 << state.value.nRaysLog
@@ -112,24 +111,11 @@ const createSensor = (d: number) => {
                 <tr>
                     <td>Add Lens</td>
                     <td>
-                        <button
-                            @click="lensGroups.push({ lenses: [defaultConvexLens(0)], selected: false })">Convex</button>
+                        <button @click="lensGroups.concat(createLensGroup(exampleConvexLens))">Convex</button>
                         <br>
-                        <button
-                            @click="lensGroups.push({ lenses: [defaultConcaveLens(0)], selected: false })">Concave</button>
+                        <button @click="lensGroups.concat(createLensGroup(exampleConcaveLens))">Concave</button>
                         <br>
-                        <button
-                            @click="lensGroups.push({ lenses: [defaultDoubletLens(0)], selected: false })">Doublet</button>
-                        <br>
-                        <button @click="() => {
-                            lensGroups = []
-                            lensGroups.push({ lenses: [defaultConvexLens(40)], selected: false })
-                            lensGroups.push({ lenses: [defaultConvexLens(20)], selected: false })
-                            lensGroups.push({ lenses: [defaultDoubletLens(0)], selected: false })
-                            lensGroups.push({ lenses: [defaultConvexLens(-20)], selected: false })
-                            options.body = true
-                            lights = []
-                        }">Bench</button>
+                        <button @click="lensGroups.concat(createLensGroup(exampleDoubletLens))">Doublet</button>
                     </td>
                 </tr>
                 <!-- <tr>

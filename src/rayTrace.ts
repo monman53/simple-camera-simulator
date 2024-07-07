@@ -1,11 +1,14 @@
+import type { CauchyParams } from "./collection/lens";
 import { aperture, body, infR, lensBacks, lensCOGs, lensFronts, lensFs, lensPlaneEdges, lensRs, lensesSorted, options, sensor } from "./globals";
-import { crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
+import { calcDispersion, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
 import type { Ray } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
 
-const collisionLens = (rays: Ray[], x: number, r: number, h: number, ni: number, no: number): CollisionResult[] => {
+const collisionLens = (rays: Ray[], x: number, r: number, h: number, paramsI: CauchyParams, paramsO: CauchyParams): CollisionResult[] => {
     return rays.map(ray => {
+        const ni = calcDispersion(ray.wavelength, paramsI)
+        const no = calcDispersion(ray.wavelength, paramsO)
         let v = ray.v
         let s = ray.s
         v = v.normalize()
@@ -221,10 +224,10 @@ const collisionAll = (rays: Ray[]): CollisionResult[] => {
             updateMin(collisionIdealLens(rays, xm, h * lens.aperture, f))
         } else {
             lens.planes.forEach((p, j) => {
-                const ni = p.r > 0 ? p.nb : p.na
-                const no = p.r > 0 ? p.na : p.nb
+                const paramsI = p.r > 0 ? p.paramsB : p.paramsA
+                const paramsO = p.r > 0 ? p.paramsA : p.paramsB
                 // Plane
-                updateMin(collisionLens(rays, p.x, p.r, p.h, ni, no))
+                updateMin(collisionLens(rays, p.x, p.r, p.h, paramsI, paramsO))
 
                 // Plane outside
                 updateMin(collisionAperture(rays, lensPlaneEdges.value[i][j], p.h, h))

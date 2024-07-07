@@ -1,4 +1,5 @@
 import { wavelength } from "./collection/color"
+import type { CauchyParams } from "./collection/lens"
 import type { Lens, LensPlane } from "./type"
 
 //================================
@@ -363,4 +364,43 @@ export const wavelengthToHue = (lambda: number) => {
             return hue
         }
     }
+}
+
+export const estimateCauchyParameters = (nd: number, vd: number) => {
+    // Estimate dispersion curve is linear around d
+    const lf = wavelength.F
+    const ld = wavelength.d
+    const lc = wavelength.C
+
+    const nf = nd + (ld - lf) / (lc - lf) * (nd - 1) / vd
+    const nc = nd + (ld - lc) / (lc - lf) * (nd - 1) / vd
+
+    // Solve Cauchy's formula parameters A, B and C
+    // n(lambda) = A + B/lambda^2 + C/lambda^4
+    const lf2 = lf * lf
+    const ld2 = ld * ld
+    const lc2 = lc * lc
+    const lf4 = lf2 * lf2
+    const ld4 = ld2 * ld2
+    const lc4 = lc2 * lc2
+
+    // TODO: Optimize here
+    const D1 = 1 / ld2 - 1 / lf2
+    const D2 = 1 / ld4 - 1 / lf4
+    const D3 = nd - nf
+    const D4 = 1 / ld2 - 1 / lc2
+    const D5 = 1 / ld4 - 1 / lc4
+    const D6 = nd - nc
+
+    const B = (D3 * D5 - D6 * D2) / (D1 * D5 - D4 * D2)
+    const C = D3 / D2 - D1 / D2 * B
+    const A = nd - 1 / ld2 * B - 1 / ld4 * C
+
+    return { A, B, C }
+}
+
+export const calcDispersion = (lambda: number, params: CauchyParams) => {
+    const lambda2 = lambda * lambda
+    const lambda4 = lambda2 * lambda2
+    return params.A + params.B / lambda2 + params.C / lambda4
 }

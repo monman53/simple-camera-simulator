@@ -1,12 +1,19 @@
 import { wavelengthToHue } from "@/math"
 
 export const wavelength = {
-    max: 1013.98,
+    min: 380,
+    max: 750,
+
+    // Fraunhofer lines
+    F: 486.134,
+    d: 587.565,
+    C: 656.281,
+
+    // By color
     red: 706.52,
-    yellow: 587.56,
+    yellow: 587.565,
     green: 530,
     blue: 435.84,
-    min: 365.01,
 }
 
 export const lightHSL = (lambda: number, intensity: number) => {

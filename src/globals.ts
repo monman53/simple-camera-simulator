@@ -1,7 +1,8 @@
 import { ref, computed, watch } from "vue"
-import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge } from "./math"
+import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge, calcDispersion } from "./math"
 import { type Lens, type LensGroup, type LightPoint, type LightType } from "./type"
 import { wavelength } from "./collection/color"
+import { createLensGroup, exampleConvexLens, exampleTestLens } from "./collection/lens"
 
 //================================
 // States
@@ -42,62 +43,8 @@ export const lights = ref(lights0())
 // Lenses
 //--------------------------------
 
-export const defaultDoubletLens = (x: number) => {
-    const d = 10
-    const R = 70
-    return {
-        planes: [
-            { x: x - d / 2, r: R, h: 20, na: 1, nb: 1.5 },
-            { x: x + d / 2, r: -R, h: 20, na: 1.5, nb: 1.8 },
-            { x: x + 2 * d / 2, r: -R, h: 20, na: 1.8, nb: 1 },
-        ],
-        aperture: 1,
-        selected: false
-    }
-}
-
-export const defaultConvexLens = (x: number) => {
-    const d = 10
-    const R = 70
-    return {
-        planes: [
-            { x: x - d / 2, r: R, h: 20, na: 1, nb: 1.5 },
-            { x: x + d / 2, r: -R, h: 20, na: 1.5, nb: 1 },
-        ],
-        aperture: 1,
-        selected: false
-    }
-}
-
-export const defaultConcaveLens = (x: number) => {
-    const R = 30
-    const d = 4
-    return {
-        planes: [
-            {
-                x: x - d / 2,
-                r: -R,
-                h: 10,
-                na: 1,
-                nb: 1.5
-            },
-            {
-                x: x + d / 2,
-                r: R,
-                h: 10,
-                na: 1.5,
-                nb: 1
-            },
-        ],
-        aperture: 1,
-        selected: false
-    }
-}
-
 export const lensGroups0 = (): LensGroup[] => {
-    return [
-        { lenses: [defaultConvexLens(0)], selected: false }
-    ]
+    return createLensGroup(exampleConvexLens)
 }
 export const lensGroups = ref(lensGroups0())
 
@@ -421,8 +368,8 @@ export const calcLensInfo = (lenses: Lens[]) => {
             ll.push({
                 r: p.r,
                 d,
-                na: p.na,
-                nb: p.nb,
+                na: calcDispersion(wavelength.d, p.paramsA),
+                nb: calcDispersion(wavelength.d, p.paramsB),
             })
         })
     })
@@ -539,28 +486,28 @@ export const globalLensRe = computed(() => {
         fwdApertures.push({ x: aperture.value.x, r: aperture.value.r })
         bwdApertures.push({ x: -aperture.value.x, r: aperture.value.r })
     }
-    const fwdLenses = lensesSorted.value.map((lens) => {
+    const fwdLenses: Lens[] = lensesSorted.value.map((lens) => {
         return {
             planes: lens.planes.map((p) => {
                 return {
                     x: p.x,
                     r: p.r,
-                    na: p.na,
-                    nb: p.nb,
+                    paramsA: p.paramsA,
+                    paramsB: p.paramsB,
                     h: p.h,
                 }
             }),
             aperture: lens.aperture,
         }
     })
-    const bwdLenses = lensesSorted.value.map((lens) => {
+    const bwdLenses: Lens[] = lensesSorted.value.map((lens) => {
         return {
             planes: lens.planes.map((p) => {
                 return {
                     x: -p.x,
                     r: -p.r,
-                    na: p.nb,
-                    nb: p.na,
+                    paramsA: p.paramsB,
+                    paramsB: p.paramsA,
                     h: p.h,
                 }
             }),
@@ -587,14 +534,7 @@ export const lensExist = computed(() => {
 //================================
 
 const test = () => {
-    const SK6 = 1.61375
-    const SF1 = 1.71736
-    const lenses = [
-        { planes: [{ x: 0, r: 85.4, na: 1, nb: SK6, h: 10 }, { x: 7.7, r: -500, na: SK6, nb: 1, h: 10 }], aperture: 1 },
-        { planes: [{ x: 8.2, r: 44.5, na: 1, nb: SK6, h: 10 }, { x: 27.2, r: 70, na: SK6, nb: 1, h: 10 }], aperture: 1 },
-        { planes: [{ x: 31.7, r: -135, na: 1, nb: SF1, h: 10 }, { x: 33.7, r: 34.3, na: SF1, nb: 1, h: 10 }], aperture: 1 },
-        { planes: [{ x: 52.7, r: 146, na: 1, nb: SK6, h: 10 }, { x: 60.7, r: -46.8, na: SK6, nb: 1, h: 10 }], aperture: 1 },
-    ]
+    const lenses = createLensGroup(exampleTestLens)[0].lenses
     const info = calcLensInfo(lenses)
     console.log(info.f, 99.78672652)
 }

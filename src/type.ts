@@ -1,3 +1,4 @@
+import type { CauchyParams } from "./collection/lens"
 import type { Vec } from "./math"
 
 export type LightPoint = { type: "Point", c: Vec, wavelengths: number[] }
@@ -8,8 +9,8 @@ export type LensPlane = {
     x: number,
     r: number,
     h: number,
-    na: number,
-    nb: number,
+    paramsA: CauchyParams,
+    paramsB: CauchyParams,
 }
 
 export type Lens = {
