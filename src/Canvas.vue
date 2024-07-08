@@ -29,8 +29,10 @@ const drawSegment = (p: Vec, q: Vec) => {
 
 const drawRay = (rays: Ray[], sensorDataTmp: any[]) => {
   const lenses = options.value.lens ? lensesSorted.value : []
+  const apertures = options.value.aperture ? [aperture.value] : []
   const body_ = options.value.body ? body.value : null
-  const segments = rayTrace(rays, lenses, body_)
+  const sensors = options.value.sensor ? [sensor.value] : []
+  const segments = rayTrace(rays, lenses, apertures, sensors, body_, body.value.r)
   segments.forEach((raySegments, i) => {
     const wavelength = rays[i].wavelength
     ctx.strokeStyle = lightHSL(wavelength, style.value.rayIntensity)

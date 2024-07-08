@@ -1,9 +1,9 @@
 import type { CauchyParams } from "./collection/lens";
-import { aperture, body, calcLensInfo, infR, lensBacks, lensCOGs, lensFronts, lensFs, lensPlaneEdges, lensRs, lensesSorted, options, sensor } from "./globals";
+import { calcLensInfo, infR, options, sensor } from "./globals";
 import { calcDispersion, calcLensBack, calcLensFront, calcLensPlaneEdge, calcLensR, calcLensXCOG, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
-import type { Body, Lens, Ray } from "./type";
+import type { Aperture, Body, Lens, Ray, Sensor } from "./type";
 
-type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
+type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isAperture?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
 
 const collisionLens = (rays: Ray[], x: number, r: number, h: number, paramsI: CauchyParams, paramsO: CauchyParams): CollisionResult[] => {
     return rays.map(ray => {
@@ -117,7 +117,7 @@ const collisionAperture = (rays: Ray[], x: number, rMin: number, rMax: number): 
                 return {
                     p: pa.p,
                     d: pa.d,
-                    isEnd: true,
+                    isAperture: true,
                 }
             }
         }
@@ -125,11 +125,11 @@ const collisionAperture = (rays: Ray[], x: number, rMin: number, rMax: number): 
     })
 }
 
-const collisionSensor = (rays: Ray[]): CollisionResult[] => {
+const collisionSensor = (rays: Ray[], sensor: Sensor): CollisionResult[] => {
     return rays.map(ray => {
         let v = ray.v
         let s = ray.s
-        const ps = intersectionLS(s, v, sensor.value.s, sensor.value.t)
+        const ps = intersectionLS(s, v, sensor.s, sensor.t)
         if (ps !== null && dot(ps.sub(s), v) > 0) {
             return {
                 p: ps,
@@ -174,7 +174,7 @@ const collisionY = (rays: Ray[], x: number, yMin: number, yMax: number): Collisi
     })
 }
 
-const collisionAll = (rays: Ray[], lenses: Lens[], body: Body | null): CollisionResult[] => {
+const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensors: Sensor[], body: Body | null, bodyR: number): CollisionResult[] => {
     // Closest collision
     let pMins: CollisionResult[] = rays.map(ray => {
         return null
@@ -252,26 +252,26 @@ const collisionAll = (rays: Ray[], lenses: Lens[], body: Body | null): Collision
     })
 
     // Aperture
-    if (options.value.aperture && body !== null) {
-        updateMin(collisionAperture(rays, aperture.value.x, aperture.value.r, body.r))
-    }
+    apertures.forEach(aperture => {
+        updateMin(collisionAperture(rays, aperture.x, aperture.r, bodyR))
+    })
 
     // Sensor
-    if (options.value.sensor) {
-        updateMin(collisionSensor(rays))
-    }
+    sensors.forEach(sensor => {
+        updateMin(collisionSensor(rays, sensor))
+    })
 
     return pMins
 }
 
-type Segment = { s: Vec, t: Vec, isSensor?: boolean }
-export const rayTrace = (rays: Ray[], lenses: Lens[], body: Body | null): Segment[][] => {
+export type Segment = { s: Vec, t: Vec, isSensor?: boolean, isAperture?: boolean }
+export const rayTrace = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensors: Sensor[], body: Body | null, bodyR: number): Segment[][] => {
     const segments: Segment[][] = rays.map(ray => {
         return []
     })
     const maxItr = 100
     for (let i = 0; rays.length > 0 && i < maxItr; i++) {
-        const cs = collisionAll(rays, lenses, body)
+        const cs = collisionAll(rays, lenses, apertures, sensors, body, bodyR)
 
         const nextRay: Ray[] = []
         rays.forEach((ray, idx) => {
@@ -284,6 +284,11 @@ export const rayTrace = (rays: Ray[], lenses: Lens[], body: Body | null): Segmen
 
             if (c.isEnd) {
                 segments[ray.idx].push({ s, t: c.p })
+                return
+            }
+
+            if (c.isAperture) {
+                segments[ray.idx].push({ s, t: c.p, isAperture: true })
                 return
             }
 

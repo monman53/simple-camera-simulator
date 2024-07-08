@@ -1,8 +1,9 @@
 import { ref, computed, watch } from "vue"
 import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge, calcDispersion } from "./math"
-import { type Aperture, type Body, type Lens, type LensGroup, type LightPoint, type LightType, type Sensor } from "./type"
+import { type Aperture, type Body, type Lens, type LensGroup, type LensPlane, type LightPoint, type LightType, type Ray, type Sensor } from "./type"
 import { wavelength } from "./collection/color"
 import { createLensGroup, exampleConvexLens, exampleTestLens } from "./collection/lens"
+import { rayTrace, type Segment } from "./rayTrace"
 
 //================================
 // States
@@ -318,7 +319,7 @@ export const calcBody = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[
         backs.push(...lenses.map(lens => {
             return calcLensFront(lens)
         }))
-        backs.push(...apertures.map(a => a.x))
+        backs.push(...apertures.map(a => a.x + padding))
         back = Math.max(...backs)
     }
 
@@ -419,78 +420,62 @@ export const globalLensInfos = computed(() => {
     })
 })
 
-const calcLensRe = (lenses: Lens[], apertures: { r: number, x: number }[]) => {
-    // Setup
-    // Lenses
-    const params: { f: number, r: number, x: number }[] = []
-    lenses.forEach((lens, idx) => {
-        const info = calcLensInfo([lens])
-        const f = info.f
-        const r = calcLensR(lens) * lens.aperture
-        const x = options.value.lensIdeal ? calcLensXCOG(lens) : info.H
-        params.push({ f, r, x })
+const calcLensRe = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[]) => {
+    // Binary search for entrance pupil radius
 
-        if (!options.value.lensIdeal) {
-            // TODO: 
-            // params.push({ f: Infinity, x: lens.x1, r: calcLensR(lens) })
-            // params.push({ f: Infinity, x: lens.x2, r: calcLensR(lens) })
+    // Setup
+    let ok = 0
+    let ng = Infinity
+    let minX = Infinity
+    let nPlanes = 0
+    lenses.forEach(lens => {
+        lens.planes.forEach(p => {
+            if (p.x < minX) {
+                minX = p.x
+                ng = p.h
+            }
+        })
+        nPlanes += lens.planes.length
+    })
+    apertures.forEach(aperture => {
+        if (aperture.x < minX) {
+            minX = aperture.x
+            ng = aperture.r
         }
     })
-    // Body
-    // Apertures
-    apertures.forEach((aperture) => {
-        params.push({ f: Infinity, r: aperture.r, x: aperture.x })
-    })
-    params.sort((a, b) => { return a.x - b.x })
+    const body = calcBody(lenses, apertures, sensors)
+    let pathTop: Segment[] = []
+    let pathBottom: Segment[] = []
 
-    // Calculation
-    let re = 1
-    const res: number[] = []
-    const ps: number[] = []
-    params.forEach((param, idx) => {
-        const f = param.f
-        const r = param.r
-        const x = param.x
-        if (idx === 0) {
-            ps.push(x + f)
-            res.push(r)
-            re = 1
-        } else {
-            const xp = params[idx - 1].x
-            if (f === Infinity) {
-                // TODO: Buggy around
-                if (ps[idx - 1] === Infinity) {
-                    ps.push(ps[idx - 1])
-                    res.push(r)
-                } else {
-                    ps.push(ps[idx - 1])
-                    res.push((ps[idx - 1] - x) / (ps[idx - 1] - xp) * res[idx - 1])
-                }
-                if (r < Math.abs(res[idx])) {
-                    re *= r / Math.abs(res[idx])
-                    res[idx] = r
-                }
+    // Binary search
+    if (isFinite(ng)) {
+        while (ng - ok > 1e-8) {
+            const mid = (ok + ng) / 2
+            const padding = 10
+            const rays: Ray[] = [
+                { s: vec(minX - padding, mid), v: vec(1, 0), wavelength: wavelength.d, idx: 0 },
+                { s: vec(minX - padding, -mid), v: vec(1, 0), wavelength: wavelength.d, idx: 1 },
+            ]
+            const result = rayTrace(rays, lenses, apertures, sensors, null, body.r)
+            const nTop = result[0].length
+            const nBottom = result[0].length
+            if (nTop === nPlanes + 1 && !result[0][nTop - 1].isAperture && nBottom === nPlanes + 1 && !result[1][nBottom - 1].isAperture) {
+                ok = mid
+                pathTop = result[0]
+                pathBottom = result[1]
             } else {
-                if (ps[idx - 1] === Infinity) {
-                    ps.push(x + f)
-                    res.push(res[idx - 1])
-                } else {
-                    ps.push(x + fGaussian(f, vec(ps[idx - 1] - x, 0)).x)
-                    res.push((ps[idx - 1] - x) / (ps[idx - 1] - xp) * res[idx - 1])
-                }
-                if (r < Math.abs(res[idx])) {
-                    re *= r / Math.abs(res[idx])
-                    res[idx] = r
-                }
+                ng = mid
             }
         }
-    })
-    return { re: Math.abs(res[0]) * re, H: calcLensInfo(lenses).H }
+    }
+
+    const re = ok
+    return { re, H: calcLensInfo(lenses).H, pathTop, pathBottom }
 }
 
 export const globalLensRe = computed(() => {
-    const fwdApertures = []
-    const bwdApertures = []
+    const fwdApertures: Aperture[] = []
+    const bwdApertures: Aperture[] = []
     if (options.value.aperture) {
         fwdApertures.push({ x: aperture.value.x, r: aperture.value.r })
         bwdApertures.push({ x: -aperture.value.x, r: aperture.value.r })
@@ -523,8 +508,8 @@ export const globalLensRe = computed(() => {
             aperture: lens.aperture,
         }
     })
-    const forward = calcLensRe(fwdLenses, fwdApertures)
-    const backward = calcLensRe(bwdLenses, bwdApertures)
+    const forward = calcLensRe(fwdLenses, fwdApertures, [])
+    const backward = calcLensRe(bwdLenses, bwdApertures, [])
     backward.H *= -1
     return { forward, backward }
 })
@@ -548,5 +533,5 @@ const test = () => {
 }
 
 watch([options], () => {
-    // test()
+    test()
 }, { deep: true })

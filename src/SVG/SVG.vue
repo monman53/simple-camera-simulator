@@ -84,6 +84,23 @@ const addLight = (e: any) => {
   }
 }
 
+const pupilPath = computed(() => {
+  let top = ""
+  let bottom = ""
+  const path = globalLensRe.value.forward.pathTop
+  for (let i = 0; i < path.length; i++) {
+    const s = path[i]
+    if (i === 0) {
+      top += `M ${-infR.value} ${s.s.y} `
+      bottom += `M ${-infR.value} ${-s.s.y} `
+    }
+
+    top += `L ${s.t.x} ${s.t.y}`
+    bottom += `L ${s.t.x} ${-s.t.y}`
+  }
+  return { top, bottom }
+})
+
 </script>
 
 <template>
@@ -100,6 +117,7 @@ const addLight = (e: any) => {
       <Grid v-if="options.grid"></Grid>
 
       <!-- Body -->
+
       <Body v-if="options.body"></Body>
 
       <!-- Guidelines -->
@@ -108,11 +126,15 @@ const addLight = (e: any) => {
       <!-- Global focal point -->
       <g v-if="options.lens && options.lensFocalPoints && lensExist">
         <WithBackground>
-          <g class="stroke-white thicker">
+          <g class="stroke-white thick">
             <line :x1="globalLensRe.forward.H" :y1="-globalLensRe.forward.re" :x2="globalLensRe.forward.H"
               :y2="globalLensRe.forward.re"></line>
-            <line :x1="globalLensRe.backward.H" :y1="-globalLensRe.backward.re" :x2="globalLensRe.backward.H"
-              :y2="globalLensRe.backward.re"></line>
+            <g class="fill-none">
+              <path :d="pupilPath.top"></path>
+              <path :d="pupilPath.bottom"></path>
+            </g>
+            <!-- <line :x1="globalLensRe.backward.H" :y1="-globalLensRe.backward.re" :x2="globalLensRe.backward.H"
+              :y2="globalLensRe.backward.re"></line> -->
           </g>
         </WithBackground>
         <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)"></Point>
