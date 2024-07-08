@@ -212,7 +212,7 @@ export const options0 = () => {
         sensor: true,
         sensorPreview: true,
         sensorMemory: false,
-        body: false,
+        body: true,
         aperture: false,
         grid: false,
         opticalAxis: false,
@@ -475,7 +475,6 @@ const calcLensRe = (lenses: Lens[], apertures: { r: number, x: number }[]) => {
             }
         }
     })
-    // return { re: Math.abs(res[0]) * re, H: ps[ps.length - 1] - calcLensInfo(lenses).f }
     return { re: Math.abs(res[0]) * re, H: calcLensInfo(lenses).H }
 }
 
@@ -510,11 +509,10 @@ export const globalLensRe = computed(() => {
                     paramsB: p.paramsA,
                     h: p.h,
                 }
-            }),
+            }).sort((a, b) => a.x - b.x),
             aperture: lens.aperture,
         }
     })
-    // console.log(calcLensInfo(fwdLenses), calcLensInfo(bwdLenses))
     const forward = calcLensRe(fwdLenses, fwdApertures)
     const backward = calcLensRe(bwdLenses, bwdApertures)
     backward.H *= -1
@@ -540,5 +538,5 @@ const test = () => {
 }
 
 watch([options], () => {
-    test()
+    // test()
 }, { deep: true })

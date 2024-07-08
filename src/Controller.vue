@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lensGroups, sensor, appleProps, options, style, globalLensInfo } from './globals'
+import { state, lensGroups, sensor, appleProps, options, style, globalLensInfo, globalLensRe } from './globals'
 import { humanReadable } from './utils';
 import { createLensGroup, exampleConcaveLens, exampleConvexLens, exampleDoubletLens, lenseData } from './collection/lens';
 import { lightHSL, wavelength } from './collection/color';
@@ -111,11 +111,11 @@ const createSensor = (d: number) => {
                 <tr>
                     <td>Add Lens</td>
                     <td>
-                        <button @click="lensGroups.concat(createLensGroup(exampleConvexLens))">Convex</button>
+                        <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleConvexLens))">Convex</button>
                         <br>
-                        <button @click="lensGroups.concat(createLensGroup(exampleConcaveLens))">Concave</button>
+                        <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleConcaveLens))">Concave</button>
                         <br>
-                        <button @click="lensGroups.concat(createLensGroup(exampleDoubletLens))">Doublet</button>
+                        <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleDoubletLens))">Doublet</button>
                     </td>
                 </tr>
                 <!-- <tr>
@@ -129,11 +129,11 @@ const createSensor = (d: number) => {
                 <td></td>
                 <td>{{ humanReadable(globalLensInfo.f) }}</td>
             </tr>
-            <!-- <tr>
+            <tr>
                 <td>F-number</td>
                 <td></td>
-                <td>{{ humanReadable(fNumber) }}</td>
-            </tr> -->
+                <td>{{ humanReadable(globalLensInfo.f / (globalLensRe.forward.re * 2)) }}</td>
+            </tr>
             <!-- <template v-if="options.advanced">
                 <tr>
                     <td>Position</td>
@@ -282,6 +282,7 @@ const createSensor = (d: number) => {
                 <td>
                     <template v-for="lens of lenseData">
                         <button @click="lensGroups = createLensGroup(lens)">{{ lens.name }}</button>
+                        <br>
                     </template>
                 </td>
             </tr>

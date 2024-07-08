@@ -35,8 +35,8 @@ export const exampleConvexLens: LensData = {
 export const exampleConcaveLens: LensData = {
     name: "Example concave",
     planes: [
-        { d: 4, r: 30, h: 10, n: nd0, vd: vd0 },
-        { d: Infinity, r: -30, h: 10 },
+        { d: 4, r: -30, h: 10, n: nd0, vd: vd0 },
+        { d: Infinity, r: 30, h: 10 },
     ],
     lenses: [[0, 1]],
     groups: [[0]],
@@ -59,18 +59,19 @@ export const exampleTestLens: LensData = {
     url: "http://dioptrique.info/OBJECTIFS13/00635/00635.HTM",
     planes: [
         // SK6
-        { d: 7.7, r: 85.4, h: 28, n: 1.6138, vd: 56.3 },
+        { d: 7.7, r: 85.4, h: 28, n: 1.61375, vd: 56.3 },
         { d: 0.5, r: -500, h: 28 },
 
         // SK6
-        { d: 19, r: 44.5, h: 18, n: 1.6138, vd: 56.3 },
+        { d: 19, r: 44.5, h: 24, n: 1.61375, vd: 56.3 },
         { d: 4.5, r: 70, h: 16 },
 
         // SF1
-        { d: 2, r: -135, h: 16, n: 1.71740, vd: 29.5 },
+        { d: 2, r: -135, h: 16, n: 1.71736, vd: 29.5 },
         { d: 19, r: 34.3, h: 16 },
 
-        { d: 8, r: 146, h: 22, n: 1.6138, vd: 59.3 },
+        // SK6
+        { d: 8, r: 146, h: 22, n: 1.61375, vd: 59.3 },
         { d: Infinity, r: -46.8, h: 22 },
     ],
     lenses: [[0, 1], [2, 3], [4, 5], [6, 7]],
