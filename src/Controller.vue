@@ -59,7 +59,7 @@ const createSensor = (d: number) => {
                     <button @click="state.newLightWavelength = wavelength.red">Red</button>
                 </template>
                 <template v-if="state.newLightColorComposite">
-                    <input type="range" min="0" max="16" v-model="state.newLightColorCompositeN">
+                    <input type="range" min="0" max="32" v-model="state.newLightColorCompositeN">
                 </template>
             </td>
             <td v-if="!state.newLightColorComposite"

@@ -20,24 +20,6 @@ const move = (e: any) => {
 
     const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
     return (e: any, d: Vec) => {
-        // Fix d.x within maxLightX < d.x < sensor.x
-        const sensorMinX = Math.min(sensor.value.s.x, sensor.value.t.x)
-        for (let i = 0; i < lensGroups.value.length; i++) {
-            const lensGroup = lensGroups.value[i];
-            if (!lensGroup.selected) {
-                continue
-            }
-            for (let j = 0; j < lensGroup.lenses.length; j++) {
-                const lens = lensGroup.lenses[j]
-                for (let k = 0; k < lens.planes.length; k++) {
-                    if (x0s[i][j][k] + d.x > sensorMinX) {
-                        if (Math.abs(sensorMinX - x0s[i][j][k]) < Math.abs(d.x)) {
-                            d.x = sensorMinX - x0s[i][j][k]
-                        }
-                    }
-                }
-            }
-        }
         // Update position
         lensGroups.value.forEach((lensGroup, i) => {
             if (!lensGroup.selected) {
