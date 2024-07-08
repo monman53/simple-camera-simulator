@@ -1,6 +1,6 @@
 import { ref, computed, watch } from "vue"
 import { Vec, calcLensFront, vec, calcLensR, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge, calcDispersion } from "./math"
-import { type Lens, type LensGroup, type LightPoint, type LightType } from "./type"
+import { type Aperture, type Body, type Lens, type LensGroup, type LightPoint, type LightType, type Sensor } from "./type"
 import { wavelength } from "./collection/color"
 import { createLensGroup, exampleConvexLens, exampleTestLens } from "./collection/lens"
 
@@ -277,58 +277,49 @@ export const rUI = computed(() => {
     return 8 * scale;
 })
 
-export const body = computed(() => {
-    const lensExist = options.value.lens && lensesSorted.value.length > 0
+export const calcBody = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[]): Body => {
     const padding = style.value.bodyPadding
 
-    let rs: number[] = []
-    if (options.value.lens) {
-        rs.push(...lensesSorted.value.map((lens, i) => { return lensRs.value[i] + padding }))
-    }
-    if (options.value.aperture) {
-        rs.push(aperture.value.r)
-    }
-    if (options.value.sensor) {
-        const r = Math.max(Math.abs(sensor.value.s.y), Math.abs(sensor.value.t.y))
-        rs.push(r + padding)
-    }
-
-    let r = null
-    if (rs.length > 0) {
+    // Radius
+    let r
+    {
+        let rs: number[] = []
+        rs.push(...lenses.map(lens => { return calcLensR(lens) + padding }))
+        rs.push(...apertures.map(a => a.r))
+        rs.push(...sensors.map(sensor => {
+            const r = Math.max(Math.abs(sensor.s.y), Math.abs(sensor.t.y))
+            return r + padding
+        }))
         r = Math.max(...rs)
     }
 
-    let front = null
-    if (lensExist) {
-        const xm = calcLensXCOG(lensesSorted.value[0])
-        if (options.value.aperture) {
+    // Front
+    let front
+    {
+        let fronts: number[] = []
+        fronts.push(...lenses.map(lens => {
             if (options.value.lensIdeal) {
-                front = Math.min(aperture.value.x, xm)
+                return calcLensXCOG(lens)
             } else {
-                front = Math.min(aperture.value.x, lensFronts.value[0])
+                return calcLensFront(lens)
             }
-        } else {
-            if (options.value.lensIdeal) {
-                front = xm
-            } else {
-                front = lensFronts.value[0]
-            }
-        }
-    } else {
-        if (options.value.aperture) {
-            front = aperture.value.x
-        }
+        }))
+        fronts.push(...apertures.map(a => a.x))
+        front = Math.min(...fronts)
     }
-    let back = null
-    if (options.value.sensor) {
-        const maxX = Math.max(sensor.value.s.x, sensor.value.t.x)
-        back = maxX + padding
-    } else if (lensExist) {
-        if (options.value.aperture) {
-            back = Math.max(...lensFronts.value, aperture.value.x)
-        } else {
-            back = Math.max(...lensFronts.value)
-        }
+
+    // Back
+    let back
+    {
+        let backs: number[] = []
+        backs.push(...sensors.map(sensor => {
+            return Math.max(sensor.s.x, sensor.t.x) + padding
+        }))
+        backs.push(...lenses.map(lens => {
+            return calcLensFront(lens)
+        }))
+        backs.push(...apertures.map(a => a.x))
+        back = Math.max(...backs)
     }
 
     return {
@@ -336,6 +327,25 @@ export const body = computed(() => {
         front,
         back,
     }
+}
+
+export const body = computed(() => {
+    let lenses: Lens[] = []
+    if (options.value.lens) {
+        lenses = lensesSorted.value
+    }
+
+    let apertures: Aperture[] = []
+    if (options.value.aperture) {
+        apertures = [aperture.value]
+    }
+
+    let sensors: Sensor[] = []
+    if (options.value.sensor) {
+        sensors = [sensor.value]
+    }
+
+    return calcBody(lenses, apertures, sensors)
 })
 
 export const calcLensInfo = (lenses: Lens[]) => {

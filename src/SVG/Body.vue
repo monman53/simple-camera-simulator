@@ -27,7 +27,7 @@ const move = () => {
 <template>
     <MoveUI :handler-creator="move" class="grab">
         <WithBackground :ui="true">
-            <g v-if="body.front !== null && body.back !== null && body.r !== null" class="stroke-white thicker">
+            <g v-if="isFinite(body.front) && isFinite(body.back) && isFinite(body.r)" class="stroke-white thicker">
                 <!-- Outline -->
                 <line :x1="body.front" :y1="-body.r" :x2="body.back" :y2="-body.r"></line>
                 <line :x1="body.front" :y1="body.r" :x2="body.back" :y2="body.r"></line>

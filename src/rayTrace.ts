@@ -1,7 +1,7 @@
 import type { CauchyParams } from "./collection/lens";
-import { aperture, body, infR, lensBacks, lensCOGs, lensFronts, lensFs, lensPlaneEdges, lensRs, lensesSorted, options, sensor } from "./globals";
-import { calcDispersion, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
-import type { Ray } from "./type";
+import { aperture, body, calcLensInfo, infR, lensBacks, lensCOGs, lensFronts, lensFs, lensPlaneEdges, lensRs, lensesSorted, options, sensor } from "./globals";
+import { calcDispersion, calcLensBack, calcLensFront, calcLensPlaneEdge, calcLensR, calcLensXCOG, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
+import type { Body, Lens, Ray } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
 
@@ -174,7 +174,7 @@ const collisionY = (rays: Ray[], x: number, yMin: number, yMax: number): Collisi
     })
 }
 
-const collisionAll = (rays: Ray[]): CollisionResult[] => {
+const collisionAll = (rays: Ray[], lenses: Lens[], body: Body | null): CollisionResult[] => {
     // Closest collision
     let pMins: CollisionResult[] = rays.map(ray => {
         return null
@@ -206,20 +206,22 @@ const collisionAll = (rays: Ray[]): CollisionResult[] => {
     //--------------------------------
 
     // Body outline
-    if (options.value.body && body.value.r && body.value.front && body.value.back) {
-        updateMin(collisionX(rays, -body.value.r, body.value.front, body.value.back))
-        updateMin(collisionX(rays, body.value.r, body.value.front, body.value.back))
-        if (options.value.sensor) {
-            updateMin(collisionY(rays, body.value.back, -body.value.r, body.value.r))
-        }
+    if (body !== null) {
+        updateMin(collisionX(rays, -body.r, body.front, body.back))
+        updateMin(collisionX(rays, body.r, body.front, body.back))
+        updateMin(collisionY(rays, body.back, -body.r, body.r))
     }
 
     // Around lenses
-    lensesSorted.value.forEach((lens, i) => {
+    lenses.forEach(lens => {
         // Lens
-        const h = lensRs.value[i]
-        const f = lensFs.value[i]
-        const xm = lensCOGs.value[i]
+        const h = calcLensR(lens)
+        const f = calcLensInfo([lens]).f
+        const xm = calcLensXCOG(lens)
+        const front = calcLensFront(lens)
+        const back = calcLensBack(lens)
+
+        // Lens surface
         if (options.value.lensIdeal) {
             updateMin(collisionIdealLens(rays, xm, h * lens.aperture, f))
         } else {
@@ -230,7 +232,8 @@ const collisionAll = (rays: Ray[]): CollisionResult[] => {
                 updateMin(collisionLens(rays, p.x, p.r, p.h, paramsI, paramsO))
 
                 // Plane outside
-                updateMin(collisionAperture(rays, lensPlaneEdges.value[i][j], p.h, h))
+                const edge = calcLensPlaneEdge(p)
+                updateMin(collisionAperture(rays, edge, p.h, h))
             })
         }
 
@@ -238,19 +241,19 @@ const collisionAll = (rays: Ray[]): CollisionResult[] => {
         updateMin(collisionAperture(rays, xm, h * lens.aperture, h))
 
         // Lens to body
-        if (options.value.body && body.value.r !== null) {
-            const x = options.value.lensIdeal ? xm : lensFronts.value[i]
-            updateMin(collisionAperture(rays, x, h, body.value.r))
+        if (body !== null) {
+            const x = options.value.lensIdeal ? xm : front
+            updateMin(collisionAperture(rays, x, h, body.r))
         }
 
         // Lens upper and bottom
-        updateMin(collisionX(rays, -h, lensFronts.value[i], lensBacks.value[i]))
-        updateMin(collisionX(rays, h, lensFronts.value[i], lensBacks.value[i]))
+        updateMin(collisionX(rays, -h, front, back))
+        updateMin(collisionX(rays, h, front, back))
     })
 
     // Aperture
-    if (options.value.aperture && body.value.r) {
-        updateMin(collisionAperture(rays, aperture.value.x, aperture.value.r, body.value.r))
+    if (options.value.aperture && body !== null) {
+        updateMin(collisionAperture(rays, aperture.value.x, aperture.value.r, body.r))
     }
 
     // Sensor
@@ -262,13 +265,13 @@ const collisionAll = (rays: Ray[]): CollisionResult[] => {
 }
 
 type Segment = { s: Vec, t: Vec, isSensor?: boolean }
-export const rayTrace = (rays: Ray[]): Segment[][] => {
+export const rayTrace = (rays: Ray[], lenses: Lens[], body: Body | null): Segment[][] => {
     const segments: Segment[][] = rays.map(ray => {
         return []
     })
     const maxItr = 100
     for (let i = 0; rays.length > 0 && i < maxItr; i++) {
-        const cs = collisionAll(rays)
+        const cs = collisionAll(rays, lenses, body)
 
         const nextRay: Ray[] = []
         rays.forEach((ray, idx) => {

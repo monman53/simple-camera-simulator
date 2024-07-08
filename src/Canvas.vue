@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, onMounted, ref } from 'vue'
 
-import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, body, lensFronts, aperture, lensBacks } from './globals'
+import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, lensFronts, aperture, lensBacks, body } from './globals'
 import { Vec, vec, vecRad, wavelengthToHue } from './math'
 
 import { type Ray } from './type'
@@ -28,7 +28,9 @@ const drawSegment = (p: Vec, q: Vec) => {
 };
 
 const drawRay = (rays: Ray[], sensorDataTmp: any[]) => {
-  const segments = rayTrace(rays)
+  const lenses = options.value.lens ? lensesSorted.value : []
+  const body_ = options.value.body ? body.value : null
+  const segments = rayTrace(rays, lenses, body_)
   segments.forEach((raySegments, i) => {
     const wavelength = rays[i].wavelength
     ctx.strokeStyle = lightHSL(wavelength, style.value.rayIntensity)

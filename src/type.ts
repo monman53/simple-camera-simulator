@@ -29,3 +29,20 @@ export type Ray = {
     wavelength: number,
     idx: number,
 }
+
+export type Aperture = {
+    x: number,
+    r: number,
+}
+
+export type Sensor = {
+    s: Vec,
+    t: Vec,
+    circleOfConfusion: number,
+}
+
+export type Body = {
+    r: number,
+    front: number,
+    back: number,
+}

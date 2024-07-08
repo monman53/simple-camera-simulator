@@ -100,14 +100,13 @@ const addLight = (e: any) => {
       <Grid v-if="options.grid"></Grid>
 
       <!-- Body -->
-
       <Body v-if="options.body"></Body>
 
       <!-- Guidelines -->
       <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView"></Guideline>
 
       <!-- Global focal point -->
-      <g v-if="options.lensFocalPoints && lensExist">
+      <g v-if="options.lens && options.lensFocalPoints && lensExist">
         <WithBackground>
           <g class="stroke-white thicker">
             <line :x1="globalLensRe.forward.H" :y1="-globalLensRe.forward.re" :x2="globalLensRe.forward.H"
