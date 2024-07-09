@@ -1,9 +1,63 @@
+<script lang="ts">
+// Reference to the svg element
+let svg: Ref<any>;
+const setSvg = (svg_: Ref<any>) => {
+  svg = svg_;
+}
+
+// Methods
+export const getPositionOnSvg = (e: any) => {
+  const rect = svg.value.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  return vec(x, y)
+}
+
+export const getPositionOnSvgApp = (e: any) => {
+  const m = getPositionOnSvg(e);
+  const x = (m.x - state.value.width / 2) / state.value.scale + state.value.c.x;
+  const y = (m.y - state.value.height / 2) / state.value.scale + state.value.c.y;
+  return vec(x, y)
+}
+
+const getPositionDiffOnSvgApp = (e: any, m0: Vec) => {
+  const m = getPositionOnSvg(e);
+  const d = m.inplaceSub(m0).inplaceDiv(state.value.scale)
+  return d
+}
+
+const preventDefaultAndStopPropagation = (e: any) => {
+  e.stopPropagation()
+  e.preventDefault()
+}
+
+// Elements move system on SVG
+let moveHandlerWithM0: any = null;
+let m0: Vec
+export const setMoveHandlerWithM0 = (h: any, m: Vec) => {
+  moveHandlerWithM0 = h
+  m0 = m
+}
+
+const svgMoveHandler = (e: any) => {
+  e.preventDefault();
+  state.value.pointerPos = getPositionOnSvgApp(e)
+  if (moveHandlerWithM0 !== null) {
+    preventDefaultAndStopPropagation(e)
+    const d = getPositionDiffOnSvgApp(e, m0)
+    moveHandlerWithM0(e, d)
+  }
+}
+const svgMoveEndHandler = () => {
+  moveHandlerWithM0 = null
+}
+</script>
+
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, type Ref } from 'vue'
 
 import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted, releaseAllLenses } from '../globals'
-import * as h from '../handlers'
-import { Vec, vec, wavelengthToHue } from '../math'
+import { Vec, vec } from '../math'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
@@ -18,12 +72,21 @@ import MoveUI from './MoveUI.vue'
 import { lightHSL, wavelength } from '@/collection/color'
 
 // Reference to the svg element
-// This is needed for handles in handlers.ts
 // TODO: Find a better way
 const svg = ref()
 onMounted(() => {
-  h.setSvg(svg)
+  setSvg(svg)
 })
+
+const svgScaleHandler = (e: any) => {
+  preventDefaultAndStopPropagation(e)
+  // Zoom in/out
+  const p = getPositionOnSvgApp(e);
+  const scaleFactor = 1.2;
+  const r = e.deltaY > 0 ? scaleFactor : 1 / scaleFactor;
+  state.value.c = state.value.c.add(p.sub(state.value.c).mul(1 - r))
+  state.value.scale /= r;
+}
 
 const svgViewBox = computed(() => {
   const x = state.value.c.x - state.value.width * 0.5 / state.value.scale
@@ -65,9 +128,8 @@ const move = () => {
 }
 
 const addLight = (e: any) => {
-  e.preventDefault()
-  e.stopPropagation()
-  const m = h.getPositionOnSvgApp(e);
+  preventDefaultAndStopPropagation(e)
+  const m = getPositionOnSvgApp(e);
   let wavelengths = [state.value.newLightWavelength]
   if (state.value.newLightColorComposite) {
     const n = state.value.newLightColorCompositeN
@@ -106,7 +168,7 @@ const pupilPath = computed(() => {
 <template>
   <MoveUI :handler-creator="move">
     <svg id="main-svg" class="move" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
-      @mousemove="h.svgMoveHandler" @mouseup="h.svgMoveEndHandler" @wheel="h.svgScaleHandler" @dblclick="addLight">
+      @mousemove="svgMoveHandler" @mouseup="svgMoveEndHandler" @wheel="svgScaleHandler" @dblclick="addLight">
 
       <!-- Optical axis -->
       <g v-if="options.opticalAxis">

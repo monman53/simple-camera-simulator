@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { getPositionOnSvg, preventDefaultAndStopPropagation, setMoveHandlerWithM0 } from '@/handlers';
 import type { Vec } from '@/math';
+import { getPositionOnSvg, getPositionOnSvgApp, setMoveHandlerWithM0 } from './SVG.vue';
+import { state } from '@/globals';
 
 const props = defineProps<{
-    handlerCreator: (...params: any[])=>((e: any, d: Vec)=>void)
+    handlerCreator: (...params: any[]) => ((e: any, d: Vec) => void)
 }>()
 
 const moveStart = (e: any) => {
-    preventDefaultAndStopPropagation(e)
+    e.preventDefault()
+    e.stopPropagation()
     const m0 = getPositionOnSvg(e);
     setMoveHandlerWithM0(props.handlerCreator(e), m0)
+    state.value.pointerPos = getPositionOnSvgApp(e)
 }
 </script>
 

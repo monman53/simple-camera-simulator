@@ -44,7 +44,7 @@ onMounted(() => {
     <div id="stage" ref="main">
       <Canvas id="canvas"></Canvas>
       <SVG id="svg"></SVG>
-      <Overlay id="parameter"></Overlay>
+      <Overlay id="overlay"></Overlay>
     </div>
     <div v-show="options.sensor && options.sensorPreview">
       <Preview></Preview>
@@ -81,7 +81,7 @@ onMounted(() => {
 
 #canvas,
 #svg,
-#parameter,
+#overlay,
 #preview,
 #memory {
   position: absolute;

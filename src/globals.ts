@@ -20,6 +20,7 @@ export const createInitialParams = () => {
         newLightColorComposite: false,
         newLightColorCompositeN: 3,
         newLightType: "Point",
+        pointerPos: vec(0, 0),
     }
 }
 export const state = ref(createInitialParams())
@@ -224,6 +225,7 @@ export const options0 = () => {
         apple: false,
         wavelength: false,
         sensorFreeMove: true,
+        pointerPosition: true,
     }
 }
 export const options = ref(options0())
