@@ -1,12 +1,34 @@
+<script lang="ts">
+export const addLight = (e: any) => {
+    preventDefaultAndStopPropagation(e)
+    const m = getPositionOnSvgApp(e);
+    let wavelengths = [state.value.newLightWavelength]
+    if (state.value.newLightColorComposite) {
+        const n = state.value.newLightColorCompositeN
+        wavelengths = []
+        for (let i = 0; i < n; i++) {
+            wavelengths.push(wavelength.min * i / n + wavelength.max * (n - i) / n)
+        }
+    }
+    if (state.value.newLightType === 'Point') {
+        lights.value.push({ type: 'Point', c: m, wavelengths })
+    }
+    if (state.value.newLightType === 'Parallel') {
+        lights.value.push({ type: 'Parallel', s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), wavelengths })
+    }
+}
+</script>
+
 <script setup lang="ts">
 import { computed } from 'vue'
-import { lights, rUI } from '../globals'
-import { Vec, wavelengthToHue } from '../math'
+import { lights, rUI, state } from '../globals'
+import { Vec, vec, wavelengthToHue } from '../math'
 import WithBackground from './WithBackground.vue';
 import CircleUI from './CircleUI.vue';
 import MoveUI from './MoveUI.vue';
 import type { LightParallel, LightType } from '@/type';
-import { lightHSL } from '@/collection/color';
+import { lightHSL, wavelength } from '@/collection/color';
+import { getPositionOnSvgApp, preventDefaultAndStopPropagation } from './SVG.vue';
 
 const props = defineProps<{
     light: LightType
@@ -100,6 +122,7 @@ const fill = computed(() => {
         return lightHSL(props.light.wavelengths[0], 0.5)
     }
 })
+
 
 const deleteLight = (e: any, idx: number) => {
     e.preventDefault()

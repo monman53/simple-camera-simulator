@@ -26,7 +26,7 @@ const getPositionDiffOnSvgApp = (e: any, m0: Vec) => {
   return d
 }
 
-const preventDefaultAndStopPropagation = (e: any) => {
+export const preventDefaultAndStopPropagation = (e: any) => {
   e.stopPropagation()
   e.preventDefault()
 }
@@ -61,7 +61,7 @@ import { Vec, vec } from '../math'
 
 import Grid from './Grid.vue'
 import Guideline from './Guideline.vue'
-import LightSVG from './Light.vue'
+import LightSVG, { addLight } from './Light.vue'
 import LensGroup from './LensGroup.vue'
 import WithBackground from './WithBackground.vue'
 import Aperture from './Aperture.vue'
@@ -124,25 +124,6 @@ const move = () => {
   releaseAllLenses()
   return (e: any, d: Vec) => {
     state.value.c = c0.sub(d)
-  }
-}
-
-const addLight = (e: any) => {
-  preventDefaultAndStopPropagation(e)
-  const m = getPositionOnSvgApp(e);
-  let wavelengths = [state.value.newLightWavelength]
-  if (state.value.newLightColorComposite) {
-    const n = state.value.newLightColorCompositeN
-    wavelengths = []
-    for (let i = 0; i < n; i++) {
-      wavelengths.push(wavelength.min * i / n + wavelength.max * (n - i) / n)
-    }
-  }
-  if (state.value.newLightType === 'Point') {
-    lights.value.push({ type: 'Point', c: m, wavelengths })
-  }
-  if (state.value.newLightType === 'Parallel') {
-    lights.value.push({ type: 'Parallel', s: vec(m.x, m.y - 25), t: vec(m.x, m.y + 25), wavelengths })
   }
 }
 
