@@ -34,17 +34,11 @@ const move = (e: any) => {
     }
 }
 
-const deleteLensGroup = (e: any) => {
-    e.preventDefault()
-    e.stopPropagation()
-    lensGroups.value.splice(props.idx, 1)
-}
-
 </script>
 
 <template>
     <MoveUI :handler-creator="move">
-        <g v-for="(lens, idx) in lensGroup.lenses" @dblclick="deleteLensGroup">
+        <g v-for="(lens, idx) in lensGroup.lenses">
             <Lens :lens :selected="lensGroup.selected"></Lens>
         </g>
     </MoveUI>

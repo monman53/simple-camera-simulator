@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { calcLensInfo, lensGroups } from './globals';
-import { humanReadable } from './utils';
+import { humanReadable, removeElement } from './utils';
 
 </script>
 
@@ -10,7 +10,10 @@ import { humanReadable } from './utils';
         <template v-for="(lensGroup, i) of lensGroups">
             <template v-if="lensGroup.selected">
                 <fieldset>
-                    <legend>Group {{ i }} (f: {{ humanReadable(calcLensInfo(lensGroup.lenses).f) }})</legend>
+                    <legend>
+                        Group {{ i }} (f: {{ humanReadable(calcLensInfo(lensGroup.lenses).f) }})
+                        <i class="bi bi-trash pointer" @click="removeElement(lensGroups, i)"></i>
+                    </legend>
                     <template v-for="(lens, j) of lensGroup.lenses">
                         <fieldset>
                             <legend>Lens {{ j }} (f: {{ humanReadable(calcLensInfo([lens]).f) }})</legend>

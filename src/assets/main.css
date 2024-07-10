@@ -2,6 +2,11 @@ body {
     margin: 0;
 }
 
+.pointer {
+    cursor: -webkit-pointer;
+    cursor: pointer;
+}
+
 .grab {
     cursor: -webkit-grab;
     cursor: grab;
