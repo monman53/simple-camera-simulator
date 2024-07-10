@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 
 import Document from './Document.vue'
 import Controller from './Controller.vue'
+import EditPanel from './EditPanel.vue';
 
-const mode = ref("control")
+type ModeType = "control" | "edit" | "info" | ""
+
+const mode: Ref<ModeType> = ref("control")
 </script>
 
 <template>
@@ -13,6 +16,10 @@ const mode = ref("control")
             <div>
                 <i v-if="mode === 'control'" class="bi bi-gear-fill" @click="mode = ''"></i>
                 <i v-else class="bi bi-gear" @click="mode = 'control'"></i>
+            </div>
+            <div>
+                <i v-if="mode === 'edit'" class="bi bi-pen-fill" @click="mode = ''"></i>
+                <i v-else class="bi bi-pen" @click="mode = 'edit'"></i>
             </div>
             <div>
                 <i v-if="mode === 'info'" class="bi bi-info-circle-fill" @click="mode = ''"></i>
@@ -25,8 +32,9 @@ const mode = ref("control")
         <div class="content">
             <Controller v-if="mode === 'control'"></Controller>
             <Document v-if="mode === 'info'"></Document>
+            <EditPanel v-if="mode === 'edit'"></EditPanel>
         </div>
-        <div v-if="mode !== ''" class="footer">
+        <div v-if="mode === 'info'" class="footer">
             <small>Created by <a href="https://monman53.github.io/">monman53</a></small>
         </div>
     </div>
@@ -57,7 +65,7 @@ a {
     margin: 0.3em;
     font-size: 1.5em;
     display: grid;
-    grid-template-columns: auto 1fr 1fr;
+    grid-template-columns: auto auto auto 1fr;
     gap: 0.3em;
 }
 
@@ -69,5 +77,4 @@ a {
     padding: 0.3em;
     text-align: right;
 }
-
 </style>

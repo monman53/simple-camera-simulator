@@ -163,9 +163,6 @@ const apertureSizeChangeStartHandler = () => {
             </g>
         </WithBackground>
 
-        <!-- dummy for ui -->
-        <path :d="path" class='transparent grab' stroke-width="0" />
-
         <!-- Thickness and change UI -->
         <g class="ui-stroke transparent horizontal-resize">
             <template v-for="(plane, idx) of lens.planes">
@@ -192,17 +189,22 @@ const apertureSizeChangeStartHandler = () => {
         </g>
 
         <!-- Aperture -->
-        <WithBackground>
-            <!-- Lines -->
-            <g class="stroke-white normal no-pointer-events">
-                <line :x1="xm" :y1="-r" :x2="xm" :y2="-r * lens.aperture"></line>
-                <line :x1="xm" :y1="r" :x2="xm" :y2="r * lens.aperture"></line>
-            </g>
-        </WithBackground>
-        <!-- UI -->
-        <MoveUI :handler-creator="apertureSizeChangeStartHandler">
-            <CircleUI :c="vec(xm, r * lens.aperture)" class="vertical-resize">
-            </CircleUI>
-        </MoveUI>
+        <g>
+            <WithBackground>
+                <!-- Lines -->
+                <g class="stroke-white normal no-pointer-events">
+                    <line :x1="xm" :y1="-r" :x2="xm" :y2="-r * lens.aperture"></line>
+                    <line :x1="xm" :y1="r" :x2="xm" :y2="r * lens.aperture"></line>
+                </g>
+            </WithBackground>
+            <!-- UI -->
+            <MoveUI :handler-creator="apertureSizeChangeStartHandler">
+                <CircleUI :c="vec(xm, r * lens.aperture)" class="vertical-resize">
+                </CircleUI>
+            </MoveUI>
+        </g>
+
+        <!-- dummy for ui -->
+        <path :d="path" class='transparent grab' stroke-width="0" />
     </g>
 </template>

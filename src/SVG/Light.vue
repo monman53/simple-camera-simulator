@@ -22,7 +22,7 @@ export const addLight = (e: any) => {
 <script setup lang="ts">
 import { computed } from 'vue'
 import { lights, rUI, state } from '../globals'
-import { Vec, vec, wavelengthToHue } from '../math'
+import { Vec, vec } from '../math'
 import WithBackground from './WithBackground.vue';
 import CircleUI from './CircleUI.vue';
 import MoveUI from './MoveUI.vue';
@@ -157,9 +157,6 @@ const deleteLight = (e: any, idx: number) => {
             <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light)">
                 <CircleUI :c="light.s"></CircleUI>
             </MoveUI>
-            <!-- <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light.t)">
-                <CircleUI :c="light.t"></CircleUI>
-            </MoveUI> -->
         </g>
     </g>
 </template>
