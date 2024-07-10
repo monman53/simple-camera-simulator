@@ -4,8 +4,9 @@ import { ref, type Ref } from 'vue'
 import Document from './Document.vue'
 import Controller from './Controller.vue'
 import EditPanel from './EditPanel.vue';
+import AddPanel from './AddPanel.vue';
 
-type ModeType = "control" | "edit" | "info" | ""
+type ModeType = "control" | "add" | "edit" | "info" | ""
 
 const mode: Ref<ModeType> = ref("control")
 </script>
@@ -16,6 +17,10 @@ const mode: Ref<ModeType> = ref("control")
             <div>
                 <i v-if="mode === 'control'" class="bi bi-gear-fill" @click="mode = ''"></i>
                 <i v-else class="bi bi-gear" @click="mode = 'control'"></i>
+            </div>
+            <div>
+                <i v-if="mode === 'add'" class="bi bi-plus-circle-fill" @click="mode = ''"></i>
+                <i v-else class="bi bi-plus-circle" @click="mode = 'add'"></i>
             </div>
             <div>
                 <i v-if="mode === 'edit'" class="bi bi-pen-fill" @click="mode = ''"></i>
@@ -31,6 +36,7 @@ const mode: Ref<ModeType> = ref("control")
         </div>
         <div class="content">
             <Controller v-if="mode === 'control'"></Controller>
+            <AddPanel v-if="mode === 'add'"></AddPanel>
             <Document v-if="mode === 'info'"></Document>
             <EditPanel v-if="mode === 'edit'"></EditPanel>
         </div>
@@ -47,7 +53,7 @@ const mode: Ref<ModeType> = ref("control")
     max-width: 30em;
     border-radius: 1em;
     color: white;
-    background-color: #0008;
+    background-color: #2228;
     backdrop-filter: blur(4px);
 }
 
@@ -65,7 +71,7 @@ a {
     margin: 0.3em;
     font-size: 1.5em;
     display: grid;
-    grid-template-columns: auto auto auto 1fr;
+    grid-template-columns: auto auto auto auto 1fr;
     gap: 0.3em;
 }
 

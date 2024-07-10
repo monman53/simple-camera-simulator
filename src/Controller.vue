@@ -263,29 +263,6 @@ const createSensor = (d: number) => {
                     <hr>Templates
                 </th>
             </tr>
-            <!-- <tr>
-                <td>Focal length</td>
-                <td>
-                    <button @click="lens.f = 12">12</button>
-                    <button @click="lens.f = 24">24</button>
-                    <button @click="lens.f = 35">35</button>
-                    <button @click="lens.f = 50">50</button>
-                    <br>
-                    <button @click="lens.f = 85">85</button>
-                    <button @click="lens.f = 100">100</button>
-                    <button @click="lens.f = 200">200</button>
-                </td>
-                <td></td>
-            </tr> -->
-            <tr>
-                <td>Lens collection</td>
-                <td>
-                    <template v-for="lens of lenseData">
-                        <button @click="lensGroups = createLensGroup(lens)">{{ lens.name }}</button>
-                        <br>
-                    </template>
-                </td>
-            </tr>
             <tr>
                 <td>Sensor height</td>
                 <td>
