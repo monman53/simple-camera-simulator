@@ -10,14 +10,6 @@ const nRays = computed(() => {
     return 1 << state.value.nRaysLog
 })
 
-const createSensor = (d: number) => {
-    const xm = (sensor.value.s.x + sensor.value.t.x) / 2
-    sensor.value.s.x = xm
-    sensor.value.s.y = -d / 2
-    sensor.value.t.x = xm
-    sensor.value.t.y = d / 2
-}
-
 </script>
 
 <template>
@@ -159,27 +151,6 @@ const createSensor = (d: number) => {
             </th>
         </tr>
         <template v-if="options.sensor">
-            <tr>
-                <td><label><input type="checkbox" v-model="options.sensorPreview"> Preview</label></td>
-            </tr>
-            <!-- <tr v-if="options.sensorPreview">
-                            <td><label><input type="checkbox" v-model="options.sensorMemory"> Memory</label></td>
-                        </tr> -->
-            <template v-if="options.advanced">
-                <tr>
-                    <td><label><input type="checkbox" v-model="options.circleOfConfusion"> CoC</label></td>
-                    <template v-if="options.circleOfConfusion">
-                        <td><input type="range" min="0" max="10" step="0.001" v-model.number="sensor.circleOfConfusion">
-                        </td>
-                        <td>{{ humanReadable(sensor.circleOfConfusion) }}</td>
-                    </template>
-                </tr>
-                <tr>
-                    <td>Diameter</td>
-                    <td></td>
-                    <td>{{ humanReadable(sensor.t.sub(sensor.s).length()) }}<br></td>
-                </tr>
-            </template>
         </template>
         <!-- Other options -->
         <tr>
@@ -262,21 +233,6 @@ const createSensor = (d: number) => {
                 <th colspan="3">
                     <hr>Templates
                 </th>
-            </tr>
-            <tr>
-                <td>Sensor height</td>
-                <td>
-                    <button @click="createSensor(24)">Full frame</button>
-                    <br>
-                    <button @click="createSensor(15.6)">APS-C</button>
-                    <br>
-                    <button @click="createSensor(14.9)">APS-C (Canon)</button>
-                    <br>
-                    <button @click="createSensor(13)">Four thirds</button>
-                    <br>
-                    <button @click="createSensor(8.8)">1"</button>
-                </td>
-                <td></td>
             </tr>
             <tr>
                 <td><label><input type="checkbox" v-model="options.apple">Apple</label></td>

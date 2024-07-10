@@ -127,6 +127,7 @@ export const sensor0 = () => {
         s: vec(80, -12),
         t: vec(80, 12),
         circleOfConfusion: 1,
+        selected: false,
     }
 }
 export const sensor = ref(sensor0())

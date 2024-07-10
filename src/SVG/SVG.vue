@@ -70,6 +70,7 @@ import Point from './Point.vue'
 import Sensor from './Sensor.vue'
 import MoveUI from './MoveUI.vue'
 import { lightHSL, wavelength } from '@/collection/color'
+import { releaseALlItems } from '@/utils'
 
 // Reference to the svg element
 // TODO: Find a better way
@@ -121,7 +122,7 @@ const strokeWidth = computed(() => {
 
 const move = () => {
   const c0 = state.value.c.copy()
-  releaseAllLenses()
+  releaseALlItems()
   return (e: any, d: Vec) => {
     state.value.c = c0.sub(d)
   }

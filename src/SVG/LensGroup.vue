@@ -16,6 +16,7 @@ const move = (e: any) => {
     if (!e.shiftKey && !props.lensGroup.selected) {
         releaseAllLenses()
     }
+    sensor.value.selected = false
     props.lensGroup.selected = true
 
     const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
