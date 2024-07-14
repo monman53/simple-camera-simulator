@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { resizeSensor } from './SVG/Sensor.vue';
 import { calcLensInfo, lensGroups, options, sensor } from './globals';
 import { humanReadable, removeElement } from './utils';
+import { groupLensGroups, ungroupLensGroup } from './SVG/LensGroup.vue';
 
 const visible = computed(() => {
     for (const lensGroup of lensGroups.value) {
@@ -18,10 +19,12 @@ const visible = computed(() => {
 
 <template>
     <div v-if="visible" class="edit-panel-base">
+        <button @click="groupLensGroups">group</button>
+        <button @click="ungroupLensGroup">ungroup</button>
+
         <!-- Lenses -->
         <template v-for="(lensGroup, i) of lensGroups">
             <template v-if="lensGroup.selected">
-                <h3>Lenses</h3>
                 <fieldset>
                     <legend :title="`f: ${humanReadable(calcLensInfo(lensGroup.lenses).f)}`">
                         Group {{ i }}
