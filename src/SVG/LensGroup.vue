@@ -58,7 +58,7 @@ const move = (e: any) => {
         return () => { }
     }
 
-    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
+    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.value.map(p => p.x)))
     return (e: any, d: Vec) => {
         // Update position
         lensGroups.value.forEach((lensGroup, i) => {
@@ -66,7 +66,7 @@ const move = (e: any) => {
                 return
             }
             lensGroup.lenses.forEach((lens, j) => {
-                lens.planes.forEach((p, k) => {
+                lens.planes.value.forEach((p, k) => {
                     p.x = x0s[i][j][k] + d.x
                 })
             })

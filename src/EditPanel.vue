@@ -60,7 +60,7 @@ const nSelectedLenses = computed(() => {
                                         <th>x</th>
                                         <th>r</th>
                                     </tr>
-                                    <template v-for="plane of lens.planes">
+                                    <template v-for="plane of lens.planes.value">
                                         <tr>
                                             <td><input type="number" v-model.number="plane.x"
                                                     :disabled="lensGroup.fixed">

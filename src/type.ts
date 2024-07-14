@@ -1,3 +1,4 @@
+import { computed, ref, type ComputedRef, type Ref } from "vue"
 import type { CauchyParams } from "./collection/lens"
 import type { Vec } from "./math"
 
@@ -13,9 +14,18 @@ export type LensPlane = {
     paramsB: CauchyParams,
 }
 
-export type Lens = {
-    planes: LensPlane[]
-    aperture: number,
+export class Lens {
+    planes: Ref<LensPlane[]>
+    aperture: Ref<number>
+    h: ComputedRef<number>
+    constructor(planes: LensPlane[], aperture: number) {
+        this.planes = ref(planes)
+        this.aperture = ref(aperture)
+        this.h = computed(() => {
+            const hs = this.planes.value.map((p) => p.h)
+            return Math.max(...hs)
+        })
+    }
 }
 
 export type LensGroup = {

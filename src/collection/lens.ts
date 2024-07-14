@@ -1,4 +1,4 @@
-import type { Lens, LensGroup, LensPlane } from "@/type"
+import { Lens, type LensGroup, type LensPlane } from "@/type"
 import { estimateCauchyParameters } from "@/math"
 
 type PlaneData = {
@@ -160,10 +160,7 @@ export const createLensGroup = (data: LensData): LensGroup[] => {
     })
 
     const lenses: Lens[] = data.lenses.map(indices => {
-        return {
-            aperture: 1,
-            planes: indices.map(i => planes[i])
-        }
+        return new Lens(indices.map(i => planes[i]), 1)
     })
 
     const groups: LensGroup[] = data.groups.map(indices => {

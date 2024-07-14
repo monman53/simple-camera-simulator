@@ -1,6 +1,6 @@
 import type { CauchyParams } from "./collection/lens";
 import { calcLensInfo, infR, options, sensor } from "./globals";
-import { calcDispersion, calcLensBack, calcLensFront, calcLensPlaneEdge, calcLensR, calcLensXCOG, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
+import { calcDispersion, calcLensBack, calcLensFront, calcLensPlaneEdge, calcLensXCOG, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
 import type { Aperture, Body, Lens, Ray, Sensor } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isAperture?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
@@ -215,7 +215,7 @@ const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensor
     // Around lenses
     lenses.forEach(lens => {
         // Lens
-        const h = calcLensR(lens)
+        const h = lens.h.value
         const f = calcLensInfo([lens]).f
         const xm = calcLensXCOG(lens)
         const front = calcLensFront(lens)
@@ -223,9 +223,9 @@ const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensor
 
         // Lens surface
         if (options.value.lensIdeal) {
-            updateMin(collisionIdealLens(rays, xm, h * lens.aperture, f))
+            updateMin(collisionIdealLens(rays, xm, h * lens.aperture.value, f))
         } else {
-            lens.planes.forEach((p, j) => {
+            lens.planes.value.forEach((p, j) => {
                 const paramsI = p.r > 0 ? p.paramsB : p.paramsA
                 const paramsO = p.r > 0 ? p.paramsA : p.paramsB
                 // Plane
@@ -238,7 +238,7 @@ const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensor
         }
 
         // Lens aperture
-        updateMin(collisionAperture(rays, xm, h * lens.aperture, h))
+        updateMin(collisionAperture(rays, xm, h * lens.aperture.value, h))
 
         // Lens to body
         if (body !== null) {

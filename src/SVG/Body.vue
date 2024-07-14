@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { aperture, body, lensCOGs, lensesSorted, lensFronts, lensGroups, lensRs, options, sensor } from '@/globals';
+import { aperture, body, lensCOGs, lensesSorted, lensFronts, lensGroups, options, sensor } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import MoveUI from './MoveUI.vue';
 import type { Vec } from '@/math';
 
 const move = () => {
-    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
+    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.value.map(p => p.x)))
     const sensorS0 = sensor.value.s.copy()
     const sensorT0 = sensor.value.t.copy()
     const apertureX0 = aperture.value.x
     return (e: any, d: Vec) => {
         lensGroups.value.forEach((lensGroup, i) => {
             lensGroup.lenses.forEach((lens, j) => {
-                lens.planes.forEach((plane, k) => {
+                lens.planes.value.forEach((plane, k) => {
                     plane.x = x0s[i][j][k] + d.x
                 })
             })
@@ -37,13 +37,13 @@ const move = () => {
                 <g v-if="options.lens">
                     <g v-for="(lens, idx) of lensesSorted">
                         <g v-if="options.lensIdeal">
-                            <line :x1="lensCOGs[idx]" :y1="-body.r" :x2="lensCOGs[idx]" :y2="-lensRs[idx]" />
-                            <line :x1="lensCOGs[idx]" :y1="body.r" :x2="lensCOGs[idx]" :y2="lensRs[idx]" />
+                            <line :x1="lensCOGs[idx]" :y1="-body.r" :x2="lensCOGs[idx]" :y2="-lens.h.value" />
+                            <line :x1="lensCOGs[idx]" :y1="body.r" :x2="lensCOGs[idx]" :y2="lens.h.value" />
                         </g>
                         <g v-else>
-                            <line :x1="lensFronts[idx]" :y1="-body.r" :x2="lensFronts[idx]" :y2="-lensRs[idx]">
+                            <line :x1="lensFronts[idx]" :y1="-body.r" :x2="lensFronts[idx]" :y2="-lens.h.value">
                             </line>
-                            <line :x1="lensFronts[idx]" :y1="body.r" :x2="lensFronts[idx]" :y2="lensRs[idx]"></line>
+                            <line :x1="lensFronts[idx]" :y1="body.r" :x2="lensFronts[idx]" :y2="lens.h.value"></line>
                         </g>
                     </g>
                 </g>

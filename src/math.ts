@@ -285,19 +285,14 @@ export const fGaussian = (f: number, a: Vec) => {
 
 export const calcLensXCOG = (lens: Lens) => {
     let x = 0
-    lens.planes.forEach((p) => {
+    lens.planes.value.forEach((p) => {
         x += calcLensPlaneEdge(p)
     })
-    return x / lens.planes.length
-}
-
-export const calcLensR = (lens: Lens) => {
-    const hs = lens.planes.map((p) => p.h)
-    return Math.max(...hs)
+    return x / lens.planes.value.length
 }
 
 export const calcLensMaxX = (lens: Lens) => {
-    return lens.planes[lens.planes.length - 1].x
+    return lens.planes.value[lens.planes.value.length - 1].x
 }
 
 export const calcLensPlaneEdge = (plane: LensPlane) => {
@@ -316,7 +311,7 @@ export const calcLensPlaneEdge = (plane: LensPlane) => {
 }
 
 export const calcLensH = (lens: Lens) => {
-    const hs = lens.planes.map(p => p.h)
+    const hs = lens.planes.value.map(p => p.h)
     // Find max h
     hs.sort((a, b) => b - a)
     return hs[0]
@@ -324,11 +319,11 @@ export const calcLensH = (lens: Lens) => {
 
 // TODO: merge with calcLensBack
 export const calcLensFront = (lens: Lens) => {
-    return calcLensPlaneEdge(lens.planes[0])
+    return calcLensPlaneEdge(lens.planes.value[0])
 }
 
 export const calcLensBack = (lens: Lens) => {
-    return calcLensPlaneEdge(lens.planes[lens.planes.length - 1])
+    return calcLensPlaneEdge(lens.planes.value[lens.planes.value.length - 1])
 
 }
 

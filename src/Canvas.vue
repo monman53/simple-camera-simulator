@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { watch, onMounted, ref } from 'vue'
 
-import { state, lights, lensGroups, sensor, sensorData, apple, options, style, infR, lensesSorted, lensRs, lensFs, lensFronts, aperture, lensBacks, body } from './globals'
-import { Vec, vec, vecRad, wavelengthToHue } from './math'
+import { state, lights, lensGroups, sensor, sensorData, apple, options, style, lensesSorted, aperture, body } from './globals'
+import { Vec, vec, vecRad } from './math'
 
 import { type Ray } from './type'
 import { rayTrace } from './rayTrace';
