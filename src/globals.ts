@@ -61,7 +61,7 @@ const lensSort = (lenses: Lens[]) => {
 }
 
 export const lensesSorted = computed(() => {
-    const res = lensGroups.value.reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
+    const res = lensGroups.value.filter(g => g.enabled).reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
     lensSort(res)
     return res
 })
