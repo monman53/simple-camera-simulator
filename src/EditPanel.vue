@@ -15,45 +15,66 @@ const visible = computed(() => {
     return sensor.value.selected
 })
 
+const nSelectedLensGroups = computed(() => {
+    return lensGroups.value.reduce((acc, cur) => {
+        return acc + (cur.selected ? 1 : 0)
+    }, 0)
+})
+
+const nSelectedLenses = computed(() => {
+    return lensGroups.value.reduce((acc, cur) => {
+        return acc + (cur.selected ? cur.lenses.length : 0)
+    }, 0)
+})
+
 </script>
 
 <template>
     <div v-if="visible" class="edit-panel-base">
-        <button @click="groupLensGroups">group</button>
-        <button @click="ungroupLensGroup">ungroup</button>
-
-        <!-- Lenses -->
-        <template v-for="(lensGroup, i) of lensGroups">
-            <template v-if="lensGroup.selected">
-                <fieldset>
-                    <legend :title="`f: ${humanReadable(calcLensInfo(lensGroup.lenses).f)}`">
-                        Group {{ i }}
-                        <i class="bi bi-power pointer" :class="{ iconDisabled: !lensGroup.enabled }"
-                            @click="lensGroup.enabled = !lensGroup.enabled"></i>
-                        <i class="bi bi-lock pointer" :class="{ iconDisabled: !lensGroup.fixed }"
-                            @click="lensGroup.fixed = !lensGroup.fixed"></i>
-                        <i class="bi bi-trash pointer warning" v-if="!lensGroup.fixed" @click="removeElement(lensGroups, i)"></i>
-                    </legend>
-                    <template v-for="(lens, j) of lensGroup.lenses">
-                        <fieldset>
-                            <legend :title="`f: ${humanReadable(calcLensInfo([lens]).f)}`">
-                                Lens {{ j }}
-                            </legend>
-                            <table>
-                                <tr>
-                                    <th>x</th>
-                                    <th>r</th>
-                                </tr>
-                                <template v-for="plane of lens.planes">
+        <template v-if="nSelectedLensGroups > 0">
+            <h3>Lenses</h3>
+            <p>
+                <button v-if="nSelectedLensGroups > 1" @click="groupLensGroups">group</button>
+                <button v-if="nSelectedLenses > 1" @click="ungroupLensGroup">ungroup</button>
+            </p>
+            <!-- Lenses -->
+            <template v-for="(lensGroup, i) of lensGroups">
+                <template v-if="lensGroup.selected">
+                    <fieldset>
+                        <legend :title="`f: ${humanReadable(calcLensInfo(lensGroup.lenses).f)}`">
+                            Group {{ i }}
+                            <i class="bi bi-power pointer" :class="{ iconDisabled: !lensGroup.enabled }"
+                                @click="lensGroup.enabled = !lensGroup.enabled"></i>
+                            <i class="bi bi-lock pointer" :class="{ iconDisabled: !lensGroup.fixed }"
+                                @click="lensGroup.fixed = !lensGroup.fixed"></i>
+                            <i class="bi bi-trash pointer warning" v-if="!lensGroup.fixed"
+                                @click="removeElement(lensGroups, i)"></i>
+                        </legend>
+                        <template v-for="(lens, j) of lensGroup.lenses">
+                            <fieldset>
+                                <legend :title="`f: ${humanReadable(calcLensInfo([lens]).f)}`">
+                                    Lens {{ j }}
+                                </legend>
+                                <table>
                                     <tr>
-                                        <td><input type="number" v-model.number="plane.x" :disabled="lensGroup.fixed"></td>
-                                        <td><input type="number" v-model.number="plane.r" :disabled="lensGroup.fixed"></td>
+                                        <th>x</th>
+                                        <th>r</th>
                                     </tr>
-                                </template>
-                            </table>
-                        </fieldset>
-                    </template>
-                </fieldset>
+                                    <template v-for="plane of lens.planes">
+                                        <tr>
+                                            <td><input type="number" v-model.number="plane.x"
+                                                    :disabled="lensGroup.fixed">
+                                            </td>
+                                            <td><input type="number" v-model.number="plane.r"
+                                                    :disabled="lensGroup.fixed">
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </table>
+                            </fieldset>
+                        </template>
+                    </fieldset>
+                </template>
             </template>
         </template>
 

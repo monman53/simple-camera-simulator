@@ -52,7 +52,7 @@ const move = (e: any) => {
         releaseAllLenses()
     }
     sensor.value.selected = false
-    props.lensGroup.selected = true
+    props.lensGroup.selected = !props.lensGroup.selected
 
     if (props.lensGroup.fixed) {
         return () => { }
