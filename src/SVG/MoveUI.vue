@@ -8,6 +8,10 @@ const props = defineProps<{
 }>()
 
 const moveStart = (e: any) => {
+    // Move only when left button pressed
+    if (e.button !== 0) {
+        return
+    }
     e.preventDefault()
     e.stopPropagation()
     const m0 = getPositionOnSvg(e);
