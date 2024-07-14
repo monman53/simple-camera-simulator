@@ -11,6 +11,7 @@ import MoveUI from './MoveUI.vue'
 const props = defineProps<{
     lens: Lens,
     selected: boolean,
+    fixed: boolean,
 }>()
 
 const xm = computed(() => {
@@ -164,7 +165,7 @@ const apertureSizeChangeStartHandler = () => {
         </WithBackground>
 
         <!-- Thickness and change UI -->
-        <g class="ui-stroke transparent horizontal-resize">
+        <g v-if="!fixed" class="ui-stroke transparent horizontal-resize">
             <template v-for="(plane, idx) of lens.planes">
                 <MoveUI :handler-creator="planeMoveStartHandler(plane)">
                     <path :d="paths[idx]"></path>
@@ -174,13 +175,13 @@ const apertureSizeChangeStartHandler = () => {
 
         <!-- Size change UI -->
         <template v-for="(plane, idx) of lens.planes">
-            <MoveUI :handler-creator="hChangeStartHandler(plane)">
+            <MoveUI v-if="!fixed" :handler-creator="hChangeStartHandler(plane)">
                 <CircleUI :c="vec(calcLensPlaneEdge(plane), -plane.h)" class="vertical-resize"></CircleUI>
             </MoveUI>
         </template>
 
         <!-- Curvature change UI -->
-        <g class="horizontal-resize">
+        <g v-if="!fixed" class="horizontal-resize">
             <template v-for="plane of lens.planes">
                 <MoveUI :handler-creator="rMoveStartHandler(plane)">
                     <CircleUI :c="vec(plane.x, 0)"></CircleUI>
@@ -198,7 +199,7 @@ const apertureSizeChangeStartHandler = () => {
                 </g>
             </WithBackground>
             <!-- UI -->
-            <MoveUI :handler-creator="apertureSizeChangeStartHandler">
+            <MoveUI v-if="!fixed" :handler-creator="apertureSizeChangeStartHandler">
                 <CircleUI :c="vec(xm, r * lens.aperture)" class="vertical-resize">
                 </CircleUI>
             </MoveUI>

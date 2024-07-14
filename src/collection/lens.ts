@@ -168,8 +168,10 @@ export const createLensGroup = (data: LensData): LensGroup[] => {
 
     const groups: LensGroup[] = data.groups.map(indices => {
         return {
+            lenses: indices.map(i => lenses[i]),
             selected: false,
-            lenses: indices.map(i => lenses[i])
+            enabled: true,
+            fixed: false,
         }
     })
 

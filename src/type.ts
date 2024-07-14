@@ -21,6 +21,8 @@ export type Lens = {
 export type LensGroup = {
     lenses: Lens[],
     selected: boolean,
+    enabled: boolean,
+    fixed: boolean,
 }
 
 export type Ray = {

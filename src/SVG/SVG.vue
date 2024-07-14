@@ -56,7 +56,7 @@ const svgMoveEndHandler = () => {
 <script setup lang="ts">
 import { computed, ref, onMounted, type Ref } from 'vue'
 
-import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted, releaseAllLenses } from '../globals'
+import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted } from '../globals'
 import { Vec, vec } from '../math'
 
 import Grid from './Grid.vue'
@@ -304,6 +304,19 @@ svg {
 
   .bold {
     stroke-width: v-bind('strokeWidth.boldBg');
+  }
+}
+
+.disabled {
+  .stroke-white {
+    stroke: #444;
+  }
+
+  /* Workaround */
+  .background {
+    .stroke-white {
+      stroke: v-bind('style.lineBgColor');
+    }
   }
 }
 

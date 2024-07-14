@@ -23,13 +23,19 @@ const visible = computed(() => {
             <template v-if="lensGroup.selected">
                 <h3>Lenses</h3>
                 <fieldset>
-                    <legend>
-                        Group {{ i }} (f: {{ humanReadable(calcLensInfo(lensGroup.lenses).f) }})
-                        <i class="bi bi-trash pointer" @click="removeElement(lensGroups, i)"></i>
+                    <legend :title="`f: ${humanReadable(calcLensInfo(lensGroup.lenses).f)}`">
+                        Group {{ i }}
+                        <i class="bi bi-power pointer" :class="{ iconDisabled: !lensGroup.enabled }"
+                            @click="lensGroup.enabled = !lensGroup.enabled"></i>
+                        <i class="bi bi-lock pointer" :class="{ iconDisabled: !lensGroup.fixed }"
+                            @click="lensGroup.fixed = !lensGroup.fixed"></i>
+                        <i class="bi bi-trash pointer warning" v-if="!lensGroup.fixed" @click="removeElement(lensGroups, i)"></i>
                     </legend>
                     <template v-for="(lens, j) of lensGroup.lenses">
                         <fieldset>
-                            <legend>Lens {{ j }} (f: {{ humanReadable(calcLensInfo([lens]).f) }})</legend>
+                            <legend :title="`f: ${humanReadable(calcLensInfo([lens]).f)}`">
+                                Lens {{ j }}
+                            </legend>
                             <table>
                                 <tr>
                                     <th>x</th>
@@ -37,8 +43,8 @@ const visible = computed(() => {
                                 </tr>
                                 <template v-for="plane of lens.planes">
                                     <tr>
-                                        <td><input type="number" v-model.number="plane.x"></td>
-                                        <td><input type="number" v-model.number="plane.r"></td>
+                                        <td><input type="number" v-model.number="plane.x" :disabled="lensGroup.fixed"></td>
+                                        <td><input type="number" v-model.number="plane.r" :disabled="lensGroup.fixed"></td>
                                     </tr>
                                 </template>
                             </table>
@@ -104,5 +110,17 @@ fieldset {
     border-top: 0;
     border-bottom: 0;
     border-right: 0;
+}
+
+i {
+    user-select: none;
+}
+
+.iconDisabled {
+    color: #555;
+}
+
+.warning {
+    color: #900;
 }
 </style>

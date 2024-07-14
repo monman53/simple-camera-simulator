@@ -19,6 +19,10 @@ const move = (e: any) => {
     sensor.value.selected = false
     props.lensGroup.selected = true
 
+    if (props.lensGroup.fixed) {
+        return () => {}
+    }
+
     const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.map(p => p.x)))
     return (e: any, d: Vec) => {
         // Update position
@@ -40,7 +44,9 @@ const move = (e: any) => {
 <template>
     <MoveUI :handler-creator="move">
         <g v-for="(lens, idx) in lensGroup.lenses">
-            <Lens :lens :selected="lensGroup.selected"></Lens>
+            <g :class="{ disabled: !lensGroup.enabled }">
+                <Lens :lens :selected="lensGroup.selected" :fixed="lensGroup.fixed"></Lens>
+            </g>
         </g>
     </MoveUI>
 </template>
