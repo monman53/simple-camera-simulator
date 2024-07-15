@@ -1,5 +1,6 @@
-import { Lens, type LensGroup, type LensPlane } from "@/type"
 import { estimateCauchyParameters } from "@/math"
+import { Lens, type LensPlane } from "@/SVG/Lens.vue"
+import { LensGroup } from "@/SVG/LensGroup.vue"
 
 type PlaneData = {
     r: number, // Curvature
@@ -164,12 +165,12 @@ export const createLensGroup = (data: LensData): LensGroup[] => {
     })
 
     const groups: LensGroup[] = data.groups.map(indices => {
-        return {
-            lenses: indices.map(i => lenses[i]),
-            selected: false,
-            enabled: true,
-            fixed: false,
-        }
+        return new LensGroup(
+            indices.map(i => lenses[i]),
+            false,
+            true,
+            false,
+        )
     })
 
     return groups

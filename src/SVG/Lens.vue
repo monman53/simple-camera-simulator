@@ -1,12 +1,37 @@
+<script lang="ts">
+
+export type LensPlane = {
+    x: number,
+    r: number,
+    h: number,
+    paramsA: CauchyParams,
+    paramsB: CauchyParams,
+}
+
+export class Lens {
+    planes: Ref<LensPlane[]>
+    aperture: Ref<number>
+    h: ComputedRef<number>
+    constructor(planes: LensPlane[], aperture: number) {
+        this.planes = ref(planes)
+        this.aperture = ref(aperture)
+        this.h = computed(() => {
+            const hs = this.planes.value.map((p) => p.h)
+            return Math.max(...hs)
+        })
+    }
+}
+</script>
+
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, type ComputedRef, type Ref } from 'vue'
 import { infR, options } from '../globals'
 import { vec, calcLensXCOG, calcLensPlaneEdge, calcLensH, Vec } from '../math'
-import type { Lens, LensPlane } from '../type'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 import Point from './Point.vue'
 import MoveUI from './MoveUI.vue'
+import type { CauchyParams } from '@/collection/lens'
 
 const props = defineProps<{
     lens: Lens,

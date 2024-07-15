@@ -1,6 +1,6 @@
 import { wavelength } from "./collection/color"
 import type { CauchyParams } from "./collection/lens"
-import type { Lens, LensPlane } from "./type"
+import type { Lens, LensPlane } from "./SVG/Lens.vue"
 
 //================================
 // Liner algebra

@@ -1,7 +1,8 @@
 import type { CauchyParams } from "./collection/lens";
-import { calcLensInfo, infR, options, sensor } from "./globals";
+import { calcLensInfo, infR, options } from "./globals";
 import { calcDispersion, calcLensBack, calcLensFront, calcLensPlaneEdge, calcLensXCOG, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
-import type { Aperture, Body, Lens, Ray, Sensor } from "./type";
+import type { Lens } from "./SVG/Lens.vue";
+import type { Aperture, Body, Ray, Sensor } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isAperture?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
 

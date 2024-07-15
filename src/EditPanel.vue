@@ -7,7 +7,7 @@ import { groupLensGroups, ungroupLensGroup } from './SVG/LensGroup.vue';
 
 const visible = computed(() => {
     for (const lensGroup of lensGroups.value) {
-        if (lensGroup.selected) {
+        if (lensGroup.selected.value) {
             return true
         }
     }
@@ -17,13 +17,13 @@ const visible = computed(() => {
 
 const nSelectedLensGroups = computed(() => {
     return lensGroups.value.reduce((acc, cur) => {
-        return acc + (cur.selected ? 1 : 0)
+        return acc + (cur.selected.value ? 1 : 0)
     }, 0)
 })
 
 const nSelectedLenses = computed(() => {
     return lensGroups.value.reduce((acc, cur) => {
-        return acc + (cur.selected ? cur.lenses.length : 0)
+        return acc + (cur.selected.value ? cur.lenses.value.length : 0)
     }, 0)
 })
 
@@ -41,16 +41,16 @@ const nSelectedLenses = computed(() => {
             <template v-for="(lensGroup, i) of lensGroups">
                 <template v-if="lensGroup.selected">
                     <fieldset>
-                        <legend :title="`f: ${humanReadable(calcLensInfo(lensGroup.lenses).f)}`">
+                        <legend :title="`f: ${humanReadable(calcLensInfo(lensGroup.lenses.value).f)}`">
                             Group {{ i }}
-                            <i class="bi bi-power pointer" :class="{ iconDisabled: !lensGroup.enabled }"
-                                @click="lensGroup.enabled = !lensGroup.enabled"></i>
-                            <i class="bi bi-lock pointer" :class="{ iconDisabled: !lensGroup.fixed }"
-                                @click="lensGroup.fixed = !lensGroup.fixed"></i>
-                            <i class="bi bi-trash pointer warning" v-if="!lensGroup.fixed"
+                            <i class="bi bi-power pointer" :class="{ iconDisabled: !lensGroup.enabled.value }"
+                                @click="lensGroup.enabled.value = !lensGroup.enabled.value"></i>
+                            <i class="bi bi-lock pointer" :class="{ iconDisabled: !lensGroup.fixed.value }"
+                                @click="lensGroup.fixed.value = !lensGroup.fixed.value"></i>
+                            <i class="bi bi-trash pointer warning" v-if="!lensGroup.fixed.value"
                                 @click="removeElement(lensGroups, i)"></i>
                         </legend>
-                        <template v-for="(lens, j) of lensGroup.lenses">
+                        <template v-for="(lens, j) of lensGroup.lenses.value">
                             <fieldset>
                                 <legend :title="`f: ${humanReadable(calcLensInfo([lens]).f)}`">
                                     Lens {{ j }}
@@ -63,10 +63,10 @@ const nSelectedLenses = computed(() => {
                                     <template v-for="plane of lens.planes.value">
                                         <tr>
                                             <td><input type="number" v-model.number="plane.x"
-                                                    :disabled="lensGroup.fixed">
+                                                    :disabled="lensGroup.fixed.value">
                                             </td>
                                             <td><input type="number" v-model.number="plane.r"
-                                                    :disabled="lensGroup.fixed">
+                                                    :disabled="lensGroup.fixed.value">
                                             </td>
                                         </tr>
                                     </template>

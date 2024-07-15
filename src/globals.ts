@@ -1,9 +1,11 @@
 import { ref, computed, watch, type UnwrapRef, shallowRef } from "vue"
 import { Vec, calcLensFront, vec, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge, calcDispersion } from "./math"
-import { Lens, type Aperture, type Body, type LensGroup, type LensPlane, type LightPoint, type LightType, type Ray, type Sensor } from "./type"
+import { type Aperture, type Body, type LightPoint, type LightType, type Ray, type Sensor } from "./type"
 import { wavelength } from "./collection/color"
 import { createLensGroup, exampleConvexLens, exampleTestLens } from "./collection/lens"
 import { rayTrace, type Segment } from "./rayTrace"
+import type { LensGroup } from "./SVG/LensGroup.vue"
+import { Lens } from "./SVG/Lens.vue"
 
 //================================
 // States
@@ -61,7 +63,7 @@ const lensSort = (lenses: Lens[]) => {
 }
 
 export const lensesSorted = computed(() => {
-    const res = lensGroups.value.filter(g => g.enabled).reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses) }, [])
+    const res = lensGroups.value.filter(g => g.enabled).reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses.value) }, [])
     lensSort(res)
     return res
 })
@@ -102,7 +104,7 @@ export const lensPlaneEdges = computed(() => {
 
 export const releaseAllLenses = () => {
     for (const lensGroup of lensGroups.value) {
-        lensGroup.selected = false
+        lensGroup.selected.value = false
     }
 }
 
@@ -529,7 +531,7 @@ export const lensExist = computed(() => {
 
 const test = () => {
     const lenses = createLensGroup(exampleTestLens)[0].lenses
-    const info = calcLensInfo(lenses)
+    const info = calcLensInfo(lenses.value)
     console.log(info.f, 99.78672652)
 }
 

@@ -5,13 +5,13 @@ import MoveUI from './MoveUI.vue';
 import type { Vec } from '@/math';
 
 const move = () => {
-    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.map(lens => lens.planes.value.map(p => p.x)))
+    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.value.map(lens => lens.planes.value.map(p => p.x)))
     const sensorS0 = sensor.value.s.copy()
     const sensorT0 = sensor.value.t.copy()
     const apertureX0 = aperture.value.x
     return (e: any, d: Vec) => {
         lensGroups.value.forEach((lensGroup, i) => {
-            lensGroup.lenses.forEach((lens, j) => {
+            lensGroup.lenses.value.forEach((lens, j) => {
                 lens.planes.value.forEach((plane, k) => {
                     plane.x = x0s[i][j][k] + d.x
                 })
