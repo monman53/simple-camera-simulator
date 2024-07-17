@@ -70,14 +70,14 @@ const nSelectedLenses = computed(() => {
                     <tr>
                       <td>
                         <input
-                          v-model.number="plane.x"
+                          v-model.number="plane.x.value"
                           type="number"
                           :disabled="lensGroup.fixed.value"
                         />
                       </td>
                       <td>
                         <input
-                          v-model.number="plane.r"
+                          v-model.number="plane.r.value"
                           type="number"
                           :disabled="lensGroup.fixed.value"
                         />
