@@ -57,7 +57,7 @@ const move = (e: MouseEvent) => {
   }
   sensor.value.selected = false
   const lensGroup = lensGroups.value[props.idx]
-  lensGroup.selected.value = !props.lensGroup.selected.value
+  lensGroup.selected.value = true
 
   if (props.lensGroup.fixed.value) {
     return () => {}
