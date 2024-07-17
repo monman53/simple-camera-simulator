@@ -199,6 +199,10 @@ const pupilPath = computed(() => {
         </WithBackground>
         <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)" />
         <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f, 0)" />
+        <g v-if="options.lensDoubleFocalPoints">
+          <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f * 2, 0)" />
+          <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f * 2, 0)" />
+        </g>
       </g>
 
       <!-- Items -->

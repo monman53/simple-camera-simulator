@@ -21,7 +21,7 @@ type CollisionResult = {
   p: Vec
   d: number
   isSensor?: boolean
-  isAperture?: boolean
+  isAperture: boolean
   isEnd?: boolean
   vn?: () => Vec
 } | null
@@ -53,6 +53,7 @@ const collisionLens = (
           return {
             p: pl.p,
             d: pl.d,
+            isAperture: false,
             vn: () => {
               const n = vec(pl.p.x - cx, pl.p.y)
               if (dot(n, v) < 0) {
@@ -78,6 +79,7 @@ const collisionLens = (
         return {
           p: pl.p,
           d: pl.d,
+          isAperture: false,
           vn: () => {
             // const n = vec(Infinity, 0)
             const n = vec(-Math.sign(r), 0)
@@ -117,6 +119,7 @@ const collisionIdealLens = (rays: Ray[], x: number, h: number, f: number): Colli
       return {
         p: pl.p,
         d: pl.d,
+        isAperture: false,
         vn: () => {
           const ff = x - s.x > 0 ? f : -f
           const ss = fGaussian(ff, vec(s.x - x, s.y))
@@ -167,7 +170,8 @@ const collisionSensor = (rays: Ray[], sensor: Sensor): CollisionResult[] => {
       return {
         p: ps,
         d: ps.sub(s).length(),
-        isSensor: true
+        isSensor: true,
+        isAperture: false
       }
     } else {
       return null
@@ -184,6 +188,7 @@ const collisionX = (rays: Ray[], y: number, xMin: number, xMax: number): Collisi
       return {
         p: ps.p,
         d: ps.d,
+        isAperture: false,
         isEnd: true
       }
     }
@@ -200,6 +205,7 @@ const collisionY = (rays: Ray[], x: number, yMin: number, yMax: number): Collisi
       return {
         p: ps.p,
         d: ps.d,
+        isAperture: false,
         isEnd: true
       }
     }
@@ -305,7 +311,7 @@ const collisionAll = (
   return pMins
 }
 
-export type Segment = { s: Vec; t: Vec; isSensor?: boolean; isAperture?: boolean }
+export type Segment = { s: Vec; t: Vec; isSensor?: boolean; isAperture: boolean }
 export const rayTrace = (
   rays: Ray[],
   lenses: Lens[],
@@ -326,26 +332,26 @@ export const rayTrace = (
       const s = ray.s
       const c = cs[idx]
       if (c === null) {
-        segments[ray.idx].push({ s, t: ray.s.add(ray.v.mul(infR.value)) })
+        segments[ray.idx].push({ s, t: ray.s.add(ray.v.mul(infR.value)), isAperture: false })
         return
       }
 
       if (c.isEnd !== undefined) {
-        segments[ray.idx].push({ s, t: c.p })
+        segments[ray.idx].push({ s, t: c.p, isAperture: false })
         return
       }
 
-      if (c.isAperture !== undefined) {
+      if (c.isAperture) {
         segments[ray.idx].push({ s, t: c.p, isAperture: true })
         return
       }
 
       if (c.isSensor !== undefined) {
-        segments[ray.idx].push({ s, t: c.p, isSensor: true })
+        segments[ray.idx].push({ s, t: c.p, isSensor: true, isAperture: false })
         return
       }
 
-      segments[ray.idx].push({ s, t: c.p })
+      segments[ray.idx].push({ s, t: c.p, isAperture: false })
 
       // Next ray
       if (c.vn !== undefined) {

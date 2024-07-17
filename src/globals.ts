@@ -454,9 +454,9 @@ const calcLensRe = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[]) =>
       const nBottom = result[0].length
       if (
         nTop === nPlanes + 1 &&
-        result[0][nTop - 1].isAperture !== undefined &&
+        !result[0][nTop - 1].isAperture &&
         nBottom === nPlanes + 1 &&
-        result[1][nBottom - 1].isAperture !== undefined
+        !result[1][nBottom - 1].isAperture
       ) {
         ok = mid
         pathTop = result[0]
