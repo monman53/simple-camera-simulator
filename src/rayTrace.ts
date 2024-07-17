@@ -1,7 +1,7 @@
 import type { CauchyParams } from "./collection/lens";
 import { infR, options } from "./globals";
 import { calcDispersion, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
-import { calcLensPlaneEdge, type Lens } from "./SVG/LensItem.vue";
+import { Lens } from "./SVG/LensItem.vue";
 import type { Aperture, Body, Ray, Sensor } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isAperture?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
@@ -227,14 +227,13 @@ const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensor
             updateMin(collisionIdealLens(rays, xm, h * lens.aperture.value, f))
         } else {
             lens.planes.value.forEach(p => {
-                const paramsI = p.r > 0 ? p.paramsB : p.paramsA
-                const paramsO = p.r > 0 ? p.paramsA : p.paramsB
+                const paramsI = p.r.value > 0 ? p.paramsB : p.paramsA
+                const paramsO = p.r.value > 0 ? p.paramsA : p.paramsB
                 // Plane
-                updateMin(collisionLens(rays, p.x, p.r, p.h, paramsI, paramsO))
+                updateMin(collisionLens(rays, p.x.value, p.r.value, p.h.value, paramsI.value, paramsO.value))
 
                 // Plane outside
-                const edge = calcLensPlaneEdge(p)
-                updateMin(collisionAperture(rays, edge, p.h, h))
+                updateMin(collisionAperture(rays, p.edge.value, p.h.value, h))
             })
         }
 

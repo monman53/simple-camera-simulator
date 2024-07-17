@@ -64,7 +64,7 @@ const move = (e: MouseEvent) => {
         return () => { }
     }
 
-    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.value.map(lens => lens.planes.value.map(p => p.x)))
+    const x0s = lensGroups.value.map(lensGroup => lensGroup.lenses.value.map(lens => lens.planes.value.map(p => p.x.value)))
     return (e: any, d: Vec) => {
         // Update position
         lensGroups.value.forEach((lensGroup, i) => {
@@ -73,7 +73,7 @@ const move = (e: MouseEvent) => {
             }
             lensGroup.lenses.value.forEach((lens, j) => {
                 lens.planes.value.forEach((p, k) => {
-                    p.x = x0s[i][j][k] + d.x
+                    p.x.value = x0s[i][j][k] + d.x
                 })
             })
         })

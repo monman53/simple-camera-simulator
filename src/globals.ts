@@ -5,7 +5,7 @@ import { wavelength } from "./collection/color"
 import { createLensGroup, exampleConvexLens, exampleTestLens } from "./collection/lens"
 import { rayTrace, type Segment } from "./rayTrace"
 import { LensGroup } from "./SVG/LensGroupItem.vue"
-import { Lens } from "./SVG/LensItem.vue"
+import { Lens, LensPlane } from "./SVG/LensItem.vue"
 
 //================================
 // States
@@ -57,7 +57,7 @@ const lensSort = (lenses: Lens[]) => {
         if (options.value.lensIdeal) {
             return a.xcog.value - b.xcog.value
         } else {
-            return a.planes.value[0].x - b.planes.value[0].x
+            return a.planes.value[0].x.value - b.planes.value[0].x.value
         }
     })
 }
@@ -340,18 +340,18 @@ export const calcLensInfo = (lenses: Lens[]) => {
             } else {
                 if (j === lens.planes.value.length - 1) {
                     if (idx !== lenses.length - 1) {
-                        d = lenses[idx + 1].planes.value[0].x - p.x
+                        d = lenses[idx + 1].planes.value[0].x.value - p.x.value
                     }
                 } else {
-                    d = lens.planes.value[j + 1].x - p.x
+                    d = lens.planes.value[j + 1].x.value - p.x.value
                 }
             }
 
             ll.push({
-                r: p.r,
+                r: p.r.value,
                 d,
-                na: calcDispersion(wavelength.d, p.paramsA),
-                nb: calcDispersion(wavelength.d, p.paramsB),
+                na: calcDispersion(wavelength.d, p.paramsA.value),
+                nb: calcDispersion(wavelength.d, p.paramsB.value),
             })
         })
     })
@@ -401,9 +401,9 @@ const calcLensRe = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[]) =>
     let nPlanes = 0
     lenses.forEach(lens => {
         lens.planes.value.forEach(p => {
-            if (p.x < minX) {
-                minX = p.x
-                ng = p.h
+            if (p.x.value < minX) {
+                minX = p.x.value
+                ng = p.h.value
             }
         })
         nPlanes += lens.planes.value.length
@@ -454,27 +454,15 @@ export const globalLensRe = computed(() => {
     const fwdLenses: Lens[] = lensesSorted.value.map((lens) => {
         return new Lens(
             lens.planes.value.map((p) => {
-                return {
-                    x: p.x,
-                    r: p.r,
-                    paramsA: p.paramsA,
-                    paramsB: p.paramsB,
-                    h: p.h,
-                }
+                return new LensPlane(p.x.value, p.r.value, p.h.value, p.paramsA.value, p.paramsB.value)
             }),
             lens.aperture.value)
     })
     const bwdLenses: Lens[] = lensesSorted.value.map((lens) => {
         return new Lens(
             lens.planes.value.map((p) => {
-                return {
-                    x: -p.x,
-                    r: -p.r,
-                    paramsA: p.paramsB,
-                    paramsB: p.paramsA,
-                    h: p.h,
-                }
-            }).sort((a, b) => a.x - b.x),
+                return new LensPlane(-p.x.value, -p.r.value, p.h.value, p.paramsB.value, p.paramsA.value)
+            }).sort((a, b) => a.x.value - b.x.value),
             lens.aperture.value)
     })
     const forward = calcLensRe(fwdLenses, fwdApertures, [])

@@ -1,15 +1,26 @@
 <script lang="ts">
 
-export type LensPlane = {
-  x: number,
-  r: number,
-  h: number,
-  paramsA: CauchyParams,
-  paramsB: CauchyParams,
+export class LensPlane {
+  x: Ref<number>
+  r: Ref<number>
+  h: Ref<number>
+  paramsA: Ref<CauchyParams>
+  paramsB: Ref<CauchyParams>
+  edge: ComputedRef<number>
+  constructor(x: number, r: number, h: number, paramsA: CauchyParams, paramsB: CauchyParams) {
+    this.x = ref(x)
+    this.r = ref(r)
+    this.h = ref(h)
+    this.paramsA = ref(paramsA)
+    this.paramsB = ref(paramsB)
+    this.edge = computed(() => {
+      return calcLensPlaneEdge(this)
+    })
+  }
 }
 
 export class Lens {
-  planes: Ref<LensPlane[]>
+  planes: ShallowRef<LensPlane[]>
   aperture: Ref<number>
   h: ComputedRef<number>
   f: ComputedRef<number>
@@ -18,10 +29,10 @@ export class Lens {
   front: ComputedRef<number>
   back: ComputedRef<number>
   constructor(planes: LensPlane[], aperture: number) {
-    this.planes = ref(planes)
+    this.planes = shallowRef(planes)
     this.aperture = ref(aperture)
     this.h = computed(() => {
-      const hs = this.planes.value.map((p) => p.h)
+      const hs = this.planes.value.map((p) => p.h.value)
       return Math.max(...hs)
     })
     this.f = computed(() => {
@@ -50,10 +61,10 @@ const calcLensXCOG = (lens: Lens) => {
     return x / lens.planes.value.length
 }
 
-export const calcLensPlaneEdge = (plane: LensPlane) => {
-    const x = plane.x
-    const r = plane.r
-    const h = plane.h
+const calcLensPlaneEdge = (plane: LensPlane) => {
+    const x = plane.x.value
+    const r = plane.r.value
+    const h = plane.h.value
     if (!isFinite(r)) {
         return x
     }
@@ -66,7 +77,7 @@ export const calcLensPlaneEdge = (plane: LensPlane) => {
 }
 
 const calcLensH = (lens: Lens) => {
-    const hs = lens.planes.value.map(p => p.h)
+    const hs = lens.planes.value.map(p => p.h.value)
     // Find max h
     hs.sort((a, b) => b - a)
     return hs[0]
@@ -85,7 +96,7 @@ const calcLensBack = (lens: Lens) => {
 </script>
 
 <script setup lang="ts">
-import { computed, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, ref, shallowRef, type ComputedRef, type Ref, type ShallowRef } from 'vue'
 import { calcLensInfo, infR, options } from '../globals'
 import { vec, Vec } from '../math'
 import WithBackground from './WithBackground.vue'
@@ -115,30 +126,30 @@ const path = computed(() => {
   for (let i = 0; i < planes.length - 1; i++) {
     const p1 = planes[i] // left
     const p2 = planes[i + 1] //right
-    const edge1 = calcLensPlaneEdge(p1)
-    const edge2 = calcLensPlaneEdge(p2)
-    const absR1 = Math.abs(p1.r)
-    const absR2 = Math.abs(p2.r)
-    const sweep1 = p1.r > 0 ? 0 : 1
-    const sweep2 = p2.r > 0 ? 1 : 0
+    const edge1 = p1.edge.value
+    const edge2 = p2.edge.value
+    const absR1 = Math.abs(p1.r.value)
+    const absR2 = Math.abs(p2.r.value)
+    const sweep1 = p1.r.value > 0 ? 0 : 1
+    const sweep2 = p2.r.value > 0 ? 1 : 0
 
     // left
     d += `M ${edge1} ${-r.value} `
-    d += `L ${edge1} ${-p1.h} `
-    if (isFinite(p1.r)) {
-      d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${edge1} ${p1.h} `
+    d += `L ${edge1} ${-p1.h.value} `
+    if (isFinite(p1.r.value)) {
+      d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${edge1} ${p1.h.value} `
     } else {
-      d += `L ${edge1} ${p1.h} `
+      d += `L ${edge1} ${p1.h.value} `
     }
     d += `L ${edge1} ${r.value} `
 
     // right
     d += `L ${edge2} ${r.value} `
-    d += `L ${edge2} ${p2.h} `
-    if (isFinite(p2.r)) {
-      d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${edge2} ${-p2.h} `
+    d += `L ${edge2} ${p2.h.value} `
+    if (isFinite(p2.r.value)) {
+      d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${edge2} ${-p2.h.value} `
     } else {
-      d += `L ${edge2} ${-p2.h} `
+      d += `L ${edge2} ${-p2.h.value} `
     }
     d += `L ${edge2} ${-r.value} `
 
@@ -151,16 +162,16 @@ const path = computed(() => {
 
 const paths = computed(() => {
   return props.lens.planes.value.map(p => {
-    const absR = Math.abs(p.r)
-    const sweep = p.r > 0 ? 0 : 1
-    const edge = calcLensPlaneEdge(p)
+    const absR = Math.abs(p.r.value)
+    const sweep = p.r.value > 0 ? 0 : 1
+    const edge = p.edge.value
 
     let d = ""
-    d += `M ${edge} ${-r.value} L ${edge} ${-p.h} `
-    if (isFinite(p.r)) {
-      d += `A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h} `
+    d += `M ${edge} ${-r.value} L ${edge} ${-p.h.value} `
+    if (isFinite(p.r.value)) {
+      d += `A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h.value} `
     } else {
-      d += `L ${edge} ${p.h}`
+      d += `L ${edge} ${p.h.value}`
     }
     d += `L ${edge} ${r.value}`
     return d
@@ -169,22 +180,22 @@ const paths = computed(() => {
 
 const planeMoveStartHandler = (plane: LensPlane) => {
   return () => {
-    const x0 = plane.x;
+    const x0 = plane.x.value;
     return (e: any, d: Vec) => {
       // TODO
-      plane.x = x0 + d.x
+      plane.x.value = x0 + d.x
     }
   }
 }
 
 const hChangeStartHandler = (plane: LensPlane) => {
   return () => {
-    const h0 = plane.h;
+    const h0 = plane.h.value;
     return (e: any, d: Vec) => {
-      if (h0 - d.y > Math.abs(plane.r)) {
-        plane.h = Math.abs(plane.r)
+      if (h0 - d.y > Math.abs(plane.r.value)) {
+        plane.h.value = Math.abs(plane.r.value)
       } else {
-        plane.h = h0 - d.y
+        plane.h.value = h0 - d.y
       }
     }
   }
@@ -192,15 +203,15 @@ const hChangeStartHandler = (plane: LensPlane) => {
 
 const rMoveStartHandler = (plane: LensPlane) => {
   return () => {
-    const h0 = plane.h
-    const x0 = plane.x
+    const h0 = plane.h.value
+    const x0 = plane.x.value
     const edge0 = calcLensPlaneEdge(plane)
     return (e: any, d: Vec) => {
       let xn = x0 + d.x
       const a = xn - edge0
       const rn = (-h0 * h0 - a * a) / (2 * a)
-      plane.r = rn
-      plane.x = xn
+      plane.r.value = rn
+      plane.x.value = xn
     }
   }
 }
@@ -230,15 +241,15 @@ const apertureSizeChangeStartHandler = () => {
       <WithBackground>
         <g class="stroke-white thicker fill-none">
           <template v-for="(plane, idx) of lens.planes.value" :key="idx">
-            <circle v-if="isFinite(plane.r)" :cx="plane.x + plane.r" :cy="0" :r="Math.abs(plane.r)" />
+            <circle v-if="isFinite(plane.r.value)" :cx="plane.x.value + plane.r.value" :cy="0" :r="Math.abs(plane.r.value)" />
             <!-- Infinity curvature -->
-            <line v-if="!isFinite(plane.r)" :x1="plane.x" :y1="-infR" :x2="plane.x" :y2="infR" />
+            <line v-if="!isFinite(plane.r.value)" :x1="plane.x.value" :y1="-infR" :x2="plane.x.value" :y2="infR" />
           </template>
         </g>
       </WithBackground>
       <!-- Center Point -->
       <template v-for="(plane, idx) of lens.planes.value" :key="idx">
-        <Point v-if="isFinite(plane.r)" :c="vec(plane.x + plane.r, 0)" />
+        <Point v-if="isFinite(plane.r.value)" :c="vec(plane.x.value + plane.r.value, 0)" />
       </template>
     </g>
 
@@ -261,7 +272,7 @@ const apertureSizeChangeStartHandler = () => {
     <!-- Size change UI -->
     <template v-for="(plane, idx) of lens.planes.value" :key="idx">
       <MoveUI v-if="!fixed" :handler-creator="hChangeStartHandler(plane)">
-        <CircleUI :c="vec(calcLensPlaneEdge(plane), -plane.h)" class="vertical-resize" />
+        <CircleUI :c="vec(plane.edge.value, -plane.h.value)" class="vertical-resize" />
       </MoveUI>
     </template>
 
@@ -269,7 +280,7 @@ const apertureSizeChangeStartHandler = () => {
     <g v-if="!fixed" class="horizontal-resize">
       <template v-for="(plane, idx) of lens.planes.value" :key="idx">
         <MoveUI :handler-creator="rMoveStartHandler(plane)">
-          <CircleUI :c="vec(plane.x, 0)" />
+          <CircleUI :c="vec(plane.x.value, 0)" />
         </MoveUI>
       </template>
     </g>

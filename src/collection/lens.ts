@@ -1,5 +1,5 @@
 import { estimateCauchyParameters } from "@/math"
-import { Lens, type LensPlane } from "@/SVG/LensItem.vue"
+import { Lens, LensPlane } from "@/SVG/LensItem.vue"
 import { LensGroup } from "@/SVG/LensGroupItem.vue"
 
 type PlaneData = {
@@ -139,24 +139,12 @@ export const createLensGroup = (data: LensData): LensGroup[] => {
     let x = 0
     const planes: LensPlane[] = data.planes.map((plane, i) => {
         if (i === 0) {
-            return {
-                x: 0,
-                r: plane.r,
-                h: plane.h,
-                paramsA: createParam(undefined, undefined),
-                paramsB: createParam(plane.n, plane.vd),
-            }
+            return new LensPlane(0, plane.r, plane.h, createParam(undefined, undefined), createParam(plane.n, plane.vd))
         } else {
             x += data.planes[i - 1].d
             const pre = data.planes[i - 1]
             const cur = data.planes[i]
-            return {
-                x,
-                r: plane.r,
-                h: plane.h,
-                paramsA: createParam(pre.n, pre.vd),
-                paramsB: createParam(cur.n, cur.vd),
-            }
+            return new LensPlane(x, plane.r, plane.h, createParam(pre.n, pre.vd), createParam(cur.n, cur.vd),)
         }
     })
 
