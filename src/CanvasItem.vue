@@ -16,7 +16,7 @@ const offscreenCanvas = new OffscreenCanvas(state.value.width, state.value.heigh
 const ctx = offscreenCanvas.getContext("2d", { alpha: false });
 let mainCtx: any = null;
 
-if (!ctx) {
+if (ctx === null) {
   throw new Error()
 }
 
@@ -40,7 +40,7 @@ const drawRay = (rays: Ray[], sensorDataTmp: any[]) => {
       const s = segment.s
       const t = segment.t
       drawSegment(s, t)
-      if (segment.isSensor) {
+      if (segment.isSensor !== undefined) {
         sensorDataTmp.push({ y: t.sub(sensor.value.s).length(), wavelength })
         return
       }
@@ -127,9 +127,6 @@ const draw = () => {
 }
 
 onMounted(() => {
-  if (!canvas) {
-    return;
-  }
   mainCtx = canvas.value.getContext("bitmaprenderer");
   window.requestAnimationFrame(draw)
 })
@@ -146,7 +143,11 @@ watch([state, lights, apple, lensGroups, aperture, sensor, options, style], () =
 </script>
 
 <template>
-  <canvas ref="canvas" :width="state.width" :height="state.height"></canvas>
+  <canvas
+    ref="canvas"
+    :width="state.width"
+    :height="state.height"
+  />
 </template>
 
 <style scoped></style>

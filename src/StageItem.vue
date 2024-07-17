@@ -4,10 +4,10 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { state, options } from './globals'
 
 import SVG from './SVG/SVG.vue'
-import Canvas from './Canvas.vue'
-import Overlay from './Overlay.vue'
-import Preview from './Preview.vue'
-import Memory from './Memory.vue'
+import Canvas from './CanvasItem.vue'
+import Overlay from './OverlayItem.vue'
+import Preview from './PreviewItem.vue'
+import Memory from './MemoryItem.vue'
 
 const main = ref()
 
@@ -40,17 +40,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class='container' :class="containerType">
-    <div id="stage" ref="main">
-      <Canvas id="canvas"></Canvas>
-      <SVG id="svg"></SVG>
-      <Overlay></Overlay>
+  <div
+    class="container"
+    :class="containerType"
+  >
+    <div
+      id="stage"
+      ref="main"
+    >
+      <Canvas id="canvas" />
+      <SVG id="svg" />
+      <Overlay />
     </div>
     <div v-show="options.sensor && options.sensorPreview">
-      <Preview></Preview>
+      <Preview />
     </div>
     <div v-show="options.sensor && options.sensorPreview && options.sensorMemory">
-      <Memory></Memory>
+      <Memory />
     </div>
   </div>
 </template>

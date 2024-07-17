@@ -25,7 +25,7 @@ const move = () => {
 
     const s0 = sensor.value.s.copy()
     const t0 = sensor.value.t.copy()
-    return (e: any, d: Vec) => {
+    return (e: MouseEvent, d: Vec) => {
         const sn = s0.add(d)
         const tn = t0.add(d)
         if (!e.shiftKey) {
@@ -42,7 +42,7 @@ const resize = () => {
     const s0 = sensor.value.s.copy()
     const t0 = sensor.value.t.copy()
     const m0 = s0.add(t0).div(2)
-    return (e: any, d: Vec) => {
+    return (e: MouseEvent, d: Vec) => {
         const sn = s0.add(d)
         if (!e.shiftKey) {
             sn.x = m0.x
@@ -56,15 +56,27 @@ const resize = () => {
 </script>
 
 <template>
-    <g>
-        <MoveUI :handler-creator="move" class="grab">
-            <WithBackground :ui="true">
-                <line :x1="sensor.s.x" :y1="sensor.s.y" :x2="sensor.t.x" :y2="sensor.t.y" class="stroke-white"
-                    :class="{ normal: !sensor.selected, bold: sensor.selected }" />
-            </WithBackground>
-        </MoveUI>
-        <MoveUI :handler-creator="resize" class="grab">
-            <CircleUI :c="sensor.s"></CircleUI>
-        </MoveUI>
-    </g>
+  <g>
+    <MoveUI
+      :handler-creator="move"
+      class="grab"
+    >
+      <WithBackground :ui="true">
+        <line
+          :x1="sensor.s.x"
+          :y1="sensor.s.y"
+          :x2="sensor.t.x"
+          :y2="sensor.t.y"
+          class="stroke-white"
+          :class="{ normal: !sensor.selected, bold: sensor.selected }"
+        />
+      </WithBackground>
+    </MoveUI>
+    <MoveUI
+      :handler-creator="resize"
+      class="grab"
+    >
+      <CircleUI :c="sensor.s" />
+    </MoveUI>
+  </g>
 </template>

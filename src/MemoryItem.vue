@@ -8,9 +8,6 @@ const canvas = ref()
 let mainCtx: any = null;
 
 onMounted(() => {
-  if (!canvas) {
-    return;
-  }
   mainCtx = canvas.value.getContext("2d");
   setMemoryCanvasCtx(mainCtx)
 })
@@ -24,8 +21,14 @@ watch([() => state.value.height], () => {
 </script>
 
 <template>
-  <canvas ref="canvas" width="100" :height="state.height"></canvas>
-  <button @click="options.sensorMemory = false"><i class="bi bi-trash3-fill"></i></button>
+  <canvas
+    ref="canvas"
+    width="100"
+    :height="state.height"
+  />
+  <button @click="options.sensorMemory = false">
+    <i class="bi bi-trash3-fill" />
+  </button>
 </template>
 
 <style scoped>

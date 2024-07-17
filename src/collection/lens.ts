@@ -1,6 +1,6 @@
 import { estimateCauchyParameters } from "@/math"
-import { Lens, type LensPlane } from "@/SVG/Lens.vue"
-import { LensGroup } from "@/SVG/LensGroup.vue"
+import { Lens, type LensPlane } from "@/SVG/LensItem.vue"
+import { LensGroup } from "@/SVG/LensGroupItem.vue"
 
 type PlaneData = {
     r: number, // Curvature

@@ -4,10 +4,10 @@ import { getPositionOnSvg, getPositionOnSvgApp, setMoveHandlerWithM0 } from './S
 import { state } from '@/globals';
 
 const props = defineProps<{
-    handlerCreator: (...params: any[]) => ((e: any, d: Vec) => void)
+    handlerCreator: (...params: any[]) => ((e: MouseEvent, d: Vec) => void)
 }>()
 
-const moveStart = (e: any) => {
+const moveStart = (e: MouseEvent) => {
     // Move only when left button pressed
     if (e.button !== 0) {
         return
@@ -21,7 +21,7 @@ const moveStart = (e: any) => {
 </script>
 
 <template>
-    <g @mousedown="moveStart">
-        <slot></slot>
-    </g>
+  <g @mousedown="moveStart">
+    <slot />
+  </g>
 </template>

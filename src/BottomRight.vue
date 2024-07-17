@@ -5,11 +5,14 @@ import { humanReadable } from './utils';
 </script>
 
 <template>
-    <div>
-        <div id="base" v-if="options.pointerPosition">
-            ({{ humanReadable(state.pointerPos.x) }}, {{ humanReadable(state.pointerPos.y) }})
-        </div>
+  <div>
+    <div
+      v-if="options.pointerPosition"
+      id="base"
+    >
+      ({{ humanReadable(state.pointerPos.x) }}, {{ humanReadable(state.pointerPos.y) }})
     </div>
+  </div>
 </template>
 
 <style>

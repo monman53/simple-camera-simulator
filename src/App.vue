@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import Stage from './Stage.vue'
+import Stage from './StageItem.vue'
 </script>
 
 <template>
-  <Stage></Stage>
+  <Stage />
 </template>
 
 <style scoped>

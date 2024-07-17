@@ -1,11 +1,11 @@
-import { ref, computed, watch, type UnwrapRef, shallowRef } from "vue"
-import { Vec, calcLensFront, vec, calcLensBack, fGaussian, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge, calcDispersion } from "./math"
+import { ref, computed, watch, shallowRef } from "vue"
+import { calcLensFront, vec, calcLensBack, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge, calcDispersion } from "./math"
 import { type Aperture, type Body, type LightPoint, type LightType, type Ray, type Sensor } from "./type"
 import { wavelength } from "./collection/color"
 import { createLensGroup, exampleConvexLens, exampleTestLens } from "./collection/lens"
 import { rayTrace, type Segment } from "./rayTrace"
-import type { LensGroup } from "./SVG/LensGroup.vue"
-import { Lens } from "./SVG/Lens.vue"
+import { LensGroup } from "./SVG/LensGroupItem.vue"
+import { Lens } from "./SVG/LensItem.vue"
 
 //================================
 // States
@@ -258,7 +258,7 @@ export const infR = computed(() => {
     // Screen diagonal length
     const w = state.value.width / state.value.scale;
     const h = state.value.height / state.value.scale;
-    let screen = Math.sqrt(w * w + h * h);
+    const screen = Math.sqrt(w * w + h * h);
 
     // light to center max distance
     const c = vec((sensor.value.s.x + sensor.value.t.x) / 2, 0)
@@ -289,7 +289,7 @@ export const calcBody = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[
     // Radius
     let r
     {
-        let rs: number[] = []
+        const rs: number[] = []
         rs.push(...lenses.map(lens => { return lens.h.value + padding }))
         rs.push(...apertures.map(a => a.r))
         rs.push(...sensors.map(sensor => {
@@ -302,7 +302,7 @@ export const calcBody = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[
     // Front
     let front
     {
-        let fronts: number[] = []
+        const fronts: number[] = []
         fronts.push(...lenses.map(lens => {
             if (options.value.lensIdeal) {
                 return calcLensXCOG(lens)
@@ -317,7 +317,7 @@ export const calcBody = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[
     // Back
     let back
     {
-        let backs: number[] = []
+        const backs: number[] = []
         backs.push(...sensors.map(sensor => {
             return Math.max(sensor.s.x, sensor.t.x) + padding
         }))
@@ -464,7 +464,7 @@ const calcLensRe = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[]) =>
             const result = rayTrace(rays, lenses, apertures, sensors, null, body.r)
             const nTop = result[0].length
             const nBottom = result[0].length
-            if (nTop === nPlanes + 1 && !result[0][nTop - 1].isAperture && nBottom === nPlanes + 1 && !result[1][nBottom - 1].isAperture) {
+            if (nTop === nPlanes + 1 && result[0][nTop - 1].isAperture !== undefined && nBottom === nPlanes + 1 && result[1][nBottom - 1].isAperture !== undefined) {
                 ok = mid
                 pathTop = result[0]
                 pathBottom = result[1]

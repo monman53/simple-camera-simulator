@@ -15,8 +15,8 @@ export class LensGroup {
 }
 
 export const groupLensGroups = () => {
-    const selected = lensGroups.value.filter(g => g.selected)
-    const notSelected = lensGroups.value.filter(g => !g.selected)
+    const selected = lensGroups.value.filter(g => g.selected.value)
+    const notSelected = lensGroups.value.filter(g => !g.selected.value)
     const selectedLenses = selected.reduce((acc: Lens[], cur) => {
         return acc.concat(cur.lenses.value)
     }, [])
@@ -42,7 +42,7 @@ export const ungroupLensGroup = () => {
 import type { Vec } from '@/math';
 import { lensGroups, releaseAllLenses, sensor } from '../globals'
 
-import LensSVG, { Lens } from './Lens.vue'
+import LensSVG, { Lens } from './LensItem.vue'
 import MoveUI from './MoveUI.vue';
 import { ref, shallowRef, type Ref, type ShallowRef } from 'vue';
 
@@ -51,13 +51,14 @@ const props = defineProps<{
     idx: number
 }>()
 
-const move = (e: any) => {
+const move = (e: MouseEvent) => {
     // Selection
     if (!e.shiftKey && !props.lensGroup.selected.value) {
         releaseAllLenses()
     }
     sensor.value.selected = false
-    props.lensGroup.selected.value = !props.lensGroup.selected.value
+    const lensGroup = lensGroups.value[props.idx]
+    lensGroup.selected.value = !props.lensGroup.selected.value
 
     if (props.lensGroup.fixed.value) {
         return () => { }
@@ -82,11 +83,18 @@ const move = (e: any) => {
 </script>
 
 <template>
-    <MoveUI :handler-creator="move">
-        <g v-for="(lens, idx) in lensGroup.lenses.value">
-            <g :class="{ disabled: !lensGroup.enabled.value }">
-                <LensSVG :lens :selected="lensGroup.selected.value" :fixed="lensGroup.fixed.value"></LensSVG>
-            </g>
-        </g>
-    </MoveUI>
+  <MoveUI :handler-creator="move">
+    <g
+      v-for="(lens, idx) in lensGroup.lenses.value"
+      :key="idx"
+    >
+      <g :class="{ disabled: !lensGroup.enabled.value }">
+        <LensSVG
+          :lens
+          :selected="lensGroup.selected.value"
+          :fixed="lensGroup.fixed.value"
+        />
+      </g>
+    </g>
+  </MoveUI>
 </template>

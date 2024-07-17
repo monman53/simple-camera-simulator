@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps({
+defineProps({
     ui: {
         type: Boolean,
         default: false,
@@ -8,13 +8,16 @@ const props = defineProps({
 </script>
 
 <template>
-    <g class="background">
-        <slot></slot>
-    </g>
-    <g class="foreground">
-        <slot></slot>
-    </g>
-    <g v-if="ui" class="ui">
-        <slot></slot>
-    </g>
+  <g class="background">
+    <slot />
+  </g>
+  <g class="foreground">
+    <slot />
+  </g>
+  <g
+    v-if="ui"
+    class="ui"
+  >
+    <slot />
+  </g>
 </template>

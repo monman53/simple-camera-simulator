@@ -29,7 +29,7 @@ import { infR, options } from '../globals'
 import { vec, calcLensXCOG, calcLensPlaneEdge, calcLensH, Vec } from '../math'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
-import Point from './Point.vue'
+import Point from './PointItem.vue'
 import MoveUI from './MoveUI.vue'
 import type { CauchyParams } from '@/collection/lens'
 
@@ -162,75 +162,137 @@ const apertureSizeChangeStartHandler = () => {
 </script>
 
 <template>
-    <g>
-        <!-- Curvature circle -->
-        <g v-if="options.lens && options.curvature">
-            <!-- Circle -->
-            <WithBackground>
-                <g class="stroke-white thicker fill-none">
-                    <template v-for="plane of lens.planes.value">
-                        <circle v-if="isFinite(plane.r)" :cx="plane.x + plane.r" :cy="0" :r="Math.abs(plane.r)">
-                        </circle>
-                        <!-- Infinity curvature -->
-                        <line v-if="!isFinite(plane.r)" :x1="plane.x" :y1="-infR" :x2="plane.x" :y2="infR"></line>
-                    </template>
-                </g>
-            </WithBackground>
-            <!-- Center Point -->
-            <template v-for="plane of lens.planes.value">
-                <Point v-if="isFinite(plane.r)" :c="vec(plane.x + plane.r, 0)"></Point>
-            </template>
+  <g>
+    <!-- Curvature circle -->
+    <g v-if="options.lens && options.curvature">
+      <!-- Circle -->
+      <WithBackground>
+        <g class="stroke-white thicker fill-none">
+          <template
+            v-for="(plane, idx) of lens.planes.value"
+            :key="idx"
+          >
+            <circle
+              v-if="isFinite(plane.r)"
+              :cx="plane.x + plane.r"
+              :cy="0"
+              :r="Math.abs(plane.r)"
+            />
+            <!-- Infinity curvature -->
+            <line
+              v-if="!isFinite(plane.r)"
+              :x1="plane.x"
+              :y1="-infR"
+              :x2="plane.x"
+              :y2="infR"
+            />
+          </template>
         </g>
-
-        <!-- Lens -->
-        <WithBackground>
-            <g class="stroke-white fill-none" :class="{ normal: !selected, bold: selected }">
-                <path :d="path"></path>
-            </g>
-        </WithBackground>
-
-        <!-- Thickness and change UI -->
-        <g v-if="!fixed" class="ui-stroke transparent horizontal-resize">
-            <template v-for="(plane, idx) of lens.planes.value">
-                <MoveUI :handler-creator="planeMoveStartHandler(plane)">
-                    <path :d="paths[idx]"></path>
-                </MoveUI>
-            </template>
-        </g>
-
-        <!-- Size change UI -->
-        <template v-for="(plane, idx) of lens.planes.value">
-            <MoveUI v-if="!fixed" :handler-creator="hChangeStartHandler(plane)">
-                <CircleUI :c="vec(calcLensPlaneEdge(plane), -plane.h)" class="vertical-resize"></CircleUI>
-            </MoveUI>
-        </template>
-
-        <!-- Curvature change UI -->
-        <g v-if="!fixed" class="horizontal-resize">
-            <template v-for="plane of lens.planes.value">
-                <MoveUI :handler-creator="rMoveStartHandler(plane)">
-                    <CircleUI :c="vec(plane.x, 0)"></CircleUI>
-                </MoveUI>
-            </template>
-        </g>
-
-        <!-- Aperture -->
-        <g>
-            <WithBackground>
-                <!-- Lines -->
-                <g class="stroke-white normal no-pointer-events">
-                    <line :x1="xm" :y1="-r" :x2="xm" :y2="-r * lens.aperture.value"></line>
-                    <line :x1="xm" :y1="r" :x2="xm" :y2="r * lens.aperture.value"></line>
-                </g>
-            </WithBackground>
-            <!-- UI -->
-            <MoveUI v-if="!fixed" :handler-creator="apertureSizeChangeStartHandler">
-                <CircleUI :c="vec(xm, r * lens.aperture.value)" class="vertical-resize">
-                </CircleUI>
-            </MoveUI>
-        </g>
-
-        <!-- dummy for ui -->
-        <path :d="path" class='transparent grab' stroke-width="0" />
+      </WithBackground>
+      <!-- Center Point -->
+      <template
+        v-for="(plane, idx) of lens.planes.value"
+        :key="idx"
+      >
+        <Point
+          v-if="isFinite(plane.r)"
+          :c="vec(plane.x + plane.r, 0)"
+        />
+      </template>
     </g>
+
+    <!-- Lens -->
+    <WithBackground>
+      <g
+        class="stroke-white fill-none"
+        :class="{ normal: !selected, bold: selected }"
+      >
+        <path :d="path" />
+      </g>
+    </WithBackground>
+
+    <!-- Thickness and change UI -->
+    <g
+      v-if="!fixed"
+      class="ui-stroke transparent horizontal-resize"
+    >
+      <template
+        v-for="(plane, idx) of lens.planes.value"
+        :key="idx"
+      >
+        <MoveUI :handler-creator="planeMoveStartHandler(plane)">
+          <path :d="paths[idx]" />
+        </MoveUI>
+      </template>
+    </g>
+
+    <!-- Size change UI -->
+    <template
+      v-for="(plane, idx) of lens.planes.value"
+      :key="idx"
+    >
+      <MoveUI
+        v-if="!fixed"
+        :handler-creator="hChangeStartHandler(plane)"
+      >
+        <CircleUI
+          :c="vec(calcLensPlaneEdge(plane), -plane.h)"
+          class="vertical-resize"
+        />
+      </MoveUI>
+    </template>
+
+    <!-- Curvature change UI -->
+    <g
+      v-if="!fixed"
+      class="horizontal-resize"
+    >
+      <template
+        v-for="(plane, idx) of lens.planes.value"
+        :key="idx"
+      >
+        <MoveUI :handler-creator="rMoveStartHandler(plane)">
+          <CircleUI :c="vec(plane.x, 0)" />
+        </MoveUI>
+      </template>
+    </g>
+
+    <!-- Aperture -->
+    <g>
+      <WithBackground>
+        <!-- Lines -->
+        <g class="stroke-white normal no-pointer-events">
+          <line
+            :x1="xm"
+            :y1="-r"
+            :x2="xm"
+            :y2="-r * lens.aperture.value"
+          />
+          <line
+            :x1="xm"
+            :y1="r"
+            :x2="xm"
+            :y2="r * lens.aperture.value"
+          />
+        </g>
+      </WithBackground>
+      <!-- UI -->
+      <MoveUI
+        v-if="!fixed"
+        :handler-creator="apertureSizeChangeStartHandler"
+      >
+        <CircleUI
+          :c="vec(xm, r * lens.aperture.value)"
+          class="vertical-resize"
+        />
+      </MoveUI>
+    </g>
+
+    <!-- dummy for ui -->
+    <path
+      :d="path"
+      class="transparent grab"
+      stroke-width="0"
+    />
+  </g>
 </template>

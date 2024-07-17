@@ -36,8 +36,40 @@ const grid = computed(() => {
 </script>
 
 <template>
-    <line v-for="x of grid.xs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="thicker"></line>
-    <line v-for="y of grid.ys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="thicker"></line>
-    <line v-for="x of grid.bxs" :x1="x" :y1="-infR" :x2="x" :y2="infR" class="thick"></line>
-    <line v-for="y of grid.bys" :y1="y" :x1="-infR" :y2="y" :x2="infR" class="thick"></line>
+  <line
+    v-for="(x, idx) of grid.xs"
+    :key="idx"
+    :x1="x"
+    :y1="-infR"
+    :x2="x"
+    :y2="infR"
+    class="thicker"
+  />
+  <line
+    v-for="(y, idx) of grid.ys"
+    :key="idx"
+    :y1="y"
+    :x1="-infR"
+    :y2="y"
+    :x2="infR"
+    class="thicker"
+  />
+  <line
+    v-for="(x, idx) of grid.bxs"
+    :key="idx"
+    :x1="x"
+    :y1="-infR"
+    :x2="x"
+    :y2="infR"
+    class="thick"
+  />
+  <line
+    v-for="(y, idx) of grid.bys"
+    :key="idx"
+    :y1="y"
+    :x1="-infR"
+    :y2="y"
+    :x2="infR"
+    class="thick"
+  />
 </template>

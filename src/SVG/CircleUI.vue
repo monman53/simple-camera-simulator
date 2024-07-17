@@ -4,20 +4,24 @@ import { Vec } from '../math'
 import { rUI } from '@/globals';
 import WithBackground from './WithBackground.vue';
 
-const props = defineProps<{
+defineProps<{
     c: Vec,
 }>()
 
 </script>
 
 <template>
-    <g class="hover-hidden-parent">
-        <WithBackground>
-            <g class="stroke-white fill-transparent normal">
-                <g class="hover-hidden-child">
-                    <circle :cx="c.x" :cy="c.y" :r="rUI"></circle>
-                </g>
-            </g>
-        </WithBackground>
-    </g>
+  <g class="hover-hidden-parent">
+    <WithBackground>
+      <g class="stroke-white fill-transparent normal">
+        <g class="hover-hidden-child">
+          <circle
+            :cx="c.x"
+            :cy="c.y"
+            :r="rUI"
+          />
+        </g>
+      </g>
+    </WithBackground>
+  </g>
 </template>

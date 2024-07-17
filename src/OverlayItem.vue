@@ -4,8 +4,8 @@ import BottomRight from './BottomRight.vue'
 </script>
 
 <template>
-    <TopLeft id="top-left"></TopLeft>
-    <BottomRight id="bottom-right"></BottomRight>
+  <TopLeft id="top-left" />
+  <BottomRight id="bottom-right" />
 </template>
 
 <style scoped>

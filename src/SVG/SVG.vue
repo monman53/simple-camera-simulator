@@ -1,9 +1,6 @@
 <script lang="ts">
-// Reference to the svg element
-let svg: Ref<any>;
-const setSvg = (svg_: Ref<any>) => {
-  svg = svg_;
-}
+
+let svg = ref();
 
 // Methods
 export const getPositionOnSvg = (e: any) => {
@@ -54,30 +51,23 @@ const svgMoveEndHandler = () => {
 </script>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, type Ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted } from '../globals'
 import { Vec, vec } from '../math'
 
-import Grid from './Grid.vue'
-import Guideline from './Guideline.vue'
-import LightSVG, { addLight } from './Light.vue'
-import LensGroup from './LensGroup.vue'
+import Grid from './GridItem.vue'
+import Guideline from './GuideLines.vue'
+import LightSVG, { addLight } from './LightItem.vue'
+import LensGroup from './LensGroupItem.vue'
 import WithBackground from './WithBackground.vue'
-import Aperture from './Aperture.vue'
-import Body from './Body.vue'
-import Point from './Point.vue'
-import Sensor from './Sensor.vue'
+import Aperture from './ApertureItem.vue'
+import Body from './BodyItem.vue'
+import Point from './PointItem.vue'
+import Sensor from './SensorItem.vue'
 import MoveUI from './MoveUI.vue'
-import { lightHSL, wavelength } from '@/collection/color'
+import { lightHSL } from '@/collection/color'
 import { releaseALlItems } from '@/utils'
-
-// Reference to the svg element
-// TODO: Find a better way
-const svg = ref()
-onMounted(() => {
-  setSvg(svg)
-})
 
 const svgScaleHandler = (e: any) => {
   preventDefaultAndStopPropagation(e)
@@ -149,69 +139,115 @@ const pupilPath = computed(() => {
 
 <template>
   <MoveUI :handler-creator="move">
-    <svg id="main-svg" class="move" ref="svg" :view-box.camel="svgViewBox" :width="state.width" :height="state.height"
-      @mousemove="svgMoveHandler" @mouseup="svgMoveEndHandler" @wheel="svgScaleHandler" @dblclick="addLight">
+    <svg
+      id="main-svg"
+      ref="svg"
+      class="move"
+      :view-box.camel="svgViewBox"
+      :width="state.width"
+      :height="state.height"
+      @mousemove="svgMoveHandler"
+      @mouseup="svgMoveEndHandler"
+      @wheel="svgScaleHandler"
+      @dblclick="addLight"
+    >
 
       <!-- Optical axis -->
       <g v-if="options.opticalAxis">
-        <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thicker"></line>
+        <line
+          :x1="-infR"
+          y1="0"
+          :x2="infR"
+          y2="0"
+          class="stroke-white thicker"
+        />
       </g>
 
       <!-- Grid -->
-      <Grid v-if="options.grid"></Grid>
+      <Grid v-if="options.grid" />
 
       <!-- Body -->
 
-      <Body v-if="options.body"></Body>
+      <Body v-if="options.body" />
 
       <!-- Guidelines -->
-      <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView"></Guideline>
+      <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView" />
 
       <!-- Global focal point -->
       <g v-if="options.lens && options.lensFocalPoints && lensExist">
         <WithBackground>
           <g class="stroke-white thick">
-            <line :x1="globalLensRe.forward.H" :y1="-globalLensRe.forward.re" :x2="globalLensRe.forward.H"
-              :y2="globalLensRe.forward.re"></line>
+            <line
+              :x1="globalLensRe.forward.H"
+              :y1="-globalLensRe.forward.re"
+              :x2="globalLensRe.forward.H"
+              :y2="globalLensRe.forward.re"
+            />
             <g class="fill-none">
-              <path :d="pupilPath.top"></path>
-              <path :d="pupilPath.bottom"></path>
+              <path :d="pupilPath.top" />
+              <path :d="pupilPath.bottom" />
             </g>
             <!-- <line :x1="globalLensRe.backward.H" :y1="-globalLensRe.backward.re" :x2="globalLensRe.backward.H"
               :y2="globalLensRe.backward.re"></line> -->
           </g>
         </WithBackground>
-        <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)"></Point>
-        <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f, 0)"></Point>
+        <Point :c="vec(globalLensRe.forward.H + globalLensInfo.f, 0)" />
+        <Point :c="vec(globalLensRe.backward.H - globalLensInfo.f, 0)" />
       </g>
 
       <!-- Items -->
       <g v-if="options.lens">
-        <g v-for="(lensGroup, idx) in lensGroups">
-          <LensGroup :lensGroup :idx></LensGroup>
+        <g
+          v-for="(lensGroup, idx) in lensGroups"
+          :key="idx"
+        >
+          <LensGroup
+            :lens-group
+            :idx
+          />
         </g>
       </g>
 
       <!-- Aperture -->
-      <Aperture v-if="options.aperture"></Aperture>
+      <Aperture v-if="options.aperture" />
 
       <!-- Apple -->
       <g v-if="options.apple">
-        <g v-for="(light, idx) of apple">
+        <g
+          v-for="(light, idx) of apple"
+          :key="idx"
+        >
           <WithBackground>
-            <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
+            <circle
+              :cx="light.c.x"
+              :cy="light.c.y"
+              :r="rUI"
+              class="stroke-white normal fill-none"
+            />
           </WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill="lightHSL(light.wavelengths[0], 0.5)"></circle>
+          <circle
+            :cx="light.c.x"
+            :cy="light.c.y"
+            :r="rUI"
+            :fill="lightHSL(light.wavelengths[0], 0.5)"
+          />
         </g>
       </g>
 
       <!-- Lights -->
-      <g v-for="(light, idx) of lights">
-        <LightSVG :light :idx class="grab"></LightSVG>
+      <g
+        v-for="(light, idx) of lights"
+        :key="idx"
+      >
+        <LightSVG
+          :light
+          :idx
+          class="grab"
+        />
       </g>
 
       <!-- Sensor -->
-      <Sensor v-if="options.sensor"></Sensor>
+      <Sensor v-if="options.sensor" />
     </svg>
   </MoveUI>
 </template>

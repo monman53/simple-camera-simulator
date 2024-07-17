@@ -5,13 +5,18 @@ import { lensGroups } from './globals';
 </script>
 
 <template>
-    <div class="add-panel-base">
-        <h4>Lens collection</h4>
-        <template v-for="lens of lenseData">
-            <button @click="lensGroups = createLensGroup(lens)">{{ lens.name }}</button>
-            <br>
-        </template>
-    </div>
+  <div class="add-panel-base">
+    <h4>Lens collection</h4>
+    <template
+      v-for="(lens, idx) of lenseData"
+      :key="idx"
+    >
+      <button @click="lensGroups = createLensGroup(lens)">
+        {{ lens.name }}
+      </button>
+      <br>
+    </template>
+  </div>
 </template>
 
 <style>

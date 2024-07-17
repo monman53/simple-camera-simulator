@@ -2,7 +2,6 @@
 import { watch, onMounted, ref, computed } from 'vue'
 
 import { state, sensor, sensorData, options, style, memoryCanvasCtx } from './globals'
-import { wavelengthToHue } from './math';
 import { lightHSL } from './collection/color';
 
 // Reference to the canvas
@@ -13,7 +12,7 @@ const offscreenCanvas = new OffscreenCanvas(100, state.value.height);
 const ctx = offscreenCanvas.getContext("2d", { alpha: false });
 let mainCtx: any = null;
 
-if (!ctx) {
+if (ctx === null) {
   throw new Error()
 }
 
@@ -54,9 +53,6 @@ const draw = () => {
 }
 
 onMounted(() => {
-  if (!canvas) {
-    return;
-  }
   mainCtx = canvas.value.getContext("bitmaprenderer");
   window.requestAnimationFrame(draw)
 })
@@ -80,8 +76,14 @@ const save = () => {
 </script>
 
 <template>
-  <canvas ref="canvas" width="100" :height="state.height"></canvas>
-  <button @click="save"><i class="bi bi-camera-fill"></i></button>
+  <canvas
+    ref="canvas"
+    width="100"
+    :height="state.height"
+  />
+  <button @click="save">
+    <i class="bi bi-camera-fill" />
+  </button>
 </template>
 
 <style scoped>

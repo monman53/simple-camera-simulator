@@ -1,7 +1,7 @@
 import type { CauchyParams } from "./collection/lens";
 import { calcLensInfo, infR, options } from "./globals";
 import { calcDispersion, calcLensBack, calcLensFront, calcLensPlaneEdge, calcLensXCOG, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
-import type { Lens } from "./SVG/Lens.vue";
+import type { Lens } from "./SVG/LensItem.vue";
 import type { Aperture, Body, Ray, Sensor } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isAperture?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
@@ -11,7 +11,7 @@ const collisionLens = (rays: Ray[], x: number, r: number, h: number, paramsI: Ca
         const ni = calcDispersion(ray.wavelength, paramsI)
         const no = calcDispersion(ray.wavelength, paramsO)
         let v = ray.v
-        let s = ray.s
+        const s = ray.s
         v = v.normalize()
         if (isFinite(r)) {
             const cx = x + r
@@ -81,8 +81,8 @@ const collisionLens = (rays: Ray[], x: number, r: number, h: number, paramsI: Ca
 
 const collisionIdealLens = (rays: Ray[], x: number, h: number, f: number): CollisionResult[] => {
     return rays.map(ray => {
-        let v = ray.v
-        let s = ray.s
+        const v = ray.v
+        const s = ray.s
         const pl = intersectionY(s, v, x, -h, h)
         if (pl.p === null) {
             return null
@@ -110,8 +110,8 @@ const collisionIdealLens = (rays: Ray[], x: number, h: number, f: number): Colli
 
 const collisionAperture = (rays: Ray[], x: number, rMin: number, rMax: number): CollisionResult[] => {
     return rays.map(ray => {
-        let v = ray.v
-        let s = ray.s
+        const v = ray.v
+        const s = ray.s
         const pa = intersectionY(s, v, x, -rMax, rMax)
         if (pa.p !== null) {
             if (Math.abs(pa.p.y) > Math.abs(rMin)) {
@@ -128,8 +128,8 @@ const collisionAperture = (rays: Ray[], x: number, rMin: number, rMax: number): 
 
 const collisionSensor = (rays: Ray[], sensor: Sensor): CollisionResult[] => {
     return rays.map(ray => {
-        let v = ray.v
-        let s = ray.s
+        const v = ray.v
+        const s = ray.s
         const ps = intersectionLS(s, v, sensor.s, sensor.t)
         if (ps !== null && dot(ps.sub(s), v) > 0) {
             return {
@@ -145,8 +145,8 @@ const collisionSensor = (rays: Ray[], sensor: Sensor): CollisionResult[] => {
 
 const collisionX = (rays: Ray[], y: number, xMin: number, xMax: number): CollisionResult[] => {
     return rays.map(ray => {
-        let v = ray.v
-        let s = ray.s
+        const v = ray.v
+        const s = ray.s
         const ps = intersectionX(s, v, y, xMin, xMax)
         if (ps.p !== null) {
             return {
@@ -161,8 +161,8 @@ const collisionX = (rays: Ray[], y: number, xMin: number, xMax: number): Collisi
 
 const collisionY = (rays: Ray[], x: number, yMin: number, yMax: number): CollisionResult[] => {
     return rays.map(ray => {
-        let v = ray.v
-        let s = ray.s
+        const v = ray.v
+        const s = ray.s
         const ps = intersectionY(s, v, x, yMin, yMax)
         if (ps.p !== null) {
             return {
@@ -177,7 +177,7 @@ const collisionY = (rays: Ray[], x: number, yMin: number, yMax: number): Collisi
 
 const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensors: Sensor[], body: Body | null, bodyR: number): CollisionResult[] => {
     // Closest collision
-    let pMins: CollisionResult[] = rays.map(ray => {
+    const pMins: CollisionResult[] = rays.map(() => {
         return null
     })
 
@@ -226,7 +226,7 @@ const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensor
         if (options.value.lensIdeal) {
             updateMin(collisionIdealLens(rays, xm, h * lens.aperture.value, f))
         } else {
-            lens.planes.value.forEach((p, j) => {
+            lens.planes.value.forEach(p => {
                 const paramsI = p.r > 0 ? p.paramsB : p.paramsA
                 const paramsO = p.r > 0 ? p.paramsA : p.paramsB
                 // Plane
@@ -267,7 +267,7 @@ const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensor
 
 export type Segment = { s: Vec, t: Vec, isSensor?: boolean, isAperture?: boolean }
 export const rayTrace = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensors: Sensor[], body: Body | null, bodyR: number): Segment[][] => {
-    const segments: Segment[][] = rays.map(ray => {
+    const segments: Segment[][] = rays.map(() => {
         return []
     })
     const maxItr = 100
@@ -283,17 +283,17 @@ export const rayTrace = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sen
                 return
             }
 
-            if (c.isEnd) {
+            if (c.isEnd !== undefined) {
                 segments[ray.idx].push({ s, t: c.p })
                 return
             }
 
-            if (c.isAperture) {
+            if (c.isAperture !== undefined) {
                 segments[ray.idx].push({ s, t: c.p, isAperture: true })
                 return
             }
 
-            if (c.isSensor) {
+            if (c.isSensor !== undefined) {
                 segments[ray.idx].push({ s, t: c.p, isSensor: true })
                 return
             }
@@ -301,7 +301,7 @@ export const rayTrace = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sen
             segments[ray.idx].push({ s, t: c.p })
 
             // Next ray
-            if (c.vn) {
+            if (c.vn !== undefined) {
                 nextRay.push({ s: c.p, v: c.vn(), wavelength: ray.wavelength, idx: ray.idx })
             } else {
                 console.error('Unexpected: Method does not exit calculating next direction vector.')

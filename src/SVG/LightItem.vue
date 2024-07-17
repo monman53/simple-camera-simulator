@@ -70,7 +70,7 @@ const parallelLightNodeMoveStartHandler = (idx: number, light: LightParallel) =>
         const s0 = light.s.copy()
         const m0 = light.s.add(light.t).div(2)
 
-        return (e: any, d: Vec) => {
+        return (e: MouseEvent, d: Vec) => {
             const ns = s0.add(d)
             if (e.shiftKey) {
                 ns.x = m0.x
@@ -95,7 +95,7 @@ const move = (idx: number) => {
             const s0 = light.s.copy()
             const t0 = light.t.copy()
             const m0 = s0.add(t0).div(2)
-            return (e: any, d: Vec) => {
+            return (e: MouseEvent, d: Vec) => {
                 const sn = s0.add(d)
                 const tn = t0.add(d)
                 if (e.shiftKey) {
@@ -133,30 +133,49 @@ const deleteLight = (e: any, idx: number) => {
 </script>
 
 <template>
-    <g>
-        <g v-if="light.type === 'Point'">
-            <MoveUI :handler-creator="move(idx)">
-                <g @dblclick="deleteLight($event, idx)" class="grab">
-                    <WithBackground>
-                        <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" class="stroke-white normal fill-none"></circle>
-                    </WithBackground>
-                    <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill></circle>
-                </g>
-            </MoveUI>
+  <g>
+    <g v-if="light.type === 'Point'">
+      <MoveUI :handler-creator="move(idx)">
+        <g
+          class="grab"
+          @dblclick="deleteLight($event, idx)"
+        >
+          <WithBackground>
+            <circle
+              :cx="light.c.x"
+              :cy="light.c.y"
+              :r="rUI"
+              class="stroke-white normal fill-none"
+            />
+          </WithBackground>
+          <circle
+            :cx="light.c.x"
+            :cy="light.c.y"
+            :r="rUI"
+            :fill
+          />
         </g>
-        <g v-if="light.type === 'Parallel'">
-            <MoveUI :handler-creator="move(idx)">
-                <g @dblclick="deleteLight($event, idx)">
-                    <polygon :points :fill></polygon>
-                    <WithBackground>
-                        <polygon :points class="stroke-white normal fill-none"></polygon>
-                    </WithBackground>
-                </g>
-            </MoveUI>
-
-            <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light)">
-                <CircleUI :c="light.s"></CircleUI>
-            </MoveUI>
-        </g>
+      </MoveUI>
     </g>
+    <g v-if="light.type === 'Parallel'">
+      <MoveUI :handler-creator="move(idx)">
+        <g @dblclick="deleteLight($event, idx)">
+          <polygon
+            :points
+            :fill
+          />
+          <WithBackground>
+            <polygon
+              :points
+              class="stroke-white normal fill-none"
+            />
+          </WithBackground>
+        </g>
+      </MoveUI>
+
+      <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light)">
+        <CircleUI :c="light.s" />
+      </MoveUI>
+    </g>
+  </g>
 </template>
