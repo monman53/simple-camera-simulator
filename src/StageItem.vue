@@ -26,9 +26,13 @@ const containerType = computed(() => {
   return 'col1'
 })
 
-watch(containerType, () => {
-  resize()
-}, { deep: true })
+watch(
+  containerType,
+  () => {
+    resize()
+  },
+  { deep: true }
+)
 
 onMounted(() => {
   window.addEventListener('resize', resize)
@@ -36,18 +40,11 @@ onMounted(() => {
   observer.observe(main.value)
   resize()
 })
-
 </script>
 
 <template>
-  <div
-    class="container"
-    :class="containerType"
-  >
-    <div
-      id="stage"
-      ref="main"
-    >
+  <div class="container" :class="containerType">
+    <div id="stage" ref="main">
       <Canvas id="canvas" />
       <SVG id="svg" />
       <Overlay />

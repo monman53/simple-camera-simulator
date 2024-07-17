@@ -10,14 +10,14 @@ import BottomRight from './BottomRight.vue'
 
 <style scoped>
 #top-left {
-    position: absolute;
-    top: 0;
-    left: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 #bottom-right {
-    position: absolute;
-    bottom: 0;
-    right: 0;
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 </style>

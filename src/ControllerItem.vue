@@ -1,60 +1,53 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, appleProps, options, style, globalLensInfo, globalLensRe, lensGroups } from './globals'
-import { humanReadable } from './utils';
-import { createLensGroup, exampleConcaveLens, exampleConvexLens, exampleDoubletLens } from './collection/lens';
-import { lightHSL, wavelength } from './collection/color';
+import {
+  state,
+  appleProps,
+  options,
+  style,
+  globalLensInfo,
+  globalLensRe,
+  lensGroups
+} from './globals'
+import { humanReadable } from './utils'
+import {
+  createLensGroup,
+  exampleConcaveLens,
+  exampleConvexLens,
+  exampleDoubletLens
+} from './collection/lens'
+import { lightHSL, wavelength } from './collection/color'
 
 const nRays = computed(() => {
-    return 1 << state.value.nRaysLog
+  return 1 << state.value.nRaysLog
 })
-
 </script>
 
 <template>
   <table>
     <!-- Rays -->
     <tr>
-      <th colspan="3">
-        Lights
-      </th>
+      <th colspan="3">Lights</th>
     </tr>
     <tr>
       <td># of rays</td>
       <td>
-        <input
-          v-model.number="state.nRaysLog"
-          type="range"
-          min="0"
-          max="16"
-        >
+        <input v-model.number="state.nRaysLog" type="range" min="0" max="16" />
       </td>
       <td>{{ nRays }}</td>
     </tr>
     <tr>
       <td>Intensity</td>
       <td>
-        <input
-          v-model.number="style.rayIntensity"
-          type="range"
-          min="0"
-          max="1"
-          step="0.001"
-        >
+        <input v-model.number="style.rayIntensity" type="range" min="0" max="1" step="0.001" />
       </td>
       <td>{{ humanReadable(style.rayIntensity) }}</td>
     </tr>
     <tr>
       <td>Ray thickness</td>
       <td>
-        <input
-          v-model.number="style.rayWidth"
-          type="range"
-          min="0.01"
-          max="1"
-          step="0.001"
-        >
+        <input v-model.number="style.rayWidth" type="range" min="0.01" max="1" step="0.001" />
       </td>
       <td>{{ humanReadable(style.rayWidth) }}</td>
     </tr>
@@ -62,13 +55,10 @@ const nRays = computed(() => {
       <td>New light color</td>
       <td>
         <label>
-          <input
-            v-model="state.newLightColorComposite"
-            type="checkbox"
-          >
+          <input v-model="state.newLightColorComposite" type="checkbox" />
           Composite
         </label>
-        <br>
+        <br />
         <template v-if="!state.newLightColorComposite">
           <input
             v-model="state.newLightWavelength"
@@ -76,28 +66,15 @@ const nRays = computed(() => {
             :min="wavelength.min"
             :max="wavelength.max"
             step="0.001"
-          >
-          <br>
-          <button @click="state.newLightWavelength = wavelength.blue">
-            Blue
-          </button><br>
-          <button @click="state.newLightWavelength = wavelength.green">
-            Green
-          </button><br>
-          <button @click="state.newLightWavelength = wavelength.yellow">
-            Yellow
-          </button><br>
-          <button @click="state.newLightWavelength = wavelength.red">
-            Red
-          </button>
+          />
+          <br />
+          <button @click="state.newLightWavelength = wavelength.blue">Blue</button><br />
+          <button @click="state.newLightWavelength = wavelength.green">Green</button><br />
+          <button @click="state.newLightWavelength = wavelength.yellow">Yellow</button><br />
+          <button @click="state.newLightWavelength = wavelength.red">Red</button>
         </template>
         <template v-if="state.newLightColorComposite">
-          <input
-            v-model="state.newLightColorCompositeN"
-            type="range"
-            min="0"
-            max="32"
-          >
+          <input v-model="state.newLightColorCompositeN" type="range" min="0" max="32" />
         </template>
       </td>
       <td
@@ -112,20 +89,12 @@ const nRays = computed(() => {
       <td>New light type</td>
       <td>
         <label>
-          <input
-            v-model="state.newLightType"
-            type="radio"
-            :value="'Point'"
-          >
+          <input v-model="state.newLightType" type="radio" :value="'Point'" />
           Point
         </label>
-        <br>
+        <br />
         <label>
-          <input
-            v-model="state.newLightType"
-            type="radio"
-            :value="'Parallel'"
-          >
+          <input v-model="state.newLightType" type="radio" :value="'Parallel'" />
           Parallel
         </label>
       </td>
@@ -134,47 +103,35 @@ const nRays = computed(() => {
     <!-- Lens -->
     <tr>
       <th colspan="3">
-        <hr><label><input
-          v-model="options.lens"
-          type="checkbox"
-        > Lens</label>
+        <hr />
+        <label><input v-model="options.lens" type="checkbox" /> Lens</label>
       </th>
     </tr>
     <template v-if="options.lens">
       <tr>
         <td>
-          <label><input
-            v-model="options.lensFocalPoints"
-            type="checkbox"
-          > Focal points</label>
+          <label><input v-model="options.lensFocalPoints" type="checkbox" /> Focal points</label>
         </td>
       </tr>
       <tr v-if="options.lensFocalPoints && options.advanced">
         <td>
-          <label><input
-            v-model="options.lensDoubleFocalPoints"
-            type="checkbox"
-          > 2x Focal
-            points</label>
+          <label
+            ><input v-model="options.lensDoubleFocalPoints" type="checkbox" /> 2x Focal
+            points</label
+          >
         </td>
       </tr>
     </template>
     <template v-if="options.lens">
       <tr>
         <td>
-          <label><input
-            v-model="options.lensIdeal"
-            type="checkbox"
-          > Ideal lens</label>
+          <label><input v-model="options.lensIdeal" type="checkbox" /> Ideal lens</label>
         </td>
       </tr>
       <template v-if="options.advanced">
         <tr>
           <td>
-            <label><input
-              v-model="options.curvature"
-              type="checkbox"
-            > Curvature</label>
+            <label><input v-model="options.curvature" type="checkbox" /> Curvature</label>
           </td>
           <td />
           <!-- <td>{{ humanReadable(lensR) }}</td> -->
@@ -185,11 +142,11 @@ const nRays = computed(() => {
             <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleConvexLens))">
               Convex
             </button>
-            <br>
+            <br />
             <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleConcaveLens))">
               Concave
             </button>
-            <br>
+            <br />
             <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleDoubletLens))">
               Doublet
             </button>
@@ -232,103 +189,72 @@ const nRays = computed(() => {
     <!-- Screen -->
     <tr>
       <th colspan="3">
-        <hr><label><input
-          v-model="options.sensor"
-          type="checkbox"
-        > Screen</label>
+        <hr />
+        <label><input v-model="options.sensor" type="checkbox" /> Screen</label>
       </th>
     </tr>
     <template v-if="options.sensor" />
     <!-- Other options -->
     <tr>
       <th colspan="3">
-        <hr>Other Options
+        <hr />
+        Other Options
       </th>
     </tr>
     <tr>
       <td>
-        <label><input
-          v-model="options.body"
-          type="checkbox"
-        > Body</label>
+        <label><input v-model="options.body" type="checkbox" /> Body</label>
       </td>
     </tr>
     <tr v-if="options.lens && options.sensor">
       <td>
-        <label><input
-          v-model="options.angleOfView"
-          type="checkbox"
-        > Guide lines</label>
+        <label><input v-model="options.angleOfView" type="checkbox" /> Guide lines</label>
       </td>
     </tr>
     <tr>
       <td>
-        <label><input
-          v-model="options.advanced"
-          type="checkbox"
-        > Advanced mode</label>
+        <label><input v-model="options.advanced" type="checkbox" /> Advanced mode</label>
       </td>
     </tr>
     <tr>
       <td>
-        <label><input
-          v-model="options.aperture"
-          type="checkbox"
-        > Aperture</label>
+        <label><input v-model="options.aperture" type="checkbox" /> Aperture</label>
       </td>
     </tr>
     <template v-if="options.advanced">
       <tr v-if="options.lens && options.sensor && options.circleOfConfusion">
         <td>
-          <label><input
-            v-model="options.depthOfField"
-            type="checkbox"
-          > Depth of field</label>
+          <label><input v-model="options.depthOfField" type="checkbox" /> Depth of field</label>
         </td>
       </tr>
-      <tr v-if="options.lens && options.sensor && options.circleOfConfusion && options.depthOfField">
+      <tr
+        v-if="options.lens && options.sensor && options.circleOfConfusion && options.depthOfField"
+      >
         <td>
-          <label><input
-            v-model="options.hyperfocalPoint"
-            type="checkbox"
-          > Hyperfocal
-            point</label>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label><input
-            v-model="options.grid"
-            type="checkbox"
-          > Grid</label>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <label><input
-            v-model="options.opticalAxis"
-            type="checkbox"
-          > Optical axis</label>
-        </td>
-      </tr>
-      <tr>
-        <td>UI stroke width</td>
-        <td>
-          <input
-            v-model.number="style.widthUI"
-            type="range"
-            min="0"
-            max="3"
-            step="0.01"
+          <label
+            ><input v-model="options.hyperfocalPoint" type="checkbox" /> Hyperfocal point</label
           >
         </td>
       </tr>
       <tr>
         <td>
-          <label><input
-            v-model="options.wavelength"
-            type="checkbox"
-          > Wavelength</label>
+          <label><input v-model="options.grid" type="checkbox" /> Grid</label>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label><input v-model="options.opticalAxis" type="checkbox" /> Optical axis</label>
+        </td>
+      </tr>
+      <tr>
+        <td>UI stroke width</td>
+        <td>
+          <input v-model.number="style.widthUI" type="range" min="0" max="3" step="0.01" />
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <label><input v-model="options.wavelength" type="checkbox" /> Wavelength</label>
         </td>
       </tr>
     </template>
@@ -336,7 +262,8 @@ const nRays = computed(() => {
     <template v-if="options.advanced">
       <tr>
         <th colspan="3">
-          <hr>Field
+          <hr />
+          Field
         </th>
       </tr>
       <tr>
@@ -369,15 +296,13 @@ const nRays = computed(() => {
     <template v-if="options.advanced">
       <tr>
         <th colspan="3">
-          <hr>Templates
+          <hr />
+          Templates
         </th>
       </tr>
       <tr>
         <td>
-          <label><input
-            v-model="options.apple"
-            type="checkbox"
-          >Apple</label>
+          <label><input v-model="options.apple" type="checkbox" />Apple</label>
         </td>
         <td />
         <td />
@@ -385,49 +310,28 @@ const nRays = computed(() => {
       <template v-if="options.apple">
         <tr>
           <td>
-            <div class="indent">
-              x
-            </div>
+            <div class="indent">x</div>
           </td>
           <td>
-            <label><input
-              v-model.number="appleProps.c.x"
-              type="number"
-            ></label>
+            <label><input v-model.number="appleProps.c.x" type="number" /></label>
           </td>
         </tr>
         <tr>
           <td>
-            <div class="indent">
-              r
-            </div>
+            <div class="indent">r</div>
           </td>
           <!-- <td><label><input type="number" v-model.number="appleProps.r"></label></td> -->
           <td>
-            <input
-              v-model.number="appleProps.r"
-              type="range"
-              min="0"
-              max="200"
-              step="0.01"
-            >
+            <input v-model.number="appleProps.r" type="range" min="0" max="200" step="0.01" />
           </td>
           <td>{{ humanReadable(appleProps.r) }}</td>
         </tr>
         <tr>
           <td>
-            <div class="indent">
-              n
-            </div>
+            <div class="indent">n</div>
           </td>
           <td>
-            <input
-              v-model.number="appleProps.n"
-              type="range"
-              min="0"
-              max="64"
-              step="1"
-            >
+            <input v-model.number="appleProps.n" type="range" min="0" max="64" step="1" />
           </td>
           <td>{{ appleProps.n }}</td>
         </tr>
@@ -438,27 +342,27 @@ const nRays = computed(() => {
 
 <style scoped>
 .indent {
-    padding-left: 1em;
+  padding-left: 1em;
 }
 
 table td {
-    vertical-align: top;
+  vertical-align: top;
 }
 
 table td:nth-child(1) {
-    padding-left: 1em;
-    text-align: left;
+  padding-left: 1em;
+  text-align: left;
 }
 
 table td:nth-child(2) {
-    text-align: left;
+  text-align: left;
 }
 
 table td:nth-child(3) {
-    text-align: right;
+  text-align: right;
 }
 
 input[type='number'] {
-    width: 5em;
+  width: 5em;
 }
 </style>

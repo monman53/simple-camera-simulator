@@ -3,35 +3,35 @@ import { computed } from 'vue'
 import { state, infR } from '../globals'
 
 const grid = computed(() => {
-    const xMin = state.value.c.x - state.value.width / 2 / state.value.scale;
-    const xMax = state.value.c.x + state.value.width / 2 / state.value.scale
-    const yMin = state.value.c.y - state.value.height / 2 / state.value.scale;
-    const yMax = state.value.c.y + state.value.height / 2 / state.value.scale;
-    const size = Math.max(xMax - xMin, yMax - yMin);
+  const xMin = state.value.c.x - state.value.width / 2 / state.value.scale
+  const xMax = state.value.c.x + state.value.width / 2 / state.value.scale
+  const yMin = state.value.c.y - state.value.height / 2 / state.value.scale
+  const yMax = state.value.c.y + state.value.height / 2 / state.value.scale
+  const size = Math.max(xMax - xMin, yMax - yMin)
 
-    // Normal grid
-    const interval = Math.pow(10, Math.floor(Math.log10(size * 0.3)));
-    const xs: number[] = []
-    const ys: number[] = []
-    for (let x = Math.floor(xMin / interval) * interval; x < xMax; x += interval) {
-        xs.push(x)
-    }
-    for (let y = Math.floor(yMin / interval) * interval; y < yMax; y += interval) {
-        ys.push(y)
-    }
+  // Normal grid
+  const interval = Math.pow(10, Math.floor(Math.log10(size * 0.3)))
+  const xs: number[] = []
+  const ys: number[] = []
+  for (let x = Math.floor(xMin / interval) * interval; x < xMax; x += interval) {
+    xs.push(x)
+  }
+  for (let y = Math.floor(yMin / interval) * interval; y < yMax; y += interval) {
+    ys.push(y)
+  }
 
-    // Bold grid
-    const boldInterval = interval * 10;
-    const bxs: number[] = []
-    const bys: number[] = []
-    for (let x = Math.floor(xMin / boldInterval) * boldInterval; x < xMax; x += boldInterval) {
-        bxs.push(x)
-    }
-    for (let y = Math.floor(yMin / boldInterval) * boldInterval; y < yMax; y += boldInterval) {
-        bys.push(y)
-    }
+  // Bold grid
+  const boldInterval = interval * 10
+  const bxs: number[] = []
+  const bys: number[] = []
+  for (let x = Math.floor(xMin / boldInterval) * boldInterval; x < xMax; x += boldInterval) {
+    bxs.push(x)
+  }
+  for (let y = Math.floor(yMin / boldInterval) * boldInterval; y < yMax; y += boldInterval) {
+    bys.push(y)
+  }
 
-    return { xs, ys, bxs, bys }
+  return { xs, ys, bxs, bys }
 })
 </script>
 

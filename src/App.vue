@@ -6,5 +6,4 @@ import Stage from './StageItem.vue'
   <Stage />
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

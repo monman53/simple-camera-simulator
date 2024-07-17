@@ -1,5 +1,4 @@
 <script lang="ts">
-
 export class LensPlane {
   x: Ref<number>
   r: Ref<number>
@@ -39,64 +38,62 @@ export class Lens {
     this.f = computed(() => {
       return calcLensInfo([this]).f
     })
-    this.r = computed(()=>{
+    this.r = computed(() => {
       return calcLensH(this)
     })
     this.H = computed(() => {
       return calcLensInfo([this]).H
     })
-    this.xcog = computed(()=>{
+    this.xcog = computed(() => {
       return calcLensXCOG(this)
     })
-    this.front= computed(()=>{
+    this.front = computed(() => {
       return calcLensFront(this)
     })
-    this.back= computed(()=>{
+    this.back = computed(() => {
       return calcLensBack(this)
     })
   }
 }
 
 const calcLensXCOG = (lens: Lens) => {
-    let x = 0
-    lens.planes.value.forEach((p) => {
-        x += calcLensPlaneEdge(p)
-    })
-    return x / lens.planes.value.length
+  let x = 0
+  lens.planes.value.forEach((p) => {
+    x += calcLensPlaneEdge(p)
+  })
+  return x / lens.planes.value.length
 }
 
 const calcLensPlaneEdge = (plane: LensPlane) => {
-    const x = plane.x.value
-    const r = plane.r.value
-    const h = plane.h.value
-    if (!isFinite(r)) {
-        return x
-    }
-    const d = Math.abs(r) - Math.sqrt(r * r - h * h)
-    if (r > 0) {
-        return x + d
-    } else {
-        return x - d
-    }
+  const x = plane.x.value
+  const r = plane.r.value
+  const h = plane.h.value
+  if (!isFinite(r)) {
+    return x
+  }
+  const d = Math.abs(r) - Math.sqrt(r * r - h * h)
+  if (r > 0) {
+    return x + d
+  } else {
+    return x - d
+  }
 }
 
 const calcLensH = (lens: Lens) => {
-    const hs = lens.planes.value.map(p => p.h.value)
-    // Find max h
-    hs.sort((a, b) => b - a)
-    return hs[0]
+  const hs = lens.planes.value.map((p) => p.h.value)
+  // Find max h
+  hs.sort((a, b) => b - a)
+  return hs[0]
 }
 
 // TODO: merge with calcLensBack
 const calcLensFront = (lens: Lens) => {
-    return calcLensPlaneEdge(lens.planes.value[0])
+  return calcLensPlaneEdge(lens.planes.value[0])
 }
 
 const calcLensBack = (lens: Lens) => {
-    return calcLensPlaneEdge(lens.planes.value[lens.planes.value.length - 1])
-
+  return calcLensPlaneEdge(lens.planes.value[lens.planes.value.length - 1])
 }
-
 </script>
 
 <script setup lang="ts">
@@ -110,13 +107,13 @@ import MoveUI from './MoveUI.vue'
 import type { CauchyParams } from '@/collection/lens'
 
 const props = defineProps<{
-  lens: Lens,
-  selected: boolean,
-  fixed: boolean,
+  lens: Lens
+  selected: boolean
+  fixed: boolean
 }>()
 
 const path = computed(() => {
-  let d = ""
+  let d = ''
   // Planes
   const planes = props.lens.planes.value
   const r = props.lens.r.value
@@ -152,19 +149,18 @@ const path = computed(() => {
 
     // Close
     d += `Z `
-
   }
   return d
 })
 
 const paths = computed(() => {
   const r = props.lens.r.value
-  return props.lens.planes.value.map(p => {
+  return props.lens.planes.value.map((p) => {
     const absR = Math.abs(p.r.value)
     const sweep = p.r.value > 0 ? 0 : 1
     const edge = p.edge.value
 
-    let d = ""
+    let d = ''
     d += `M ${edge} ${-r} L ${edge} ${-p.h.value} `
     if (isFinite(p.r.value)) {
       d += `A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h.value} `
@@ -178,7 +174,7 @@ const paths = computed(() => {
 
 const planeMoveStartHandler = (plane: LensPlane) => {
   return () => {
-    const x0 = plane.x.value;
+    const x0 = plane.x.value
     return (e: any, d: Vec) => {
       // TODO
       plane.x.value = x0 + d.x
@@ -188,7 +184,7 @@ const planeMoveStartHandler = (plane: LensPlane) => {
 
 const hChangeStartHandler = (plane: LensPlane) => {
   return () => {
-    const h0 = plane.h.value;
+    const h0 = plane.h.value
     return (e: any, d: Vec) => {
       if (h0 - d.y > Math.abs(plane.r.value)) {
         plane.h.value = Math.abs(plane.r.value)
@@ -217,19 +213,18 @@ const rMoveStartHandler = (plane: LensPlane) => {
 const apertureSizeChangeStartHandler = () => {
   const lens = props.lens
   const r = lens.r.value
-  const a0 = lens.aperture.value * r;
+  const a0 = lens.aperture.value * r
   return (e: any, d: Vec) => {
-    const an = (a0 + d.y) / r;
+    const an = (a0 + d.y) / r
     if (an < 0) {
-      lens.aperture.value = 0;
+      lens.aperture.value = 0
     } else if (an > 1) {
-      lens.aperture.value = 1;
+      lens.aperture.value = 1
     } else {
-      lens.aperture.value = an;
+      lens.aperture.value = an
     }
   }
 }
-
 </script>
 
 <template>
@@ -240,9 +235,20 @@ const apertureSizeChangeStartHandler = () => {
       <WithBackground>
         <g class="stroke-white thicker fill-none">
           <template v-for="(plane, idx) of lens.planes.value" :key="idx">
-            <circle v-if="isFinite(plane.r.value)" :cx="plane.x.value + plane.r.value" :cy="0" :r="Math.abs(plane.r.value)" />
+            <circle
+              v-if="isFinite(plane.r.value)"
+              :cx="plane.x.value + plane.r.value"
+              :cy="0"
+              :r="Math.abs(plane.r.value)"
+            />
             <!-- Infinity curvature -->
-            <line v-if="!isFinite(plane.r.value)" :x1="plane.x.value" :y1="-infR" :x2="plane.x.value" :y2="infR" />
+            <line
+              v-if="!isFinite(plane.r.value)"
+              :x1="plane.x.value"
+              :y1="-infR"
+              :x2="plane.x.value"
+              :y2="infR"
+            />
           </template>
         </g>
       </WithBackground>
@@ -289,13 +295,26 @@ const apertureSizeChangeStartHandler = () => {
       <WithBackground>
         <!-- Lines -->
         <g class="stroke-white normal no-pointer-events">
-          <line :x1="lens.xcog.value" :y1="-lens.r.value" :x2="lens.xcog.value" :y2="-lens.r.value * lens.aperture.value" />
-          <line :x1="lens.xcog.value" :y1="lens.r.value" :x2="lens.xcog.value" :y2="lens.r.value * lens.aperture.value" />
+          <line
+            :x1="lens.xcog.value"
+            :y1="-lens.r.value"
+            :x2="lens.xcog.value"
+            :y2="-lens.r.value * lens.aperture.value"
+          />
+          <line
+            :x1="lens.xcog.value"
+            :y1="lens.r.value"
+            :x2="lens.xcog.value"
+            :y2="lens.r.value * lens.aperture.value"
+          />
         </g>
       </WithBackground>
       <!-- UI -->
       <MoveUI v-if="!fixed" :handler-creator="apertureSizeChangeStartHandler">
-        <CircleUI :c="vec(lens.xcog.value, lens.r.value * lens.aperture.value)" class="vertical-resize" />
+        <CircleUI
+          :c="vec(lens.xcog.value, lens.r.value * lens.aperture.value)"
+          class="vertical-resize"
+        />
       </MoveUI>
     </g>
 

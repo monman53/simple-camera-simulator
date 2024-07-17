@@ -1,35 +1,35 @@
 body {
-    margin: 0;
+  margin: 0;
 }
 
 .pointer {
-    cursor: -webkit-pointer;
-    cursor: pointer;
+  cursor: -webkit-pointer;
+  cursor: pointer;
 }
 
 .grab {
-    cursor: -webkit-grab;
-    cursor: grab;
+  cursor: -webkit-grab;
+  cursor: grab;
 }
 
 .grab:active {
-    cursor: -webkit-grabbing;
-    cursor: grabbing;
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
 }
 
 .grabbing {
-    cursor: -webkit-grabbing;
-    cursor: grabbing;
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
 }
 
 .move {
-    cursor: move;
+  cursor: move;
 }
 
 .horizontal-resize {
-    cursor: col-resize;
+  cursor: col-resize;
 }
 
 .vertical-resize {
-    cursor: row-resize;
+  cursor: row-resize;
 }

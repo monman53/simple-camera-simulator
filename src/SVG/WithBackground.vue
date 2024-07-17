@@ -1,9 +1,9 @@
 <script setup lang="ts">
 defineProps({
-    ui: {
-        type: Boolean,
-        default: false,
-    }
+  ui: {
+    type: Boolean,
+    default: false
+  }
 })
 </script>
 
@@ -14,10 +14,7 @@ defineProps({
   <g class="foreground">
     <slot />
   </g>
-  <g
-    v-if="ui"
-    class="ui"
-  >
+  <g v-if="ui" class="ui">
     <slot />
   </g>
 </template>

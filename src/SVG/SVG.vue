@@ -1,6 +1,5 @@
 <script lang="ts">
-
-let svg = ref();
+let svg = ref()
 
 // Methods
 export const getPositionOnSvg = (e: any) => {
@@ -11,14 +10,14 @@ export const getPositionOnSvg = (e: any) => {
 }
 
 export const getPositionOnSvgApp = (e: any) => {
-  const m = getPositionOnSvg(e);
-  const x = (m.x - state.value.width / 2) / state.value.scale + state.value.c.x;
-  const y = (m.y - state.value.height / 2) / state.value.scale + state.value.c.y;
+  const m = getPositionOnSvg(e)
+  const x = (m.x - state.value.width / 2) / state.value.scale + state.value.c.x
+  const y = (m.y - state.value.height / 2) / state.value.scale + state.value.c.y
   return vec(x, y)
 }
 
 const getPositionDiffOnSvgApp = (e: any, m0: Vec) => {
-  const m = getPositionOnSvg(e);
+  const m = getPositionOnSvg(e)
   const d = m.inplaceSub(m0).inplaceDiv(state.value.scale)
   return d
 }
@@ -29,7 +28,7 @@ export const preventDefaultAndStopPropagation = (e: any) => {
 }
 
 // Elements move system on SVG
-let moveHandlerWithM0: any = null;
+let moveHandlerWithM0: any = null
 let m0: Vec
 export const setMoveHandlerWithM0 = (h: any, m: Vec) => {
   moveHandlerWithM0 = h
@@ -37,7 +36,7 @@ export const setMoveHandlerWithM0 = (h: any, m: Vec) => {
 }
 
 const svgMoveHandler = (e: any) => {
-  e.preventDefault();
+  e.preventDefault()
   state.value.pointerPos = getPositionOnSvgApp(e)
   if (moveHandlerWithM0 !== null) {
     preventDefaultAndStopPropagation(e)
@@ -53,7 +52,20 @@ const svgMoveEndHandler = () => {
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { state, lights, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted, lensGroups } from '../globals'
+import {
+  state,
+  lights,
+  style,
+  apple,
+  options,
+  infR,
+  rUI,
+  globalLensInfo,
+  globalLensRe,
+  lensExist,
+  lensesSorted,
+  lensGroups
+} from '../globals'
 import { Vec, vec } from '../math'
 
 import Grid from './GridItem.vue'
@@ -72,16 +84,16 @@ import { releaseALlItems } from '@/utils'
 const svgScaleHandler = (e: any) => {
   preventDefaultAndStopPropagation(e)
   // Zoom in/out
-  const p = getPositionOnSvgApp(e);
-  const scaleFactor = 1.2;
-  const r = e.deltaY > 0 ? scaleFactor : 1 / scaleFactor;
+  const p = getPositionOnSvgApp(e)
+  const scaleFactor = 1.2
+  const r = e.deltaY > 0 ? scaleFactor : 1 / scaleFactor
   state.value.c = state.value.c.add(p.sub(state.value.c).mul(1 - r))
-  state.value.scale /= r;
+  state.value.scale /= r
 }
 
 const svgViewBox = computed(() => {
-  const x = state.value.c.x - state.value.width * 0.5 / state.value.scale
-  const y = state.value.c.y - state.value.height * 0.5 / state.value.scale
+  const x = state.value.c.x - (state.value.width * 0.5) / state.value.scale
+  const y = state.value.c.y - (state.value.height * 0.5) / state.value.scale
   const w = state.value.width / state.value.scale
   const h = state.value.height / state.value.scale
   return `${x} ${y} ${w} ${h}`
@@ -101,7 +113,7 @@ const strokeWidth = computed(() => {
     thickerBg: 0.2 * scale * scaleBg,
     thickBg: 0.6 * scale * scaleBg,
     normalBg: 1 * scale * scaleBg,
-    boldBg: 2 * scale * scaleBg,
+    boldBg: 2 * scale * scaleBg
   }
 })
 
@@ -119,8 +131,8 @@ const move = () => {
 }
 
 const pupilPath = computed(() => {
-  let top = ""
-  let bottom = ""
+  let top = ''
+  let bottom = ''
   const path = globalLensRe.value.forward.pathTop
   for (let i = 0; i < path.length; i++) {
     const s = path[i]
@@ -134,7 +146,6 @@ const pupilPath = computed(() => {
   }
   return { top, bottom }
 })
-
 </script>
 
 <template>
@@ -151,16 +162,9 @@ const pupilPath = computed(() => {
       @wheel="svgScaleHandler"
       @dblclick="addLight"
     >
-
       <!-- Optical axis -->
       <g v-if="options.opticalAxis">
-        <line
-          :x1="-infR"
-          y1="0"
-          :x2="infR"
-          y2="0"
-          class="stroke-white thicker"
-        />
+        <line :x1="-infR" y1="0" :x2="infR" y2="0" class="stroke-white thicker" />
       </g>
 
       <!-- Grid -->
@@ -171,7 +175,9 @@ const pupilPath = computed(() => {
       <Body v-if="options.body" />
 
       <!-- Guidelines -->
-      <Guideline v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView" />
+      <Guideline
+        v-if="options.lens && lensesSorted.length === 1 && options.sensor && options.angleOfView"
+      />
 
       <!-- Global focal point -->
       <g v-if="options.lens && options.lensFocalPoints && lensExist">
@@ -197,14 +203,8 @@ const pupilPath = computed(() => {
 
       <!-- Items -->
       <g v-if="options.lens">
-        <g
-          v-for="(lensGroup, idx) in lensGroups"
-          :key="idx"
-        >
-          <LensGroup
-            :lens-group
-            :idx
-          />
+        <g v-for="(lensGroup, idx) in lensGroups" :key="idx">
+          <LensGroup :lens-group :idx />
         </g>
       </g>
 
@@ -213,10 +213,7 @@ const pupilPath = computed(() => {
 
       <!-- Apple -->
       <g v-if="options.apple">
-        <g
-          v-for="(light, idx) of apple"
-          :key="idx"
-        >
+        <g v-for="(light, idx) of apple" :key="idx">
           <WithBackground>
             <circle
               :cx="light.c.x"
@@ -235,15 +232,8 @@ const pupilPath = computed(() => {
       </g>
 
       <!-- Lights -->
-      <g
-        v-for="(light, idx) of lights"
-        :key="idx"
-      >
-        <LightSVG
-          :light
-          :idx
-          class="grab"
-        />
+      <g v-for="(light, idx) of lights" :key="idx">
+        <LightSVG :light :idx class="grab" />
       </g>
 
       <!-- Sensor -->
