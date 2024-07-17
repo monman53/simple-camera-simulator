@@ -25,6 +25,7 @@ export class Lens {
   h: ComputedRef<number>
   f: ComputedRef<number>
   H: ComputedRef<number>
+  r: ComputedRef<number>
   xcog: ComputedRef<number>
   front: ComputedRef<number>
   back: ComputedRef<number>
@@ -37,6 +38,9 @@ export class Lens {
     })
     this.f = computed(() => {
       return calcLensInfo([this]).f
+    })
+    this.r = computed(()=>{
+      return calcLensH(this)
     })
     this.H = computed(() => {
       return calcLensInfo([this]).H
@@ -111,18 +115,11 @@ const props = defineProps<{
   fixed: boolean,
 }>()
 
-const xm = computed(() => {
-  return calcLensXCOG(props.lens)
-})
-
-const r = computed(() => {
-  return calcLensH(props.lens)
-})
-
 const path = computed(() => {
   let d = ""
   // Planes
   const planes = props.lens.planes.value
+  const r = props.lens.r.value
   for (let i = 0; i < planes.length - 1; i++) {
     const p1 = planes[i] // left
     const p2 = planes[i + 1] //right
@@ -134,24 +131,24 @@ const path = computed(() => {
     const sweep2 = p2.r.value > 0 ? 1 : 0
 
     // left
-    d += `M ${edge1} ${-r.value} `
+    d += `M ${edge1} ${-r} `
     d += `L ${edge1} ${-p1.h.value} `
     if (isFinite(p1.r.value)) {
       d += `A ${absR1} ${absR1} 0 0 ${sweep1} ${edge1} ${p1.h.value} `
     } else {
       d += `L ${edge1} ${p1.h.value} `
     }
-    d += `L ${edge1} ${r.value} `
+    d += `L ${edge1} ${r} `
 
     // right
-    d += `L ${edge2} ${r.value} `
+    d += `L ${edge2} ${r} `
     d += `L ${edge2} ${p2.h.value} `
     if (isFinite(p2.r.value)) {
       d += `A ${absR2} ${absR2} 0 0 ${sweep2} ${edge2} ${-p2.h.value} `
     } else {
       d += `L ${edge2} ${-p2.h.value} `
     }
-    d += `L ${edge2} ${-r.value} `
+    d += `L ${edge2} ${-r} `
 
     // Close
     d += `Z `
@@ -161,19 +158,20 @@ const path = computed(() => {
 })
 
 const paths = computed(() => {
+  const r = props.lens.r.value
   return props.lens.planes.value.map(p => {
     const absR = Math.abs(p.r.value)
     const sweep = p.r.value > 0 ? 0 : 1
     const edge = p.edge.value
 
     let d = ""
-    d += `M ${edge} ${-r.value} L ${edge} ${-p.h.value} `
+    d += `M ${edge} ${-r} L ${edge} ${-p.h.value} `
     if (isFinite(p.r.value)) {
       d += `A ${absR} ${absR} 0 0 ${sweep} ${edge} ${p.h.value} `
     } else {
       d += `L ${edge} ${p.h.value}`
     }
-    d += `L ${edge} ${r.value}`
+    d += `L ${edge} ${r}`
     return d
   })
 })
@@ -218,9 +216,10 @@ const rMoveStartHandler = (plane: LensPlane) => {
 
 const apertureSizeChangeStartHandler = () => {
   const lens = props.lens
-  const a0 = props.lens.aperture.value * r.value;
+  const r = lens.r.value
+  const a0 = lens.aperture.value * r;
   return (e: any, d: Vec) => {
-    const an = (a0 + d.y) / r.value;
+    const an = (a0 + d.y) / r;
     if (an < 0) {
       lens.aperture.value = 0;
     } else if (an > 1) {
@@ -290,13 +289,13 @@ const apertureSizeChangeStartHandler = () => {
       <WithBackground>
         <!-- Lines -->
         <g class="stroke-white normal no-pointer-events">
-          <line :x1="xm" :y1="-r" :x2="xm" :y2="-r * lens.aperture.value" />
-          <line :x1="xm" :y1="r" :x2="xm" :y2="r * lens.aperture.value" />
+          <line :x1="lens.xcog.value" :y1="-lens.r.value" :x2="lens.xcog.value" :y2="-lens.r.value * lens.aperture.value" />
+          <line :x1="lens.xcog.value" :y1="lens.r.value" :x2="lens.xcog.value" :y2="lens.r.value * lens.aperture.value" />
         </g>
       </WithBackground>
       <!-- UI -->
       <MoveUI v-if="!fixed" :handler-creator="apertureSizeChangeStartHandler">
-        <CircleUI :c="vec(xm, r * lens.aperture.value)" class="vertical-resize" />
+        <CircleUI :c="vec(lens.xcog.value, lens.r.value * lens.aperture.value)" class="vertical-resize" />
       </MoveUI>
     </g>
 
