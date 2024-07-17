@@ -53,7 +53,7 @@ const svgMoveEndHandler = () => {
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { state, lights, lensGroups, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted } from '../globals'
+import { state, lights, style, apple, options, infR, rUI, globalLensInfo, globalLensRe, lensExist, lensesSorted, lensGroups } from '../globals'
 import { Vec, vec } from '../math'
 
 import Grid from './GridItem.vue'

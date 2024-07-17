@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { aperture, body, lensCOGs, lensesSorted, lensFronts, lensGroups, options, sensor } from '@/globals';
+import { aperture, body, lensesSorted, lensGroups, options, sensor } from '@/globals';
 import WithBackground from './WithBackground.vue';
 import MoveUI from './MoveUI.vue';
 import type { Vec } from '@/math';
@@ -63,29 +63,29 @@ const move = () => {
           >
             <g v-if="options.lensIdeal">
               <line
-                :x1="lensCOGs[idx]"
+                :x1="lens.xcog.value"
                 :y1="-body.r"
-                :x2="lensCOGs[idx]"
+                :x2="lens.xcog.value"
                 :y2="-lens.h.value"
               />
               <line
-                :x1="lensCOGs[idx]"
+                :x1="lens.xcog.value"
                 :y1="body.r"
-                :x2="lensCOGs[idx]"
+                :x2="lens.xcog.value"
                 :y2="lens.h.value"
               />
             </g>
             <g v-else>
               <line
-                :x1="lensFronts[idx]"
+                :x1="lens.front.value"
                 :y1="-body.r"
-                :x2="lensFronts[idx]"
+                :x2="lens.front.value"
                 :y2="-lens.h.value"
               />
               <line
-                :x1="lensFronts[idx]"
+                :x1="lens.front.value"
                 :y1="body.r"
-                :x2="lensFronts[idx]"
+                :x2="lens.front.value"
                 :y2="lens.h.value"
               />
             </g>

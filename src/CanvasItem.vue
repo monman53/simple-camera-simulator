@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { watch, onMounted, ref } from 'vue'
 
-import { state, lights, lensGroups, sensor, sensorData, apple, options, style, lensesSorted, aperture, body } from './globals'
+import { state, lights, sensor, sensorData, apple, options, style, lensesSorted, aperture, body, lensGroups } from './globals'
 import { Vec, vec, vecRad } from './math'
 
 import { type Ray } from './type'

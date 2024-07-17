@@ -1,7 +1,7 @@
 import type { CauchyParams } from "./collection/lens";
-import { calcLensInfo, infR, options } from "./globals";
-import { calcDispersion, calcLensBack, calcLensFront, calcLensPlaneEdge, calcLensXCOG, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
-import type { Lens } from "./SVG/LensItem.vue";
+import { infR, options } from "./globals";
+import { calcDispersion, crossAngle, dot, eps, fGaussian, intersectionCL, intersectionLS, intersectionX, intersectionY, vec, vecRad, type Vec } from "./math";
+import { calcLensPlaneEdge, type Lens } from "./SVG/LensItem.vue";
 import type { Aperture, Body, Ray, Sensor } from "./type";
 
 type CollisionResult = ({ p: Vec, d: number, isSensor?: boolean, isAperture?: boolean, isEnd?: boolean, vn?: () => Vec } | null)
@@ -217,10 +217,10 @@ const collisionAll = (rays: Ray[], lenses: Lens[], apertures: Aperture[], sensor
     lenses.forEach(lens => {
         // Lens
         const h = lens.h.value
-        const f = calcLensInfo([lens]).f
-        const xm = calcLensXCOG(lens)
-        const front = calcLensFront(lens)
-        const back = calcLensBack(lens)
+        const f = lens.f.value
+        const xm = lens.xcog.value
+        const front = lens.front.value
+        const back = lens.back.value
 
         // Lens surface
         if (options.value.lensIdeal) {

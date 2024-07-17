@@ -1,6 +1,5 @@
 import { wavelength } from "./collection/color"
 import type { CauchyParams } from "./collection/lens"
-import type { Lens, LensPlane } from "./SVG/LensItem.vue"
 
 //================================
 // Liner algebra
@@ -282,57 +281,6 @@ export const fGaussian = (f: number, a: Vec) => {
     const by = a.y * (bx / a.x)
     return vec(bx, by)
 }
-
-export const calcLensXCOG = (lens: Lens) => {
-    let x = 0
-    lens.planes.value.forEach((p) => {
-        x += calcLensPlaneEdge(p)
-    })
-    return x / lens.planes.value.length
-}
-
-export const calcLensMaxX = (lens: Lens) => {
-    return lens.planes.value[lens.planes.value.length - 1].x
-}
-
-export const calcLensPlaneEdge = (plane: LensPlane) => {
-    const x = plane.x
-    const r = plane.r
-    const h = plane.h
-    if (!isFinite(r)) {
-        return x
-    }
-    const d = Math.abs(r) - Math.sqrt(r * r - h * h)
-    if (r > 0) {
-        return x + d
-    } else {
-        return x - d
-    }
-}
-
-export const calcLensH = (lens: Lens) => {
-    const hs = lens.planes.value.map(p => p.h)
-    // Find max h
-    hs.sort((a, b) => b - a)
-    return hs[0]
-}
-
-// TODO: merge with calcLensBack
-export const calcLensFront = (lens: Lens) => {
-    return calcLensPlaneEdge(lens.planes.value[0])
-}
-
-export const calcLensBack = (lens: Lens) => {
-    return calcLensPlaneEdge(lens.planes.value[lens.planes.value.length - 1])
-
-}
-
-// Just for demo
-export const calcLensNWavelength = (n: number, color: number) => {
-    const d = (color - (360 / 2)) * 0.0002 + 1.0
-    return d * n
-}
-
 
 //================================
 // Miscellaneous

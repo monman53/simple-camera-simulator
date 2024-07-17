@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { state, lensGroups, appleProps, options, style, globalLensInfo, globalLensRe } from './globals'
+import { state, appleProps, options, style, globalLensInfo, globalLensRe, lensGroups } from './globals'
 import { humanReadable } from './utils';
 import { createLensGroup, exampleConcaveLens, exampleConvexLens, exampleDoubletLens } from './collection/lens';
 import { lightHSL, wavelength } from './collection/color';

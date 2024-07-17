@@ -1,5 +1,5 @@
 import { ref, computed, watch, shallowRef } from "vue"
-import { calcLensFront, vec, calcLensBack, calcLensXCOG, calcLensMaxX, calcLensPlaneEdge, calcDispersion } from "./math"
+import { vec, calcDispersion } from "./math"
 import { type Aperture, type Body, type LightPoint, type LightType, type Ray, type Sensor } from "./type"
 import { wavelength } from "./collection/color"
 import { createLensGroup, exampleConvexLens, exampleTestLens } from "./collection/lens"
@@ -55,7 +55,7 @@ export const lensGroups = shallowRef(lensGroups0())
 const lensSort = (lenses: Lens[]) => {
     lenses.sort((a, b) => {
         if (options.value.lensIdeal) {
-            return calcLensXCOG(a) - calcLensXCOG(b)
+            return a.xcog.value - b.xcog.value
         } else {
             return a.planes.value[0].x - b.planes.value[0].x
         }
@@ -66,40 +66,6 @@ export const lensesSorted = computed(() => {
     const res = lensGroups.value.filter(g => g.enabled).reduce((acc: Lens[], cur: LensGroup) => { return acc.concat(cur.lenses.value) }, [])
     lensSort(res)
     return res
-})
-
-export const lensFs = computed(() => {
-    return lensesSorted.value.map((lens) => calcLensInfo([lens]).f)
-})
-
-// export const lensRs = computed(() => {
-//     return lensesSorted.value.map((lens) => calcLensR(lens))
-// })
-
-export const lensFronts = computed(() => {
-    return lensesSorted.value.map((lens) => {
-        return calcLensFront(lens)
-    })
-})
-
-export const lensBacks = computed(() => {
-    return lensesSorted.value.map((lens) => {
-        return calcLensBack(lens)
-    })
-})
-
-export const lensCOGs = computed(() => {
-    return lensesSorted.value.map((lens) => {
-        return calcLensXCOG(lens)
-    })
-})
-
-export const lensPlaneEdges = computed(() => {
-    return lensesSorted.value.map((lens) => {
-        return lens.planes.value.map(p => {
-            return calcLensPlaneEdge(p)
-        })
-    })
 })
 
 export const releaseAllLenses = () => {
@@ -305,9 +271,9 @@ export const calcBody = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[
         const fronts: number[] = []
         fronts.push(...lenses.map(lens => {
             if (options.value.lensIdeal) {
-                return calcLensXCOG(lens)
+                return lens.xcog.value
             } else {
-                return calcLensFront(lens)
+                return lens.front.value
             }
         }))
         fronts.push(...apertures.map(a => a.x))
@@ -322,7 +288,7 @@ export const calcBody = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[
             return Math.max(sensor.s.x, sensor.t.x) + padding
         }))
         backs.push(...lenses.map(lens => {
-            return calcLensFront(lens)
+            return lens.front.value
         }))
         backs.push(...apertures.map(a => a.x + padding))
         back = Math.max(...backs)
@@ -368,7 +334,7 @@ export const calcLensInfo = (lenses: Lens[]) => {
             if (options.value.lensIdeal) {
                 if (j === lens.planes.value.length - 1) {
                     if (idx !== lenses.length - 1) {
-                        d = calcLensXCOG(lenses[idx + 1]) - calcLensXCOG(lenses[idx])
+                        d = lenses[idx + 1].xcog.value - lenses[idx].xcog.value
                     }
                 }
             } else {
@@ -411,9 +377,9 @@ export const calcLensInfo = (lenses: Lens[]) => {
     let H = 0
     if (lenses.length > 0) {
         if (options.value.lensIdeal) {
-            H = calcLensXCOG(lenses[lenses.length - 1]) + lss[lss.length - 1] - f
+            H = lenses[lenses.length - 1].xcog.value + lss[lss.length - 1] - f
         } else {
-            H = calcLensMaxX(lenses[lenses.length - 1]) + lss[lss.length - 1] - f
+            H = lenses[lenses.length - 1].xcog.value + lss[lss.length - 1] - f
         }
     }
     return { f, H }
