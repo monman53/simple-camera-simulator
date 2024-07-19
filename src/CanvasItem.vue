@@ -16,8 +16,7 @@ import {
 } from './globals'
 import { Vec, vec, vecRad } from './math'
 
-import { type Ray } from './type'
-import { rayTrace } from './rayTrace'
+import { rayTrace, type Ray } from './rayTrace'
 import { lightHSL } from './collection/color'
 
 // Reference to the canvas

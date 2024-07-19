@@ -14,9 +14,17 @@ import {
   vecRad,
   type Vec
 } from './math'
+import type { Aperture } from './SVG/ApertureItem.vue'
 import type { Body } from './SVG/BodyItem.vue'
 import { Lens } from './SVG/LensItem.vue'
-import type { Aperture, Ray, Sensor } from './type'
+import type { Sensor } from './SVG/SensorItem.vue'
+
+export type Ray = {
+  s: Vec
+  v: Vec
+  wavelength: number
+  idx: number
+}
 
 type CollisionResult = {
   p: Vec

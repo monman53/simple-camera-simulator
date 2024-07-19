@@ -1,4 +1,10 @@
 <script lang="ts">
+export type Sensor = {
+  s: Vec
+  t: Vec
+  circleOfConfusion: number
+}
+
 export const resizeSensor = (r: number) => {
   const s0 = sensor.value.s.copy()
   const t0 = sensor.value.t.copy()

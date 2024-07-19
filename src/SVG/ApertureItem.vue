@@ -1,3 +1,9 @@
+<script lang="ts">
+export type Aperture = {
+  x: number
+  r: number
+}
+</script>
 <script setup lang="ts">
 import { aperture, body, style } from '@/globals'
 import WithBackground from './WithBackground.vue'

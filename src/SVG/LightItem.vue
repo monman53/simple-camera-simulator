@@ -1,4 +1,8 @@
 <script lang="ts">
+export type LightPoint = { type: 'Point'; c: Vec; wavelengths: number[] }
+export type LightParallel = { type: 'Parallel'; s: Vec; t: Vec; wavelengths: number[] }
+export type LightType = LightPoint | LightParallel
+
 export const addLight = (e: any) => {
   preventDefaultAndStopPropagation(e)
   const m = getPositionOnSvgApp(e)
@@ -31,7 +35,6 @@ import { Vec, vec } from '../math'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 import MoveUI from './MoveUI.vue'
-import type { LightParallel, LightType } from '@/type'
 import { lightHSL, wavelength } from '@/collection/color'
 import { getPositionOnSvgApp, preventDefaultAndStopPropagation } from './SVG.vue'
 
