@@ -22,20 +22,6 @@ import { lightHSL, wavelengthCollection } from './collection/color'
   <table>
     <!-- Rays -->
     <tr>
-      <td>Intensity</td>
-      <td>
-        <input v-model.number="style.rayIntensity" type="range" min="0" max="1" step="0.001" />
-      </td>
-      <td>{{ humanReadable(style.rayIntensity) }}</td>
-    </tr>
-    <tr>
-      <td>Ray thickness</td>
-      <td>
-        <input v-model.number="style.rayWidth" type="range" min="0.01" max="1" step="0.001" />
-      </td>
-      <td>{{ humanReadable(style.rayWidth) }}</td>
-    </tr>
-    <tr>
       <td>New light color</td>
       <td>
         <label>

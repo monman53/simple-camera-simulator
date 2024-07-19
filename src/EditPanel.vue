@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { resizeSensor } from './SVG/SensorItem.vue'
-import { calcLensInfo, lensGroups, lights, options, sensor } from './globals'
+import { calcLensInfo, lensGroups, lights, options, sensor, style } from './globals'
 import { humanReadable, removeElement } from './utils'
 import { groupLensGroups, ungroupLensGroup } from './SVG/LensGroupItem.vue'
 import { wavelengthCollection } from './collection/color'
@@ -172,6 +172,18 @@ const nSelectedLenses = computed(() => {
           <input type="checkbox" v-model="light.isComposite.value" />
           Composite
           <br />
+        </label>
+        <h4>Global parameters</h4>
+        <label>
+          Intensity ({{ humanReadable(style.rayIntensity) }})
+          <br />
+          <input v-model.number="style.rayIntensity" type="range" min="0" max="1" step="0.001" />
+        </label>
+        <br />
+        <label>
+          Ray thickness ({{ humanReadable(style.rayWidth) }})
+          <br />
+          <input v-model.number="style.rayWidth" type="range" min="0.01" max="1" step="0.001" />
         </label>
       </template>
     </template>
