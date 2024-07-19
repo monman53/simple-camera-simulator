@@ -150,7 +150,7 @@ const nSelectedLenses = computed(() => {
         </template>
         <template v-else>
           <label>
-            Color
+            Wavelength ({{ light.wavelength.value }})
             <br />
             <input
               v-model="light.wavelength.value"
@@ -159,8 +159,13 @@ const nSelectedLenses = computed(() => {
               :max="wavelengthCollection.max"
               step="0.001"
             />
-            <br />
           </label>
+          <br />
+          <button @click="light.wavelength.value = wavelengthCollection.blue">Blue</button>
+          <button @click="light.wavelength.value = wavelengthCollection.green">Green</button>
+          <button @click="light.wavelength.value = wavelengthCollection.yellow">Yellow</button>
+          <button @click="light.wavelength.value = wavelengthCollection.red">Red</button>
+          <br />
         </template>
         <h4>Options</h4>
         <label>
