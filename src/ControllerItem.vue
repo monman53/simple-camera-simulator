@@ -1,20 +1,6 @@
 <script setup lang="ts">
-import {
-  state,
-  appleProps,
-  options,
-  style,
-  globalLensInfo,
-  globalLensRe,
-  lensGroups
-} from './globals'
+import { state, appleProps, options, style, globalLensInfo, globalLensRe } from './globals'
 import { humanReadable } from './utils'
-import {
-  createLensGroup,
-  exampleConcaveLens,
-  exampleConvexLens,
-  exampleDoubletLens
-} from './collection/lens'
 import { lightHSL, wavelengthCollection } from './collection/color'
 </script>
 
@@ -90,41 +76,6 @@ import { lightHSL, wavelengthCollection } from './collection/color'
     </template>
     <template v-if="options.lens">
       <tr>
-        <td>
-          <label><input v-model="options.lensIdeal" type="checkbox" /> Ideal lens</label>
-        </td>
-      </tr>
-      <template v-if="options.advanced">
-        <tr>
-          <td>
-            <label><input v-model="options.curvature" type="checkbox" /> Curvature</label>
-          </td>
-          <td />
-          <!-- <td>{{ humanReadable(lensR) }}</td> -->
-        </tr>
-        <tr>
-          <td>Add Lens</td>
-          <td>
-            <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleConvexLens))">
-              Convex
-            </button>
-            <br />
-            <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleConcaveLens))">
-              Concave
-            </button>
-            <br />
-            <button @click="lensGroups = lensGroups.concat(createLensGroup(exampleDoubletLens))">
-              Doublet
-            </button>
-          </td>
-        </tr>
-        <!-- <tr>
-                    <td>Refractive index</td>
-                    <td><input type="range" min="1.01" max="3" step="0.001" v-model.number="lens.n"></td>
-                    <td>{{ humanReadable(lens.n) }}</td>
-                </tr> -->
-      </template>
-      <tr>
         <td>Focal Length</td>
         <td />
         <td>{{ humanReadable(globalLensInfo.f) }}</td>
@@ -170,6 +121,16 @@ import { lightHSL, wavelengthCollection } from './collection/color'
     <tr>
       <td>
         <label><input v-model="options.body" type="checkbox" /> Body</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label><input v-model="options.lensIdeal" type="checkbox" /> Ideal lens</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label><input v-model="options.curvature" type="checkbox" /> Curvature</label>
       </td>
     </tr>
     <tr v-if="options.lens && options.sensor">
@@ -218,11 +179,11 @@ import { lightHSL, wavelengthCollection } from './collection/color'
           <input v-model.number="style.widthUI" type="range" min="0" max="3" step="0.01" />
         </td>
       </tr>
-      <tr>
+      <!-- <tr>
         <td>
           <label><input v-model="options.wavelength" type="checkbox" /> Wavelength</label>
         </td>
-      </tr>
+      </tr> -->
     </template>
     <!-- Field -->
     <template v-if="options.advanced">

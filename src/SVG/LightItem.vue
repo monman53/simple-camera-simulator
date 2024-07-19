@@ -79,6 +79,7 @@ import MoveUI from './MoveUI.vue'
 import { lightHSL, wavelengthCollection } from '@/collection/color'
 import { getPositionOnSvgApp, preventDefaultAndStopPropagation } from './SVG.vue'
 import type { ComputedRef } from 'vue'
+import { releaseALlItems } from '@/utils'
 
 const props = defineProps<{
   light: LightType
@@ -135,15 +136,19 @@ const parallelLightNodeMoveStartHandler = (idx: number, light: LightParallel) =>
 
 const move = (idx: number) => {
   return () => {
-    // Last touched light is always front
     const light = lights.value[idx]
+
+    // Selection
+    releaseALlItems()
+    light.selected.value = true
+
+    // Last touched light is always front
     const newLights = lights.value.filter((light, i) => {
       return i !== idx
     })
     newLights.push(light)
     lights.value = newLights
     triggerRef(lights)
-    light.selected.value = true
 
     if (light instanceof LightParallel) {
       const s0 = light.s.value.copy()
