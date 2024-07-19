@@ -35,6 +35,10 @@ export const ungroupLensGroup = () => {
   }, [])
   lensGroups.value = notSelected.concat(newGroups)
 }
+
+export const removeLensGroup = (idx: number) => {
+  removeElement(lensGroups, idx)
+}
 </script>
 
 <script setup lang="ts">
@@ -44,6 +48,7 @@ import { lensGroups, lights, releaseAllLenses, sensor } from '../globals'
 import LensSVG, { Lens } from './LensItem.vue'
 import MoveUI from './MoveUI.vue'
 import { ref, shallowRef, type Ref, type ShallowRef } from 'vue'
+import { removeElement } from '@/utils'
 
 const props = defineProps<{
   lensGroup: LensGroup

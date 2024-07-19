@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 import { resizeSensor } from './SVG/SensorItem.vue'
 import { calcLensInfo, lensGroups, lights, options, sensor, style } from './globals'
-import { humanReadable, removeElement } from './utils'
-import { groupLensGroups, ungroupLensGroup } from './SVG/LensGroupItem.vue'
+import { humanReadable } from './utils'
+import { groupLensGroups, removeLensGroup, ungroupLensGroup } from './SVG/LensGroupItem.vue'
 import { wavelengthCollection } from './collection/color'
 
 const visible = computed(() => {
@@ -44,7 +44,7 @@ const nSelectedLenses = computed(() => {
       </p>
       <!-- Lenses -->
       <template v-for="(lensGroup, i) of lensGroups" :key="i">
-        <template v-if="lensGroup.selected">
+        <template v-if="lensGroup.selected.value">
           <fieldset>
             <legend :title="`f: ${humanReadable(calcLensInfo(lensGroup.lenses.value).f)}`">
               Group {{ i }}
@@ -61,7 +61,7 @@ const nSelectedLenses = computed(() => {
               <i
                 v-if="!lensGroup.fixed.value"
                 class="bi bi-trash pointer warning"
-                @click="removeElement(lensGroups, i)"
+                @click="removeLensGroup(i)"
               />
             </legend>
             <template v-for="(lens, j) of lensGroup.lenses.value" :key="j">

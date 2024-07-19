@@ -10,7 +10,7 @@ type PlaneData = {
   vd?: number
 }
 
-type LensData = {
+export type LensData = {
   name: string
   patent?: string
   url?: string
