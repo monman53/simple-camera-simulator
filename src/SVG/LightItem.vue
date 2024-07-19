@@ -4,10 +4,12 @@ class LightBase {
   compositeN: Ref<number>
   wavelength: Ref<number>
   wavelengths: ComputedRef<number[]>
+  selected: Ref<boolean>
   constructor(isComposite: boolean, wavelength: number) {
     this.isComposite = ref(isComposite)
     this.wavelength = ref(wavelength)
     this.compositeN = ref(3)
+    this.selected = ref(false)
     this.wavelengths = computed(() => {
       if (this.isComposite.value) {
         const wavelengths = []
@@ -134,6 +136,8 @@ const move = (idx: number) => {
     })
     newLights.push(light)
     lights.value = newLights
+    triggerRef(lights)
+    light.selected.value = true
 
     if (light instanceof LightParallel) {
       const s0 = light.s.value.copy()
@@ -184,7 +188,8 @@ const deleteLight = (e: any, idx: number) => {
               :cx="light.c.value.x"
               :cy="light.c.value.y"
               :r="rUI"
-              class="stroke-white normal fill-none"
+              class="stroke-white fill-none"
+              :class="{ bold: light.selected.value, normal: !light.selected.value }"
             />
           </WithBackground>
           <circle :cx="light.c.value.x" :cy="light.c.value.y" :r="rUI" :fill />
@@ -196,7 +201,11 @@ const deleteLight = (e: any, idx: number) => {
         <g @dblclick="deleteLight($event, idx)">
           <polygon :points :fill />
           <WithBackground>
-            <polygon :points class="stroke-white normal fill-none" />
+            <polygon
+              :points
+              class="stroke-white fill-none"
+              :class="{ bold: light.selected.value, normal: !light.selected.value }"
+            />
           </WithBackground>
         </g>
       </MoveUI>

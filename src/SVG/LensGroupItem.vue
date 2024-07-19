@@ -39,7 +39,7 @@ export const ungroupLensGroup = () => {
 
 <script setup lang="ts">
 import type { Vec } from '@/math'
-import { lensGroups, releaseAllLenses, sensor } from '../globals'
+import { lensGroups, lights, releaseAllLenses, sensor } from '../globals'
 
 import LensSVG, { Lens } from './LensItem.vue'
 import MoveUI from './MoveUI.vue'
@@ -56,6 +56,10 @@ const move = (e: MouseEvent) => {
     releaseAllLenses()
   }
   sensor.value.selected = false
+  // Lights
+  lights.value.forEach((light) => {
+    light.selected.value = false
+  })
   const lensGroup = lensGroups.value[props.idx]
   lensGroup.selected.value = true
 
