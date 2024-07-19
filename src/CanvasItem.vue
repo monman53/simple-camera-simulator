@@ -18,6 +18,7 @@ import { Vec, vec, vecRad } from './math'
 
 import { rayTrace, type Ray } from './rayTrace'
 import { lightHSL } from './collection/color'
+import { LightParallel, LightPoint } from './SVG/LightItem.vue'
 
 // Reference to the canvas
 const canvas = ref()
@@ -88,31 +89,31 @@ const draw = () => {
   // Light sources
   for (const light of lights.value) {
     // Point light source
-    if (light.type === 'Point') {
+    if (light instanceof LightPoint) {
       // Draw 2^nRaysLog rays from light center
       const nRays = 1 << params.nRaysLog
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
-        const s = light.c.copy()
+        const s = light.c.value.copy()
         const theta = (2 * Math.PI * i) / nRays
         const v = vecRad(theta)
-        for (let wavelength of light.wavelengths) {
+        for (let wavelength of light.wavelengths.value) {
           rays.push({ s, v, wavelength, idx: rays.length })
         }
       }
     }
 
     // Parallel light source
-    if (light.type === 'Parallel') {
-      const l = Vec.sub(light.t, light.s)
+    if (light instanceof LightParallel) {
+      const l = Vec.sub(light.t.value, light.s.value)
       const ln = l.normalize()
       const length = l.length()
       // TODO:
       const nRays = Math.floor((length / (2 * Math.PI)) * (1 << params.nRaysLog) * 0.01)
       for (let i = 0; i < nRays; i++) {
-        const s = light.s.add(ln.mul((i / nRays) * length))
+        const s = light.s.value.add(ln.mul((i / nRays) * length))
         const v = l.rotate(-Math.PI / 2).normalize()
-        for (let wavelength of light.wavelengths) {
+        for (let wavelength of light.wavelengths.value) {
           rays.push({ s, v, wavelength, idx: rays.length })
         }
       }
@@ -126,10 +127,10 @@ const draw = () => {
       const nRays = 1 << params.nRaysLog
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
-        const s = vec(light.c.x, light.c.y)
+        const s = vec(light.c.value.x, light.c.value.y)
         const theta = (2 * Math.PI * i) / nRays
         const v = vecRad(theta)
-        rays.push({ s, v, wavelength: light.wavelengths[0], idx: rays.length })
+        rays.push({ s, v, wavelength: light.wavelength.value, idx: rays.length })
       }
     }
   }

@@ -220,17 +220,17 @@ const pupilPath = computed(() => {
         <g v-for="(light, idx) of apple" :key="idx">
           <WithBackground>
             <circle
-              :cx="light.c.x"
-              :cy="light.c.y"
+              :cx="light.c.value.x"
+              :cy="light.c.value.y"
               :r="rUI"
               class="stroke-white normal fill-none"
             />
           </WithBackground>
           <circle
-            :cx="light.c.x"
-            :cy="light.c.y"
+            :cx="light.c.value.x"
+            :cy="light.c.value.y"
             :r="rUI"
-            :fill="lightHSL(light.wavelengths[0], 0.5)"
+            :fill="lightHSL(light.wavelengths.value[0], 0.5)"
           />
         </g>
       </g>

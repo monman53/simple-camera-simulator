@@ -7,7 +7,7 @@ import { LensGroup } from './SVG/LensGroupItem.vue'
 import { Lens, LensPlane } from './SVG/LensItem.vue'
 import type { Body } from './SVG/BodyItem.vue'
 import type { Sensor } from './SVG/SensorItem.vue'
-import type { LightPoint, LightType } from './SVG/LightItem.vue'
+import { LightParallel, LightPoint, type LightType } from './SVG/LightItem.vue'
 import type { Aperture } from './SVG/ApertureItem.vue'
 
 //================================
@@ -40,10 +40,10 @@ export const lights0 = (): LightType[] => {
     // { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
     // { type: Light.Point, c: vec(-120, -20), color: 240 }, // blue
     // { type: Light.White, c: vec(-200, -18) }, // white
-    { type: 'Parallel', s: vec(-180, -30), t: vec(-180, 30), wavelengths: [wavelength.yellow] } // green
+    new LightParallel(vec(-180, -30), vec(-180, 30), false, wavelength.yellow)
   ]
 }
-export const lights = ref(lights0())
+export const lights = shallowRef(lights0())
 
 //--------------------------------
 // Lenses
@@ -152,7 +152,7 @@ export const apple = computed(() => {
       const y = cy + r * Math.sin(theta)
       const c = vec(x, y)
       if (x >= cx) {
-        lights.push({ type: 'Point', c, wavelengths: [wavelength.red] })
+        lights.push(new LightPoint(c, false, wavelength.red))
       }
     }
   }
@@ -167,7 +167,7 @@ export const apple = computed(() => {
       const y = cy - (r + rLeaf) + rLeaf * Math.sin(theta)
       const c = vec(x, y)
       if (x >= cx) {
-        lights.push({ type: 'Point', c, wavelengths: [wavelength.green] })
+        lights.push(new LightPoint(c, false, wavelength.green))
       }
     }
   }
@@ -236,13 +236,13 @@ export const infR = computed(() => {
   const c = vec((sensor.value.s.x + sensor.value.t.x) / 2, 0)
   let distanceMax = 0
   for (const light of lights.value) {
-    if (light.type === 'Point') {
-      const d = c.sub(light.c)
+    if (light instanceof LightPoint) {
+      const d = c.sub(light.c.value)
       distanceMax = Math.max(distanceMax, d.length())
     }
-    if (light.type === 'Parallel') {
-      const ds = c.sub(light.s)
-      const dt = c.sub(light.s)
+    if (light instanceof LightParallel) {
+      const ds = c.sub(light.s.value)
+      const dt = c.sub(light.t.value)
       const d = Math.max(ds.length(), dt.length())
       distanceMax = Math.max(distanceMax, d)
     }

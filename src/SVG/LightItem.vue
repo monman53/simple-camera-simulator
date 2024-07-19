@@ -1,6 +1,32 @@
 <script lang="ts">
-export type LightPoint = { type: 'Point'; c: Vec; wavelengths: number[] }
-export type LightParallel = { type: 'Parallel'; s: Vec; t: Vec; wavelengths: number[] }
+class LightBase {
+  isComposite: Ref<boolean>
+  wavelength: Ref<number>
+  wavelengths: ComputedRef<number[]>
+  constructor(isComposite: boolean, wavelength: number) {
+    this.isComposite = ref(isComposite)
+    this.wavelength = ref(wavelength)
+    this.wavelengths = computed(() => {
+      return [this.wavelength.value]
+    })
+  }
+}
+export class LightPoint extends LightBase {
+  c: Ref<Vec>
+  constructor(c: Vec, isComposite: boolean, wavelength: number) {
+    super(isComposite, wavelength)
+    this.c = ref(c)
+  }
+}
+export class LightParallel extends LightBase {
+  s: Ref<Vec>
+  t: Ref<Vec>
+  constructor(s: Vec, t: Vec, isComposite: boolean, wavelength: number) {
+    super(isComposite, wavelength)
+    this.s = ref(s)
+    this.t = ref(t)
+  }
+}
 export type LightType = LightPoint | LightParallel
 
 export const addLight = (e: any) => {
@@ -15,21 +41,23 @@ export const addLight = (e: any) => {
     }
   }
   if (state.value.newLightType === 'Point') {
-    lights.value.push({ type: 'Point', c: m, wavelengths })
+    lights.value.push(
+      new LightPoint(m, state.value.newLightColorComposite, state.value.newLightWavelength)
+    )
   }
   if (state.value.newLightType === 'Parallel') {
-    lights.value.push({
-      type: 'Parallel',
-      s: vec(m.x, m.y - 25),
-      t: vec(m.x, m.y + 25),
-      wavelengths
-    })
+    const s = vec(m.x, m.y - 25)
+    const t = vec(m.x, m.y + 25)
+    lights.value.push(
+      new LightParallel(s, t, state.value.newLightColorComposite, state.value.newLightWavelength)
+    )
   }
+  triggerRef(lights)
 }
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, triggerRef, type Ref } from 'vue'
 import { lights, rUI, state } from '../globals'
 import { Vec, vec } from '../math'
 import WithBackground from './WithBackground.vue'
@@ -37,6 +65,7 @@ import CircleUI from './CircleUI.vue'
 import MoveUI from './MoveUI.vue'
 import { lightHSL, wavelength } from '@/collection/color'
 import { getPositionOnSvgApp, preventDefaultAndStopPropagation } from './SVG.vue'
+import type { ComputedRef } from 'vue'
 
 const props = defineProps<{
   light: LightType
@@ -44,9 +73,9 @@ const props = defineProps<{
 }>()
 
 const points = computed(() => {
-  if (props.light.type === 'Parallel') {
-    const s = props.light.s
-    const t = props.light.t
+  if (props.light instanceof LightParallel) {
+    const s = props.light.s.value
+    const t = props.light.t.value
     // const c = s.add(t).div(2)
     const v = t.sub(s)
     const vv = v
@@ -77,16 +106,16 @@ const parallelLightNodeMoveStartHandler = (idx: number, light: LightParallel) =>
       lights.value = newLights
     }
 
-    const s0 = light.s.copy()
-    const m0 = light.s.add(light.t).div(2)
+    const s0 = light.s.value.copy()
+    const m0 = light.s.value.add(light.t.value).div(2)
 
     return (e: MouseEvent, d: Vec) => {
       const ns = s0.add(d)
       if (e.shiftKey) {
         ns.x = m0.x
       }
-      light.s = ns
-      light.t = m0.add(m0.sub(ns))
+      light.s.value = ns
+      light.t.value = m0.add(m0.sub(ns))
     }
   }
 }
@@ -101,9 +130,9 @@ const move = (idx: number) => {
     newLights.push(light)
     lights.value = newLights
 
-    if (light.type === 'Parallel') {
-      const s0 = light.s.copy()
-      const t0 = light.t.copy()
+    if (light instanceof LightParallel) {
+      const s0 = light.s.value.copy()
+      const t0 = light.t.value.copy()
       const m0 = s0.add(t0).div(2)
       return (e: MouseEvent, d: Vec) => {
         const sn = s0.add(d)
@@ -112,24 +141,24 @@ const move = (idx: number) => {
           sn.y = s0.y - m0.y
           tn.y = t0.y - m0.y
         }
-        light.s = sn
-        light.t = tn
+        light.s.value = sn
+        light.t.value = tn
       }
     } else {
-      const c0 = light.c.copy()
+      const c0 = light.c.value.copy()
       return (e: any, d: Vec) => {
-        light.c.x = c0.x + d.x
-        light.c.y = c0.y + d.y
+        light.c.value.x = c0.x + d.x
+        light.c.value.y = c0.y + d.y
       }
     }
   }
 }
 
 const fill = computed(() => {
-  if (props.light.wavelengths.length > 1) {
+  if (props.light.wavelengths.value.length > 1) {
     return `hsl(0, 100%, 100%, 0.5)`
   } else {
-    return lightHSL(props.light.wavelengths[0], 0.5)
+    return lightHSL(props.light.wavelengths.value[0], 0.5)
   }
 })
 
@@ -142,22 +171,22 @@ const deleteLight = (e: any, idx: number) => {
 
 <template>
   <g>
-    <g v-if="light.type === 'Point'">
+    <g v-if="light instanceof LightPoint">
       <MoveUI :handler-creator="move(idx)">
         <g class="grab" @dblclick="deleteLight($event, idx)">
           <WithBackground>
             <circle
-              :cx="light.c.x"
-              :cy="light.c.y"
+              :cx="light.c.value.x"
+              :cy="light.c.value.y"
               :r="rUI"
               class="stroke-white normal fill-none"
             />
           </WithBackground>
-          <circle :cx="light.c.x" :cy="light.c.y" :r="rUI" :fill />
+          <circle :cx="light.c.value.x" :cy="light.c.value.y" :r="rUI" :fill />
         </g>
       </MoveUI>
     </g>
-    <g v-if="light.type === 'Parallel'">
+    <g v-if="light instanceof LightParallel">
       <MoveUI :handler-creator="move(idx)">
         <g @dblclick="deleteLight($event, idx)">
           <polygon :points :fill />
@@ -168,7 +197,7 @@ const deleteLight = (e: any, idx: number) => {
       </MoveUI>
 
       <MoveUI :handler-creator="parallelLightNodeMoveStartHandler(idx, light)">
-        <CircleUI :c="light.s" />
+        <CircleUI :c="light.s.value" />
       </MoveUI>
     </g>
   </g>
