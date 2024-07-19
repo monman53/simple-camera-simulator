@@ -1,6 +1,6 @@
 import { ref, computed, watch, shallowRef } from 'vue'
 import { vec, calcDispersion } from './math'
-import { wavelength } from './collection/color'
+import { wavelengthCollection } from './collection/color'
 import { createLensGroup, exampleConvexLens, exampleTestLens } from './collection/lens'
 import { rayTrace, type Ray, type Segment } from './rayTrace'
 import { LensGroup } from './SVG/LensGroupItem.vue'
@@ -21,9 +21,8 @@ export const createInitialParams = () => {
     c: vec(-100, 0),
     scale: 4,
     nRaysLog: 10,
-    newLightWavelength: wavelength.green,
+    newLightWavelength: wavelengthCollection.green,
     newLightColorComposite: false,
-    newLightColorCompositeN: 3,
     newLightType: 'Point',
     pointerPos: vec(0, 0)
   }
@@ -40,7 +39,7 @@ export const lights0 = (): LightType[] => {
     // { type: Light.Point, c: vec(-160, 0), color: 120 }, // green
     // { type: Light.Point, c: vec(-120, -20), color: 240 }, // blue
     // { type: Light.White, c: vec(-200, -18) }, // white
-    new LightParallel(vec(-180, -30), vec(-180, 30), false, wavelength.yellow)
+    new LightParallel(vec(-180, -30), vec(-180, 30), false, wavelengthCollection.yellow)
   ]
 }
 export const lights = shallowRef(lights0())
@@ -152,7 +151,7 @@ export const apple = computed(() => {
       const y = cy + r * Math.sin(theta)
       const c = vec(x, y)
       if (x >= cx) {
-        lights.push(new LightPoint(c, false, wavelength.red))
+        lights.push(new LightPoint(c, false, wavelengthCollection.red))
       }
     }
   }
@@ -167,7 +166,7 @@ export const apple = computed(() => {
       const y = cy - (r + rLeaf) + rLeaf * Math.sin(theta)
       const c = vec(x, y)
       if (x >= cx) {
-        lights.push(new LightPoint(c, false, wavelength.green))
+        lights.push(new LightPoint(c, false, wavelengthCollection.green))
       }
     }
   }
@@ -368,8 +367,8 @@ export const calcLensInfo = (lenses: Lens[]) => {
       ll.push({
         r: p.r.value,
         d,
-        na: calcDispersion(wavelength.d, p.paramsA.value),
-        nb: calcDispersion(wavelength.d, p.paramsB.value)
+        na: calcDispersion(wavelengthCollection.d, p.paramsA.value),
+        nb: calcDispersion(wavelengthCollection.d, p.paramsB.value)
       })
     })
   })
@@ -442,8 +441,8 @@ const calcLensRe = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[]) =>
       const mid = (ok + ng) / 2
       const padding = 10
       const rays: Ray[] = [
-        { s: vec(minX - padding, mid), v: vec(1, 0), wavelength: wavelength.d, idx: 0 },
-        { s: vec(minX - padding, -mid), v: vec(1, 0), wavelength: wavelength.d, idx: 1 }
+        { s: vec(minX - padding, mid), v: vec(1, 0), wavelength: wavelengthCollection.d, idx: 0 },
+        { s: vec(minX - padding, -mid), v: vec(1, 0), wavelength: wavelengthCollection.d, idx: 1 }
       ]
       const result = rayTrace(rays, lenses, apertures, sensors, null, body.r)
       const nTop = result[0].length

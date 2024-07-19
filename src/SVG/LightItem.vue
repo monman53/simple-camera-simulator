@@ -1,13 +1,26 @@
 <script lang="ts">
 class LightBase {
   isComposite: Ref<boolean>
+  compositeN: Ref<number>
   wavelength: Ref<number>
   wavelengths: ComputedRef<number[]>
   constructor(isComposite: boolean, wavelength: number) {
     this.isComposite = ref(isComposite)
     this.wavelength = ref(wavelength)
+    this.compositeN = ref(3)
     this.wavelengths = computed(() => {
-      return [this.wavelength.value]
+      if (this.isComposite.value) {
+        const wavelengths = []
+        const n = this.compositeN.value
+        for (let i = 0; i < n; i++) {
+          wavelengths.push(
+            (wavelengthCollection.min * i) / n + (wavelengthCollection.max * (n - i)) / n
+          )
+        }
+        return wavelengths
+      } else {
+        return [this.wavelength.value]
+      }
     })
   }
 }
@@ -32,14 +45,6 @@ export type LightType = LightPoint | LightParallel
 export const addLight = (e: any) => {
   preventDefaultAndStopPropagation(e)
   const m = getPositionOnSvgApp(e)
-  let wavelengths = [state.value.newLightWavelength]
-  if (state.value.newLightColorComposite) {
-    const n = state.value.newLightColorCompositeN
-    wavelengths = []
-    for (let i = 0; i < n; i++) {
-      wavelengths.push((wavelength.min * i) / n + (wavelength.max * (n - i)) / n)
-    }
-  }
   if (state.value.newLightType === 'Point') {
     lights.value.push(
       new LightPoint(m, state.value.newLightColorComposite, state.value.newLightWavelength)
@@ -63,7 +68,7 @@ import { Vec, vec } from '../math'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 import MoveUI from './MoveUI.vue'
-import { lightHSL, wavelength } from '@/collection/color'
+import { lightHSL, wavelengthCollection } from '@/collection/color'
 import { getPositionOnSvgApp, preventDefaultAndStopPropagation } from './SVG.vue'
 import type { ComputedRef } from 'vue'
 

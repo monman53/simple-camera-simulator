@@ -17,7 +17,7 @@ import {
   exampleConvexLens,
   exampleDoubletLens
 } from './collection/lens'
-import { lightHSL, wavelength } from './collection/color'
+import { lightHSL, wavelengthCollection } from './collection/color'
 
 const nRays = computed(() => {
   return 1 << state.value.nRaysLog
@@ -63,27 +63,23 @@ const nRays = computed(() => {
           <input
             v-model="state.newLightWavelength"
             type="range"
-            :min="wavelength.min"
-            :max="wavelength.max"
+            :min="wavelengthCollection.min"
+            :max="wavelengthCollection.max"
             step="0.001"
           />
           <br />
-          <button @click="state.newLightWavelength = wavelength.blue">Blue</button><br />
-          <button @click="state.newLightWavelength = wavelength.green">Green</button><br />
-          <button @click="state.newLightWavelength = wavelength.yellow">Yellow</button><br />
-          <button @click="state.newLightWavelength = wavelength.red">Red</button>
-        </template>
-        <template v-if="state.newLightColorComposite">
-          <input v-model="state.newLightColorCompositeN" type="range" min="0" max="32" />
+          <button @click="state.newLightWavelength = wavelengthCollection.blue">Blue</button><br />
+          <button @click="state.newLightWavelength = wavelengthCollection.green">Green</button
+          ><br />
+          <button @click="state.newLightWavelength = wavelengthCollection.yellow">Yellow</button
+          ><br />
+          <button @click="state.newLightWavelength = wavelengthCollection.red">Red</button>
         </template>
       </td>
       <td
         v-if="!state.newLightColorComposite"
         :style="`background-color: ${lightHSL(state.newLightWavelength, style.rayIntensity)}`"
       />
-      <td v-if="state.newLightColorComposite">
-        {{ state.newLightColorCompositeN }}
-      </td>
     </tr>
     <tr>
       <td>New light type</td>

@@ -1,4 +1,4 @@
-import { wavelength } from './collection/color'
+import { wavelengthCollection } from './collection/color'
 import type { CauchyParams } from './collection/lens'
 
 //================================
@@ -311,9 +311,9 @@ export const wavelengthToHue = (lambda: number) => {
 
 export const estimateCauchyParameters = (nd: number, vd: number) => {
   // Estimate dispersion curve is linear around d
-  const lf = wavelength.F
-  const ld = wavelength.d
-  const lc = wavelength.C
+  const lf = wavelengthCollection.F
+  const ld = wavelengthCollection.d
+  const lc = wavelengthCollection.C
 
   const nf = nd + (((ld - lf) / (lc - lf)) * (nd - 1)) / vd
   const nc = nd + (((ld - lc) / (lc - lf)) * (nd - 1)) / vd

@@ -1,6 +1,6 @@
 import { wavelengthToHue } from '@/math'
 
-export const wavelength = {
+export const wavelengthCollection = {
   min: 380,
   max: 750,
 
