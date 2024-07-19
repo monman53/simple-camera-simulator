@@ -1,18 +1,12 @@
 import { ref, computed, watch, shallowRef } from 'vue'
 import { vec, calcDispersion } from './math'
-import {
-  type Aperture,
-  type Body,
-  type LightPoint,
-  type LightType,
-  type Ray,
-  type Sensor
-} from './type'
+import { type Aperture, type LightPoint, type LightType, type Ray, type Sensor } from './type'
 import { wavelength } from './collection/color'
 import { createLensGroup, exampleConvexLens, exampleTestLens } from './collection/lens'
 import { rayTrace, type Segment } from './rayTrace'
 import { LensGroup } from './SVG/LensGroupItem.vue'
 import { Lens, LensPlane } from './SVG/LensItem.vue'
+import type { Body } from './SVG/BodyItem.vue'
 
 //================================
 // States

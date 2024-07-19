@@ -1,3 +1,11 @@
+<script lang="ts">
+export type Body = {
+  r: number
+  front: number
+  back: number
+}
+</script>
+
 <script setup lang="ts">
 import { aperture, body, lensesSorted, lensGroups, options, sensor } from '@/globals'
 import WithBackground from './WithBackground.vue'

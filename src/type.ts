@@ -21,9 +21,3 @@ export type Sensor = {
   t: Vec
   circleOfConfusion: number
 }
-
-export type Body = {
-  r: number
-  front: number
-  back: number
-}
