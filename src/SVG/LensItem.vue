@@ -98,8 +98,8 @@ const calcLensBack = (lens: Lens) => {
 
 <script setup lang="ts">
 import { computed, ref, shallowRef, type ComputedRef, type Ref, type ShallowRef } from 'vue'
-import { calcLensInfo, infR, options } from '../globals'
-import { vec, Vec } from '../math'
+import { infR, options } from '../globals'
+import { calcLensInfo, vec, Vec } from '../math'
 import WithBackground from './WithBackground.vue'
 import CircleUI from './CircleUI.vue'
 import Point from './PointItem.vue'

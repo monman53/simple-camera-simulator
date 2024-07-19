@@ -1,8 +1,7 @@
 import { ref, computed, watch, shallowRef } from 'vue'
-import { vec, calcDispersion } from './math'
+import { vec, lensSort, calcLensInfo, calcLensRe } from './math'
 import { wavelengthCollection } from './collection/color'
 import { createLensGroup, exampleConvexLens, exampleTestLens } from './collection/lens'
-import { rayTrace, type Ray, type Segment } from './rayTrace'
 import { LensGroup } from './SVG/LensGroupItem.vue'
 import { Lens, LensPlane } from './SVG/LensItem.vue'
 import type { Body } from './SVG/BodyItem.vue'
@@ -51,16 +50,6 @@ export const lensGroups0 = (): LensGroup[] => {
   return createLensGroup(exampleConvexLens)
 }
 export const lensGroups = shallowRef(lensGroups0())
-
-const lensSort = (lenses: Lens[]) => {
-  lenses.sort((a, b) => {
-    if (options.value.lensIdeal) {
-      return a.xcog.value - b.xcog.value
-    } else {
-      return a.planes.value[0].x.value - b.planes.value[0].x.value
-    }
-  })
-}
 
 export const lensesSorted = computed(() => {
   const res = lensGroups.value
@@ -336,134 +325,11 @@ export const body = computed(() => {
   return calcBody(lenses, apertures, sensors)
 })
 
-export const calcLensInfo = (lenses: Lens[]) => {
-  // TODO: This is not good
-  // Infinity loop may occur since calcLensInfo is used in lenSort()
-  // Skip for single element
-  if (lenses.length > 0) {
-    lensSort(lenses)
-  }
-  const ll: { d: number; r: number; na: number; nb: number }[] = []
-  lenses.forEach((lens, idx) => {
-    lens.planes.value.forEach((p, j) => {
-      let d = 0
-      if (options.value.lensIdeal) {
-        if (j === lens.planes.value.length - 1) {
-          if (idx !== lenses.length - 1) {
-            d = lenses[idx + 1].xcog.value - lenses[idx].xcog.value
-          }
-        }
-      } else {
-        if (j === lens.planes.value.length - 1) {
-          if (idx !== lenses.length - 1) {
-            d = lenses[idx + 1].planes.value[0].x.value - p.x.value
-          }
-        } else {
-          d = lens.planes.value[j + 1].x.value - p.x.value
-        }
-      }
-
-      ll.push({
-        r: p.r.value,
-        d,
-        na: calcDispersion(wavelengthCollection.d, p.paramsA.value),
-        nb: calcDispersion(wavelengthCollection.d, p.paramsB.value)
-      })
-    })
-  })
-
-  const ls: number[] = []
-  const lss: number[] = []
-  let f = Infinity
-  ll.forEach((l, i) => {
-    if (i === 0) {
-      ls.push(Infinity)
-      lss.push(1 / ((1 / l.r) * (1 - l.na / l.nb)))
-      f = lss[i]
-    } else {
-      ls.push(lss[i - 1] - ll[i - 1].d)
-      lss.push(1 / (l.na / l.nb / ls[i] + (1 / l.r) * (1 - l.na / l.nb)))
-      if (isFinite(f)) {
-        f *= lss[i] / ls[i]
-      } else {
-        f = lss[i]
-      }
-    }
-  })
-  let H = 0
-  if (lenses.length > 0) {
-    if (options.value.lensIdeal) {
-      H = lenses[lenses.length - 1].xcog.value + lss[lss.length - 1] - f
-    } else {
-      H = lenses[lenses.length - 1].xcog.value + lss[lss.length - 1] - f
-    }
-  }
-  return { f, H }
-}
-
 export const globalLensInfos = computed(() => {
   return lensesSorted.value.map((lens) => {
     return calcLensInfo([lens])
   })
 })
-
-const calcLensRe = (lenses: Lens[], apertures: Aperture[], sensors: Sensor[]) => {
-  // Binary search for entrance pupil radius
-
-  // Setup
-  let ok = 0
-  let ng = Infinity
-  let minX = Infinity
-  let nPlanes = 0
-  lenses.forEach((lens) => {
-    lens.planes.value.forEach((p) => {
-      if (p.x.value < minX) {
-        minX = p.x.value
-        ng = p.h.value
-      }
-    })
-    nPlanes += lens.planes.value.length
-  })
-  apertures.forEach((aperture) => {
-    if (aperture.x < minX) {
-      minX = aperture.x
-      ng = aperture.r
-    }
-  })
-  const body = calcBody(lenses, apertures, sensors)
-  let pathTop: Segment[] = []
-  let pathBottom: Segment[] = []
-
-  // Binary search
-  if (isFinite(ng)) {
-    while (ng - ok > 1e-8) {
-      const mid = (ok + ng) / 2
-      const padding = 10
-      const rays: Ray[] = [
-        { s: vec(minX - padding, mid), v: vec(1, 0), wavelength: wavelengthCollection.d, idx: 0 },
-        { s: vec(minX - padding, -mid), v: vec(1, 0), wavelength: wavelengthCollection.d, idx: 1 }
-      ]
-      const result = rayTrace(rays, lenses, apertures, sensors, null, body.r)
-      const nTop = result[0].length
-      const nBottom = result[0].length
-      if (
-        nTop === nPlanes + 1 &&
-        !result[0][nTop - 1].isAperture &&
-        nBottom === nPlanes + 1 &&
-        !result[1][nBottom - 1].isAperture
-      ) {
-        ok = mid
-        pathTop = result[0]
-        pathBottom = result[1]
-      } else {
-        ng = mid
-      }
-    }
-  }
-
-  const re = ok
-  return { re, H: calcLensInfo(lenses).H, pathTop, pathBottom }
-}
 
 export const globalLensRe = computed(() => {
   const fwdApertures: Aperture[] = []

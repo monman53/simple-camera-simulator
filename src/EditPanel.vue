@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { resizeSensor } from './SVG/SensorItem.vue'
-import { calcLensInfo, lensGroups, lights, options, sensor, style } from './globals'
+import { lensGroups, lights, options, sensor, style } from './globals'
 import { humanReadable } from './utils'
 import { groupLensGroups, removeLensGroup, ungroupLensGroup } from './SVG/LensGroupItem.vue'
 import { wavelengthCollection } from './collection/color'
+import { calcLensInfo } from './math'
 
 const visible = computed(() => {
   for (const lensGroup of lensGroups.value) {
