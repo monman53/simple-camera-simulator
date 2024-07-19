@@ -85,23 +85,6 @@ import { lightHSL, wavelengthCollection } from './collection/color'
         <td />
         <td>{{ humanReadable(globalLensInfo.f / (globalLensRe.forward.re * 2)) }}</td>
       </tr>
-      <!-- <template v-if="options.advanced">
-                <tr>
-                    <td>Position</td>
-                    <td></td>
-                    <td>{{ humanReadable(lens.x) }}</td>
-                </tr>
-                <tr>
-                    <td>Diameter</td>
-                    <td></td>
-                    <td>{{ humanReadable(lens.r * 2) }}</td>
-                </tr>
-                <tr>
-                    <td>Thickness</td>
-                    <td></td>
-                    <td>{{ humanReadable(lens.d) }}</td>
-                </tr>
-            </template> -->
     </template>
     <!-- Screen -->
     <tr>
