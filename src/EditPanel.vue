@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { resizeSensor } from './SVG/SensorItem.vue'
-import { calcLensInfo, lensGroups, options, sensor } from './globals'
+import { calcLensInfo, lensGroups, lights, options, sensor } from './globals'
 import { humanReadable, removeElement } from './utils'
 import { groupLensGroups, ungroupLensGroup } from './SVG/LensGroupItem.vue'
+import { wavelengthCollection } from './collection/color'
 
 const visible = computed(() => {
   for (const lensGroup of lensGroups.value) {
     if (lensGroup.selected.value) {
+      return true
+    }
+  }
+  for (const light of lights.value) {
+    if (light.selected.value) {
       return true
     }
   }
@@ -123,6 +129,46 @@ const nSelectedLenses = computed(() => {
       </template>
       <!-- Diameter -->
       <!-- {{ humanReadable(sensor.t.sub(sensor.s).length()) }} -->
+    </template>
+
+    <!-- Light -->
+    <template v-for="(light, idx) of lights" :key="idx">
+      <template v-if="light.selected.value">
+        <h3>Light</h3>
+        <label>
+          # of rays ({{ light.nRays.value }})
+          <br />
+          <input v-model.number="light.nRaysLog.value" type="range" min="0" max="16" />
+          <br />
+        </label>
+        <template v-if="light.isComposite.value">
+          <label>
+            # of waves
+            <br />
+            <input v-model="light.compositeN.value" type="range" :min="0" :max="32" step="1" />
+          </label>
+        </template>
+        <template v-else>
+          <label>
+            Color
+            <br />
+            <input
+              v-model="light.wavelength.value"
+              type="range"
+              :min="wavelengthCollection.min"
+              :max="wavelengthCollection.max"
+              step="0.001"
+            />
+            <br />
+          </label>
+        </template>
+        <h4>Options</h4>
+        <label>
+          <input type="checkbox" v-model="light.isComposite.value" />
+          Composite
+          <br />
+        </label>
+      </template>
     </template>
   </div>
 </template>

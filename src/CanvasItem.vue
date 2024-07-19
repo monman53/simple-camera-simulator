@@ -90,8 +90,7 @@ const draw = () => {
   for (const light of lights.value) {
     // Point light source
     if (light instanceof LightPoint) {
-      // Draw 2^nRaysLog rays from light center
-      const nRays = 1 << params.nRaysLog
+      const nRays = light.nRays.value
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
         const s = light.c.value.copy()
@@ -109,7 +108,7 @@ const draw = () => {
       const ln = l.normalize()
       const length = l.length()
       // TODO:
-      const nRays = Math.floor((length / (2 * Math.PI)) * (1 << params.nRaysLog) * 0.01)
+      const nRays = Math.floor((length / (2 * Math.PI)) * light.nRays.value * 0.01)
       for (let i = 0; i < nRays; i++) {
         const s = light.s.value.add(ln.mul((i / nRays) * length))
         const v = l.rotate(-Math.PI / 2).normalize()
@@ -123,8 +122,7 @@ const draw = () => {
   // Apple
   if (options.value.apple) {
     for (const light of apple.value) {
-      // Draw 2^nRaysLog rays from light center
-      const nRays = 1 << params.nRaysLog
+      const nRays = light.nRays.value
       for (let i = 0; i < nRays; i++) {
         // Initial position and direction
         const s = vec(light.c.value.x, light.c.value.y)

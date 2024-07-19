@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
 import {
   state,
   appleProps,
@@ -18,25 +16,11 @@ import {
   exampleDoubletLens
 } from './collection/lens'
 import { lightHSL, wavelengthCollection } from './collection/color'
-
-const nRays = computed(() => {
-  return 1 << state.value.nRaysLog
-})
 </script>
 
 <template>
   <table>
     <!-- Rays -->
-    <tr>
-      <th colspan="3">Lights</th>
-    </tr>
-    <tr>
-      <td># of rays</td>
-      <td>
-        <input v-model.number="state.nRaysLog" type="range" min="0" max="16" />
-      </td>
-      <td>{{ nRays }}</td>
-    </tr>
     <tr>
       <td>Intensity</td>
       <td>

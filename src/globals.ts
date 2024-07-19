@@ -20,7 +20,6 @@ export const createInitialParams = () => {
     height: window.innerHeight,
     c: vec(-100, 0),
     scale: 4,
-    nRaysLog: 10,
     newLightWavelength: wavelengthCollection.green,
     newLightColorComposite: false,
     newLightType: 'Point',

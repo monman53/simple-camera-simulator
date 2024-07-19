@@ -3,13 +3,19 @@ class LightBase {
   isComposite: Ref<boolean>
   compositeN: Ref<number>
   wavelength: Ref<number>
-  wavelengths: ComputedRef<number[]>
   selected: Ref<boolean>
+  nRaysLog: Ref<number>
+  nRays: ComputedRef<number>
+  wavelengths: ComputedRef<number[]>
   constructor(isComposite: boolean, wavelength: number) {
     this.isComposite = ref(isComposite)
     this.wavelength = ref(wavelength)
     this.compositeN = ref(3)
     this.selected = ref(false)
+    this.nRaysLog = ref(10)
+    this.nRays = computed(() => {
+      return 1 << this.nRaysLog.value
+    })
     this.wavelengths = computed(() => {
       if (this.isComposite.value) {
         const wavelengths = []
@@ -156,18 +162,17 @@ const move = (idx: number) => {
     } else {
       const c0 = light.c.value.copy()
       return (e: any, d: Vec) => {
-        light.c.value.x = c0.x + d.x
-        light.c.value.y = c0.y + d.y
+        light.c.value = c0.add(d)
       }
     }
   }
 }
 
 const fill = computed(() => {
-  if (props.light.wavelengths.value.length > 1) {
+  if (props.light.isComposite.value) {
     return `hsl(0, 100%, 100%, 0.5)`
   } else {
-    return lightHSL(props.light.wavelengths.value[0], 0.5)
+    return lightHSL(props.light.wavelength.value, 0.5)
   }
 })
 
@@ -175,6 +180,7 @@ const deleteLight = (e: any, idx: number) => {
   e.preventDefault()
   e.stopPropagation()
   lights.value.splice(idx, 1)
+  triggerRef(lights)
 }
 </script>
 
