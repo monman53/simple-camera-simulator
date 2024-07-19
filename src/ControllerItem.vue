@@ -52,14 +52,34 @@ import { lightHSL, wavelengthCollection } from './collection/color'
       </td>
       <td />
     </tr>
-    <!-- Lens -->
+    <!-- Other options -->
     <tr>
       <th colspan="3">
         <hr />
-        <label><input v-model="options.lens" type="checkbox" /> Lens</label>
+        Options
       </th>
     </tr>
+    <tr>
+      <td>
+        <label><input v-model="options.lens" type="checkbox" /> Lens</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label><input v-model="options.sensor" type="checkbox" /> Screen</label>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <label><input v-model="options.body" type="checkbox" /> Body</label>
+      </td>
+    </tr>
     <template v-if="options.lens">
+      <tr>
+        <td>
+          <label><input v-model="options.lensIdeal" type="checkbox" /> Ideal lens</label>
+        </td>
+      </tr>
       <tr>
         <td>
           <label><input v-model="options.lensFocalPoints" type="checkbox" /> Focal points</label>
@@ -74,43 +94,6 @@ import { lightHSL, wavelengthCollection } from './collection/color'
         </td>
       </tr>
     </template>
-    <template v-if="options.lens">
-      <tr>
-        <td>Focal Length</td>
-        <td />
-        <td>{{ humanReadable(globalLensInfo.f) }}</td>
-      </tr>
-      <tr>
-        <td>F-number</td>
-        <td />
-        <td>{{ humanReadable(globalLensInfo.f / (globalLensRe.forward.re * 2)) }}</td>
-      </tr>
-    </template>
-    <!-- Screen -->
-    <tr>
-      <th colspan="3">
-        <hr />
-        <label><input v-model="options.sensor" type="checkbox" /> Screen</label>
-      </th>
-    </tr>
-    <template v-if="options.sensor" />
-    <!-- Other options -->
-    <tr>
-      <th colspan="3">
-        <hr />
-        Other Options
-      </th>
-    </tr>
-    <tr>
-      <td>
-        <label><input v-model="options.body" type="checkbox" /> Body</label>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <label><input v-model="options.lensIdeal" type="checkbox" /> Ideal lens</label>
-      </td>
-    </tr>
     <tr>
       <td>
         <label><input v-model="options.curvature" type="checkbox" /> Curvature</label>
@@ -173,9 +156,22 @@ import { lightHSL, wavelengthCollection } from './collection/color'
       <tr>
         <th colspan="3">
           <hr />
-          Field
+          Info
         </th>
       </tr>
+      <!-- Lens -->
+      <template v-if="options.lens">
+        <tr>
+          <td>Focal Length</td>
+          <td />
+          <td>{{ humanReadable(globalLensInfo.f) }}</td>
+        </tr>
+        <tr>
+          <td>F-number</td>
+          <td />
+          <td>{{ humanReadable(globalLensInfo.f / (globalLensRe.forward.re * 2)) }}</td>
+        </tr>
+      </template>
       <tr>
         <td>Width</td>
         <td />
@@ -230,7 +226,6 @@ import { lightHSL, wavelengthCollection } from './collection/color'
           <td>
             <div class="indent">r</div>
           </td>
-          <!-- <td><label><input type="number" v-model.number="appleProps.r"></label></td> -->
           <td>
             <input v-model.number="appleProps.r" type="range" min="0" max="200" step="0.01" />
           </td>
