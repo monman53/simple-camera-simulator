@@ -7,6 +7,7 @@ class LightBase {
   nRaysLog: Ref<number>
   nRays: ComputedRef<number>
   wavelengths: ComputedRef<number[]>
+  fill: ComputedRef<string>
   constructor(isComposite: boolean, wavelength: number) {
     this.isComposite = ref(isComposite)
     this.wavelength = ref(wavelength)
@@ -30,6 +31,13 @@ class LightBase {
         return [this.wavelength.value]
       }
     })
+    this.fill = computed(() => {
+      if (this.isComposite.value) {
+        return `hsl(0, 100%, 100%, 0.5)`
+      } else {
+        return lightHSL(this.wavelength.value, 0.5)
+      }
+    })
   }
 }
 export class LightPoint extends LightBase {
@@ -42,10 +50,28 @@ export class LightPoint extends LightBase {
 export class LightParallel extends LightBase {
   s: Ref<Vec>
   t: Ref<Vec>
+  polygonPoints: ComputedRef<string>
   constructor(s: Vec, t: Vec, isComposite: boolean, wavelength: number) {
     super(isComposite, wavelength)
     this.s = ref(s)
     this.t = ref(t)
+    this.polygonPoints = computed(() => {
+      const s = this.s.value
+      const t = this.t.value
+      // const c = s.add(t).div(2)
+      const v = t.sub(s)
+      const vv = v
+        .rotate(Math.PI / 2) // 90 deg rotation
+        .normalize()
+        .mul(rUI.value / 2)
+
+      const p1 = t.add(vv)
+      const p2 = s.add(vv)
+      const p3 = s.add(vv.minus())
+      const p4 = t.add(vv.minus())
+
+      return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
+    })
   }
 }
 export type LightType = LightPoint | LightParallel
@@ -81,32 +107,10 @@ import { getPositionOnSvgApp, preventDefaultAndStopPropagation } from './SVG.vue
 import type { ComputedRef } from 'vue'
 import { releaseALlItems } from '@/utils'
 
-const props = defineProps<{
+defineProps<{
   light: LightType
   idx: number
 }>()
-
-const points = computed(() => {
-  if (props.light instanceof LightParallel) {
-    const s = props.light.s.value
-    const t = props.light.t.value
-    // const c = s.add(t).div(2)
-    const v = t.sub(s)
-    const vv = v
-      .rotate(Math.PI / 2) // 90 deg rotation
-      .normalize()
-      .mul(rUI.value / 2)
-
-    const p1 = t.add(vv)
-    const p2 = s.add(vv)
-    const p3 = s.add(vv.minus())
-    const p4 = t.add(vv.minus())
-
-    return `${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}`
-  } else {
-    return ''
-  }
-})
 
 const parallelLightNodeMoveStartHandler = (idx: number, light: LightParallel) => {
   return () => {
@@ -173,14 +177,6 @@ const move = (idx: number) => {
   }
 }
 
-const fill = computed(() => {
-  if (props.light.isComposite.value) {
-    return `hsl(0, 100%, 100%, 0.5)`
-  } else {
-    return lightHSL(props.light.wavelength.value, 0.5)
-  }
-})
-
 const deleteLight = (e: any, idx: number) => {
   e.preventDefault()
   e.stopPropagation()
@@ -203,17 +199,17 @@ const deleteLight = (e: any, idx: number) => {
               :class="{ bold: light.selected.value, normal: !light.selected.value }"
             />
           </WithBackground>
-          <circle :cx="light.c.value.x" :cy="light.c.value.y" :r="rUI" :fill />
+          <circle :cx="light.c.value.x" :cy="light.c.value.y" :r="rUI" :fill="light.fill.value" />
         </g>
       </MoveUI>
     </g>
     <g v-if="light instanceof LightParallel">
       <MoveUI :handler-creator="move(idx)">
         <g @dblclick="deleteLight($event, idx)">
-          <polygon :points :fill />
+          <polygon :points="light.polygonPoints.value" :fill="light.fill.value" />
           <WithBackground>
             <polygon
-              :points
+              :points="light.polygonPoints.value"
               class="stroke-white fill-none"
               :class="{ bold: light.selected.value, normal: !light.selected.value }"
             />
